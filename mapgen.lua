@@ -290,9 +290,8 @@ local function makeTunnel(this, dirswitch)
 	local p1 = vector.add(orpi, veci, this.of, this.rs / 2)
 	if (p1.z >= minp.z and p1.z <= maxp.z and
 			p1.x >= minp.x and p1.x <= maxp.x) then
-		local index1 = (p1.z - minp.z) * a.ystride + (p1.x - minp.x)
-		--h1 = mg.heightmap[index1]
-		h1 = this.water_level
+		local index1 = math.floor(p1.z - minp.z + 0.5) * csize.x + math.floor(p1.x - minp.x + 0.5) + 1
+		h1 = heightmap[index1]
 	else
 		h1 = this.water_level -- If not in heightmap
 	end
@@ -300,9 +299,8 @@ local function makeTunnel(this, dirswitch)
 	local p2 = vector.add(orpi, this.of, this.rs / 2)
 	if (p2.z >= minp.z and p2.z <= maxp.z and
 			p2.x >= minp.x and p2.x <= maxp.x) then
-		local index2 = (p2.z - minp.z) * a.ystride + (p2.x - minp.x)
-		--h2 = mg.heightmap[index2]
-		h2 = this.water_level
+		local index2 = math.floor(p2.z - minp.z + 0.5) * csize.x + math.floor(p2.x - minp.x + 0.5) + 1
+		h2 = heightmap[index2]
 	else
 		h2 = this.water_level
 	end
@@ -470,6 +468,18 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	--p2data = vm:get_param2_data()
 	a = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 	csize = vector.add(vector.subtract(maxp, minp), 1)
+	heightmap = minetest.get_mapgen_object("heightmap")
+
+	local max_stone_height = -40000
+	local index = 0
+	for z = minp.z, maxp.z do
+		for x = minp.x, maxp.x do
+			index = index + 1
+			if max_stone_height < heightmap[index] then
+				max_stone_height = heightmap[index]
+			end
+		end
+	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	local mem = math.floor(collectgarbage("count")/1024)
@@ -485,7 +495,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	local px = math.floor((minp.x + 32) / csize.x)
 	local pz = math.floor((minp.z + 32) / csize.z)
 
-	generateCaves(1)
+	generateCaves(max_stone_height)
 
 	--local index = 0
 	--local index3d = 0
