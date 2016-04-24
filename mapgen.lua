@@ -290,7 +290,7 @@ local function makeTunnel(this, dirswitch)
 	local p1 = vector.add(orpi, veci, this.of, this.rs / 2)
 	if (p1.z >= minp.z and p1.z <= maxp.z and
 			p1.x >= minp.x and p1.x <= maxp.x) then
-		local index1 = (p1.z - minp.z) * mg.ystride + (p1.x - minp.x)
+		local index1 = (p1.z - minp.z) * a.ystride + (p1.x - minp.x)
 		--h1 = mg.heightmap[index1]
 		h1 = this.water_level
 	else
@@ -512,8 +512,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	--minetest.generate_decorations(vm, minp, maxp)
 	--vm:set_param2_data(p2data)
 	vm:set_lighting({day = 0, night = 0})
+	vm:calc_lighting()
 	vm:update_liquids()
-	vm:calc_lighting(minp, maxp, false)
 	vm:write_to_map()
 
 	vm, a, lightmap, heightmap, biomemap, terrain, cave = nil, nil, nil, nil, nil, nil, nil
