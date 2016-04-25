@@ -2,6 +2,7 @@
 -- cavegen.cpp, and is likewise distributed under the LGPL2.1
 
 
+--local DEBUG = true
 local node = fun_caves.node
 
 local data = {}
@@ -202,16 +203,21 @@ local function carveRoute(this, vec, f, randomize_xz, tunnel_above_ground)
 								local c = data[i]
 								--if (not ndef.get(c).is_ground_content) then
 								-- ** check for ground content? **
-								if false then
+								local donotdig = false
+								if c == node("default:desert_sand") then
+									donotdig = true
+								end
+
+								if donotdig then
 									--continue
 								else
 									if (this.large_cave) then
 										local full_ymin = minp.y - 16
 										local full_ymax = maxp.y + 16
 
-										if (this.flooded and full_ymin < this.water_level and full_ymax > this.water_level) then
+										if this.flooded and not this.lava_cave then
 											data[i] = (p.y <= this.water_level) and node("default:water_source") or node("air")
-										elseif (this.flooded and full_ymax < this.water_level) then
+										elseif this.flooded then
 											data[i] = (p.y < startp.y - 2) and node("default:lava_source") or node("air")
 										else
 											data[i] = node("air")
@@ -416,6 +422,11 @@ local function CaveV6(is_large_cave)
 	this.max_tunnel_diameter = math.random(2, 6)
 	this.dswitchint          = math.random(1, 14)
 	this.flooded             = true
+	this.lava_cave           = false
+
+	if maxp.y < this.water_level and minp.y / 31000 - math.random() < -0.5 then
+		this.lava_cave = true
+	end
 
 	if this.large_cave then
 		this.part_max_length_rs  = math.random(2,4)
@@ -521,8 +532,12 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	--minetest.generate_ores(vm, minp, maxp)
 	--minetest.generate_decorations(vm, minp, maxp)
 	--vm:set_param2_data(p2data)
-	vm:set_lighting({day = 0, night = 0})
-	vm:calc_lighting()
+	if DEBUG then
+		vm:set_lighting({day = 15, night = 15})
+	else
+		vm:set_lighting({day = 0, night = 0})
+		vm:calc_lighting()
+	end
 	vm:update_liquids()
 	vm:write_to_map()
 
