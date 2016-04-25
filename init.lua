@@ -2,34 +2,45 @@ fun_caves = {}
 fun_caves.version = "1.0"
 fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
 fun_caves.world = false
+fun_caves.time_factor = 10
 
 
-if fun_caves.world then
-	minetest.register_on_mapgen_init(function(mgparams)
-		minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
-	end)
+minetest.register_on_mapgen_init(function(mgparams)
+	minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
+end)
 
-	if default then
-		if default.register_ores then
-			default.register_ores()
-		end
-		if default.register_blobs then
-			default.register_blobs()
-		end
-		if default.register_biomes then
-			default.register_biomes()
-		end
-		if default.register_decorations then
-			default.register_decorations()
-		end
-		if flowers.register_decorations then
-			flowers.register_decorations()
-		end
+if default then
+	if default.register_ores then
+		default.register_ores()
 	end
-else
-	minetest.set_mapgen_params({flags="nocaves"})
+	if default.register_blobs then
+		default.register_blobs()
+	end
+	if default.register_biomes then
+		default.register_biomes()
+	end
+	if default.register_decorations then
+		default.register_decorations()
+	end
+	if flowers.register_decorations then
+		flowers.register_decorations()
+	end
 end
 
+
+-- Check if the table contains an element.
+function table.contains(table, element)
+  for key, value in pairs(table) do
+    if value == element then
+			if key then
+				return key
+			else
+				return true
+			end
+    end
+  end
+  return false
+end
 
 -- Modify a node to add a group
 function minetest.add_group(node, groups)
@@ -71,14 +82,17 @@ function fun_caves.node(name)
 end
 
 
---dofile(fun_caves.path .. "/nodes.lua")
+dofile(fun_caves.path .. "/nodes.lua")
+dofile(fun_caves.path .. "/fungal_tree.lua")
 dofile(fun_caves.path .. "/mapgen.lua")
 
 
-if fun_caves.world then
-	minetest.register_on_newplayer(fun_caves.respawn)
-	minetest.register_on_respawnplayer(fun_caves.respawn)
-end
+minetest.register_on_newplayer(fun_caves.respawn)
+minetest.register_on_respawnplayer(fun_caves.respawn)
 
 -- Inserting helps to ensure that fun_caves operates first.
 table.insert(minetest.registered_on_generateds, 1, fun_caves.generate)
+
+minetest.register_on_joinplayer(function(player)
+	player:set_sky("#000000", "plain", {})
+end)

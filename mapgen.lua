@@ -2,26 +2,30 @@
 -- cavegen.cpp, and is likewise distributed under the LGPL2.1
 
 
---local DEBUG = true
+local DEBUG = false
+-- Cave blend distance near YMIN, YMAX
+local massive_cave_blend = 128
+-- noise threshold for massive caves
+local massive_cave_threshold = 0.6
+-- mct: 1 = small rare caves, 0.5 1/3rd ground volume, 0 = 1/2 ground volume.
+
+local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
+local cave_noise_v6 = {offset = 6, scale = 6, seed = 34329, spread = {x = 250, y = 250, z = 250}, octaves = 3, persist = 0.5, lacunarity = 2}
+local intersect_cave_noise_1 = {offset = 0, scale = 1, seed = -8402, spread = {x = 64, y = 64, z = 64}, octaves = 3, persist = 0.5, lacunarity = 2}
+local intersect_cave_noise_2 = {offset = 0, scale = 1, seed = 3944, spread = {x = 64, y = 64, z = 64}, octaves = 3, persist = 0.5, lacunarity = 2}
+local massive_cave_noise = {offset = 0, scale = 1, seed = 59033, spread = {x = 768, y = 256, z = 768}, octaves = 6, persist = 0.63, lacunarity = 2}
+local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
+local biome_blend = {offset = 0.0, scale = 0.1, spread = {x = 8, y = 8, z = 8}, seed = 4023, octaves = 2, persist = 1.0, lacunarity = 2.0}
+
+
+
 local node = fun_caves.node
 
 local data = {}
 local p2data = {}  -- vm rotation data buffer
 local lightmap = {}
-local vm, emin, emax, a, csize, heightmap, biomemap
+local vm, emin, emax, area, csize
 local div_sz_x, div_sz_z, minp, maxp, terrain, cave
-
-local terrain_noise = {offset = 0,
-scale = 20, seed = 8829, spread = {x = 40, y = 40, z = 40},
-octaves = 6, persist = 0.4, lacunarity = 2}
-
-local cave_noise = {offset = 0, scale = 1,
-seed = -3977, spread = {x = 30, y = 30, z = 30}, octaves = 3,
-persist = 0.8, lacunarity = 2}
-
-local seed_noise = {offset = 0, scale = 32768,
-seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2,
-persist = 0.4, lacunarity = 2}
 
 if fun_caves.world then
 	fun_caves.biomes = {}
@@ -118,7 +122,7 @@ local function place_schematic(pos, schem, center)
 			local dz = pos.z - minp.z + z
 			local dx = pos.x - minp.x + x
 			if pos.x + x > minp.x and pos.x + x < maxp.x and pos.z + z > minp.z and pos.z + z < maxp.z then
-				local ivm = a:index(pos.x + x, pos.y, pos.z + z)
+				local ivm = area:index(pos.x + x, pos.y, pos.z + z)
 				local isch = z1 * schem.size.y * schem.size.x + x1 + 1
 				for y = 0, schem.size.y - 1 do
 					local dy = pos.y - minp.y + y
@@ -133,7 +137,7 @@ local function place_schematic(pos, schem, center)
 						end
 					end
 
-					ivm = ivm + a.ystride
+					ivm = ivm + area.ystride
 					isch = isch + schem.size.x
 				end
 			end
@@ -157,13 +161,11 @@ local function get_decoration(biome)
 end
 
 
-local np_cave = {offset = 6, scale = 6, seed = 34329, spread = {x = 250, y = 250, z = 250}, octaves = 3, persist = 0.5, lacunarity = 2}
-
 local function rangelim(x, y, z)
 	return math.max(math.min(x, z), y)
 end
 
-local function carveRoute(this, vec, f, randomize_xz, tunnel_above_ground)
+local function carveRoute(this, vec, f, randomize_xz)
 	local startp = vector.new(this.orp)
 	startp = vector.add(startp, this.of)
 
@@ -182,52 +184,48 @@ local function carveRoute(this, vec, f, randomize_xz, tunnel_above_ground)
 	for z0 = d0, d1 do
 		local si = this.rs / 2 - math.max(0, math.abs(z0) - this.rs / 7 - 1)
 		for x0 = -si - math.random(0,1), si - 1 + math.random(0,1) do
-			if (tunnel_above_ground) then
-				--continue
-			else
-				local maxabsxz = math.max(math.abs(x0), math.abs(z0))
-				local si2 = this.rs / 2 - math.max(0, maxabsxz - this.rs / 7 - 1)
-				for y0 = -si2, si2 do
-					if (this.large_cave_is_flat) then
-						-- Make large caves not so tall
-						if (this.rs > 7 and math.abs(y0) >= this.rs / 3) then
+			local maxabsxz = math.max(math.abs(x0), math.abs(z0))
+			local si2 = this.rs / 2 - math.max(0, maxabsxz - this.rs / 7 - 1)
+			for y0 = -si2, si2 do
+				if (this.large_cave_is_flat) then
+					-- Make large caves not so tall
+					if (this.rs > 7 and math.abs(y0) >= this.rs / 3) then
+						--continue
+					else
+						local p = vector.new(cp.x + x0, cp.y + y0, cp.z + z0)
+						p = vector.add(p, this.of)
+
+						if not area:containsp(p) then
 							--continue
 						else
-							local p = vector.new(cp.x + x0, cp.y + y0, cp.z + z0)
-							p = vector.add(p, this.of)
+							local i = area:indexp(vector.round(p))
+							local c = data[i]
+							--if (not ndef.get(c).is_ground_content) then
+							-- ** check for ground content? **
+							local donotdig = false
+							if c == node("default:desert_sand") then
+								donotdig = true
+							end
 
-							if not a:containsp(p) then
+							if donotdig then
 								--continue
 							else
-								local i = a:indexp(vector.round(p))
-								local c = data[i]
-								--if (not ndef.get(c).is_ground_content) then
-								-- ** check for ground content? **
-								local donotdig = false
-								if c == node("default:desert_sand") then
-									donotdig = true
-								end
+								if (this.large_cave) then
+									local full_ymin = minp.y - 16
+									local full_ymax = maxp.y + 16
 
-								if donotdig then
-									--continue
-								else
-									if (this.large_cave) then
-										local full_ymin = minp.y - 16
-										local full_ymax = maxp.y + 16
-
-										if this.flooded and not this.lava_cave then
-											data[i] = (p.y <= this.water_level) and node("default:water_source") or node("air")
-										elseif this.flooded then
-											data[i] = (p.y < startp.y - 2) and node("default:lava_source") or node("air")
-										else
-											data[i] = node("air")
-										end
+									if this.flooded and not this.lava_cave then
+										data[i] = (p.y <= this.water_level) and node("default:water_source") or node("air")
+									elseif this.flooded then
+										data[i] = (p.y < startp.y - 2) and node("default:lava_source") or node("air")
 									else
-										if (c == node("ignore") or c == node("air")) then
-											--continue
-										else
-											data[i] = node("air")
-										end
+										data[i] = node("air")
+									end
+								else
+									if (c == node("ignore") or c == node("air")) then
+										--continue
+									else
+										data[i] = node("air")
 									end
 								end
 							end
@@ -239,7 +237,7 @@ local function carveRoute(this, vec, f, randomize_xz, tunnel_above_ground)
 	end
 end
 
-local function makeTunnel(this, dirswitch)
+local function makeV6Tunnel(this, dirswitch)
 	if dirswitch and not this.large_cave then
 		this.main_direction = vector.new(
 			((math.random() * 20) - 10) / 10,
@@ -285,38 +283,6 @@ local function makeTunnel(this, dirswitch)
 		)
 	end
 
-	-- Do not make caves that are entirely above ground, to fix
-	-- shadow bugs caused by overgenerated large caves.
-	-- It is only necessary to check the startpoint and endpoint.
-	local orpi = vector.new(this.orp.x, this.orp.y, this.orp.z)
-	local veci = vector.new(vec.x, vec.y, vec.z)
-	local h1
-	local h2
-
-	local p1 = vector.add(orpi, veci, this.of, this.rs / 2)
-	if (p1.z >= minp.z and p1.z <= maxp.z and
-			p1.x >= minp.x and p1.x <= maxp.x) then
-		local index1 = math.floor(p1.z - minp.z + 0.5) * csize.x + math.floor(p1.x - minp.x + 0.5) + 1
-		h1 = heightmap[index1]
-	else
-		h1 = this.water_level -- If not in heightmap
-	end
-
-	local p2 = vector.add(orpi, this.of, this.rs / 2)
-	if (p2.z >= minp.z and p2.z <= maxp.z and
-			p2.x >= minp.x and p2.x <= maxp.x) then
-		local index2 = math.floor(p2.z - minp.z + 0.5) * csize.x + math.floor(p2.x - minp.x + 0.5) + 1
-		h2 = heightmap[index2]
-	else
-		h2 = this.water_level
-	end
-
-	-- If startpoint and endpoint are above ground,
-	-- disable placing of nodes in carveRoute while
-	-- still running all pseudorandom calls to ensure
-	-- caves consistent with existing worlds.
-	local tunnel_above_ground = p1.y > h1 and p2.y > h2
-
 	vec = vector.add(vec, this.main_direction)
 
 	local rp = vector.add(this.orp, vec)
@@ -352,16 +318,15 @@ local function makeTunnel(this, dirswitch)
 	-- Carve routes
 	for f = 0, 1, 1.0 / veclen do
 		--print(dump(vec))
-		carveRoute(this, vec, f, randomize_xz, tunnel_above_ground)
+		carveRoute(this, vec, f, randomize_xz)
 	end
 
 	this.orp = rp
 end
 
-local function makeCave(this, max_stone_height)
-	this.max_stone_y = max_stone_height
+local function makeV6Cave(this)
+	this.max_stone_y = 32000
 	this.main_direction = vector.new(0, 0, 0)
-	--print(dump(this))
 
 	-- Allowed route area size in nodes
 	this.ar = vector.add(vector.subtract(maxp, minp), 1)
@@ -409,7 +374,7 @@ local function makeCave(this, max_stone_height)
 	-- Generate some tunnel starting from orp
 	for j = 0, this.tunnel_routepoints do
 		--print(dump(this.orp))
-		makeTunnel(this, j % this.dswitchint == 0)
+		makeV6Tunnel(this, j % this.dswitchint == 0)
 	end
 end
 
@@ -424,7 +389,7 @@ local function CaveV6(is_large_cave)
 	this.flooded             = true
 	this.lava_cave           = false
 
-	if maxp.y < this.water_level and minp.y / 31000 - math.random() < -0.5 then
+	if math.random(2) == 1 then
 		this.lava_cave = true
 	end
 
@@ -446,8 +411,8 @@ local function getBiome(x, z)
 	return nil
 end
 
-local function generateCaves(max_stone_y)
-	local cave_amount = minetest.get_perlin(np_cave):get2d({x=minp.x, y=minp.y})
+local function generateV6Caves()
+	local cave_amount = minetest.get_perlin(cave_noise_v6):get2d({x=minp.x, y=minp.y})
 	local volume_nodes = (maxp.x - minp.x + 1) * (maxp.y - minp.y + 1) * 16
 	cave_amount = math.max(0.0, cave_amount)
 	local caves_count = cave_amount * volume_nodes / 50000
@@ -457,17 +422,11 @@ local function generateCaves(max_stone_y)
 		bruises_count = math.random(0, math.random(0, 2))
 	end
 
-	if (getBiome(minp.x, minp.z) == "desert") then
-		caves_count = caves_count / 3
-		bruises_count = caves_count / 3
-	end
-
 	for i = 0, caves_count + bruises_count do
 		local large_cave = (i >= caves_count)
 		local cave = CaveV6(large_cave)
 
-		--print(dump(cave))
-		makeCave(cave, max_stone_y)
+		makeV6Cave(cave)
 	end
 end
 
@@ -477,20 +436,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	vm:get_data(data)
 	--p2data = vm:get_param2_data()
-	a = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
+	area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 	csize = vector.add(vector.subtract(maxp, minp), 1)
-	heightmap = minetest.get_mapgen_object("heightmap")
-
-	local max_stone_height = -40000
-	local index = 0
-	for z = minp.z, maxp.z do
-		for x = minp.x, maxp.x do
-			index = index + 1
-			if max_stone_height < heightmap[index] then
-				max_stone_height = heightmap[index]
-			end
-		end
-	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	local mem = math.floor(collectgarbage("count")/1024)
@@ -506,31 +453,209 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	local px = math.floor((minp.x + 32) / csize.x)
 	local pz = math.floor((minp.z + 32) / csize.z)
 
-	generateCaves(max_stone_height)
+	-- Fill with stone.
+	for z = minp.z, maxp.z do
+		for y = minp.y, maxp.y do
+			local ivm = area:index(minp.x, y, z)
+			for x = minp.x, maxp.x do
+				data[ivm] = node("default:stone")
+				ivm = ivm + 1
+			end
+		end
+	end
 
-	--local index = 0
-	--local index3d = 0
-	--for z = minp.z, maxp.z do
-	--	local dz = z - minp.z
-	--	for x = minp.x, maxp.x do
-	--		index = index + 1
-	--		local dx = x - minp.x
-	--		index3d = dz * csize.y * csize.x + dx + 1
-	--		local ivm = a:index(x, minp.y, z)
+	local made_a_big_one = false
+	local massive_cave = minetest.get_perlin_map(massive_cave_noise, csize):get3dMap_flat(minp)
+	local cave_1 = minetest.get_perlin_map(intersect_cave_noise_1, csize):get3dMap_flat(minp)
+	local cave_2 = minetest.get_perlin_map(intersect_cave_noise_2, csize):get3dMap_flat(minp)
+	local biome_n = minetest.get_perlin_map(biome_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
+	local biome_bn = minetest.get_perlin_map(biome_blend, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 
-	--		for y = minp.y, maxp.y do
-	--			local dy = y - minp.y
+	local index = 0
+	local index3d = 0
+	for z = minp.z, maxp.z do
+		local dz = z - minp.z
+		for x = minp.x, maxp.x do
+			index = index + 1
+			local dx = x - minp.x
+			index3d = dz * csize.y * csize.x + dx + 1
+			local ivm = area:index(x, minp.y, z)
 
-	--			ivm = ivm + a.ystride
-	--			index3d = index3d + csize.x
-	--		end
-	--	end
-	--end
+			for y = minp.y, maxp.y do
+				local dy = y - minp.y
+
+				if massive_cave[index3d] > massive_cave_threshold then
+					data[ivm] = node("air")
+					made_a_big_one = true
+				else
+					local n1 = (math.abs(cave_1[index3d]) < 0.08)
+					local n2 = (math.abs(cave_2[index3d]) < 0.08)
+
+					if n1 and n2 then
+						local sr = 1000
+						if data[ivm] == node("default:stone") then
+							sr = math.random(1000)
+						end
+
+						--if sr == 1 then
+						--	data[ivm] = node("default:lava_source")
+						--elseif sr == 2 then
+						--	data[ivm] = node("default:water_source")
+						--else
+							data[ivm] = node("air")
+						--end
+					end
+				end
+
+				ivm = ivm + area.ystride
+				index3d = index3d + csize.x
+			end
+		end
+	end
+
+	if made_a_big_one then
+		--print("massive cave at "..minp.x..","..minp.y..","..minp.z)
+	else
+		generateV6Caves()
+	end
+
+	local index = 0
+	local index3d = 0
+	for z = minp.z, maxp.z do
+		local dz = z - minp.z
+		for x = minp.x, maxp.x do
+			index = index + 1
+			local dx = x - minp.x
+			index3d = (dz + 1) * csize.y * csize.x + dx
+			local air_count = 0
+			local ivm = area:index(x, maxp.y, z)
+
+			for y = maxp.y, minp.y, -1 do
+				local ivm_below = ivm - area.ystride
+				local ivm_above = ivm + area.ystride
+				local dy = y - minp.y
+
+				if data[ivm] == node("air") then
+					-------------------
+					local stone_type = node("default:stone")
+					local stone_depth = 1
+					local biome_val = biome_n[index] + biome_bn[index]
+					if biome_val < -0.8 then
+						if true then
+							stone_type = node("default:ice")
+							stone_depth = 2
+						else
+							stone_type = node("fun_caves:thinice")
+							stone_depth = 2
+						end
+					elseif biome_val < -0.7 then
+						stone_type = node("fun_caves:stone_with_lichen")
+					elseif biome_val < -0.3 then
+						stone_type = node("fun_caves:stone_with_moss")
+					elseif biome_val < 0.2 then
+						stone_type = node("fun_caves:stone_with_lichen")
+					elseif biome_val < 0.5 then
+						stone_type = node("fun_caves:stone_with_algae")
+					elseif biome_val < 0.6 then
+						stone_type = node("fun_caves:stone_with_salt")
+						stone_depth = 2
+					elseif biome_val < 0.8 then
+						stone_type = node("default:coalblock")
+						stone_depth = 2
+					else
+						stone_type = node("fun_caves:hot_cobble")
+					end
+					--	"glow"
+
+					-- Change stone per biome.
+					if data[ivm_below] == node("default:stone") then
+						data[ivm_below] = stone_type
+						if stone_depth == 2 then
+							data[ivm_below - area.ystride] = stone_type
+						end
+					end
+					if data[ivm_above] == node("default:stone") then
+						data[ivm_above] = stone_type
+						if stone_depth == 2 then
+							data[ivm_above + area.ystride] = stone_type
+						end
+					end
+
+					if (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss")) and math.random(1,20) == 1 then
+						data[ivm_above] = node("fun_caves:glowing_fungal_stone")
+					end
+
+					if data[ivm] == node("air") then
+						local sr = math.random(1,1000)
+
+						-- fluids
+						if (not made_a_big_one) and data[ivm_below] == node("default:stone") and sr < 10 then
+								data[ivm] = node("default:lava_source")
+						elseif (not made_a_big_one) and data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 10 then
+								data[ivm] = node("default:water_source")
+						-- hanging down
+						elseif data[ivm_above] == node("default:ice") and sr < 80 then
+							data[ivm] = node("fun_caves:icicle_down")
+						elseif (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss") or data[ivm_above] == node("fun_caves:stone_with_algae") or data[ivm_above] == node("default:stone")) and sr < 80 then
+							if data[ivm_above] == node("fun_caves:stone_with_algae") then
+								data[ivm] = node("fun_caves:stalactite_slimy")
+							elseif data[ivm_above] == node("fun_caves:stone_with_moss") then
+								data[ivm] = node("fun_caves:stalactite_mossy")
+							else
+								data[ivm] = node("fun_caves:stalactite")
+							end
+						-- standing up
+						elseif data[ivm_below] == node("default:coalblock") and sr < 20 then
+							data[ivm] = node("fun_caves:constant_flame")
+						elseif data[ivm_below] == node("default:ice") and sr < 80 then
+							data[ivm] = node("fun_caves:icicle_up")
+						elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae") or data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:stone_with_moss")) and sr < 80 then
+							if data[ivm_below] == node("fun_caves:stone_with_algae") then
+								data[ivm] = node("fun_caves:stalagmite_slimy")
+							elseif data[ivm_below] == node("fun_caves:stone_with_moss") then
+								data[ivm] = node("fun_caves:stalagmite_mossy")
+							elseif data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("default:stone") then
+								data[ivm] = node("fun_caves:stalagmite")
+							end
+						-- vegetation
+						elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae")) and biome_val >= -0.7 then
+							if sr < 110 then
+								data[ivm] = node("flowers:mushroom_red")
+							elseif sr < 140 then
+								data[ivm] = node("flowers:mushroom_brown")
+							elseif air_count > 1 and sr < 160 then
+								data[ivm_above] = node("fun_caves:huge_mushroom_cap")
+								data[ivm] = node("fun_caves:giant_mushroom_stem")
+							elseif air_count > 2 and sr < 170 then
+								data[ivm + 2 * area.ystride] = node("fun_caves:giant_mushroom_cap")
+								data[ivm_above] = node("fun_caves:giant_mushroom_stem")
+								data[ivm] = node("fun_caves:giant_mushroom_stem")
+							elseif made_a_big_one and air_count > 5 and sr < 180 then
+								fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)), node(fun_caves.fungal_tree_leaves[math.random(1,#fun_caves.fungal_tree_leaves)]), node("fun_caves:fungal_tree_fruit"))
+								data[ivm_below] = node("dirt")
+							elseif sr < 300 then
+								data[ivm_below] = node("dirt")
+							end
+							if data[ivm] ~= node("air") then
+								data[ivm_below] = node("dirt")
+							end
+						end
+					end
+
+					if data[ivm] == node("air") then
+						air_count = air_count + 1
+					end
+				end
+
+				ivm = ivm - area.ystride
+				index3d = index3d - csize.x
+			end
+		end
+	end
 
 
 	vm:set_data(data)
-	--minetest.generate_ores(vm, minp, maxp)
-	--minetest.generate_decorations(vm, minp, maxp)
+	minetest.generate_ores(vm, minp, maxp)
 	--vm:set_param2_data(p2data)
 	if DEBUG then
 		vm:set_lighting({day = 15, night = 15})
@@ -541,5 +666,36 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	vm:update_liquids()
 	vm:write_to_map()
 
-	vm, a, lightmap, heightmap, biomemap, terrain, cave = nil, nil, nil, nil, nil, nil, nil
+	vm, area, lightmap, terrain, cave = nil, nil, nil, nil, nil
+end
+
+function fun_caves.respawn(player)
+	local pos = {x=0,y=0,z=0}
+	local massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
+	local biome_n = minetest.get_perlin(biome_noise):get2d({x=pos.x, y=pos.z})
+	local biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
+	local biome = biome_n + biome_bn
+
+	while biome < 0.3 or biome > 0.5 do
+		pos.x = pos.x + math.random(20) - 10
+		pos.z = pos.z + math.random(20) - 10
+
+		biome_n = minetest.get_perlin(biome_noise):get2d({x=pos.x, y=pos.z})
+		biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
+		biome = biome_n + biome_bn
+	end
+
+	while massive_cave <= massive_cave_threshold do
+		pos.y = pos.y + 80
+		massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
+	end
+
+	while massive_cave > massive_cave_threshold do
+		pos.y = pos.y - 1
+		massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
+	end
+
+	pos.y = pos.y + 1
+	player:setpos(pos)
+	return true -- Disable default player spawner
 end
