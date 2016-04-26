@@ -62,6 +62,27 @@ minetest.register_craft({
 	}
 })
 
+minetest.register_craft({
+	output = "mobs:leather",
+	recipe = {
+		{"fun_caves:giant_mushroom_cap"}
+	}
+})
+
+minetest.register_craft({
+	output = "dye:red",
+	recipe = {
+		{"flowers:mushroom_red"}
+	}
+})
+
+--minetest.register_craft({
+--	output = "dye:yellow",
+--	recipe = {
+--		{"flowers:mushroom_brown"}
+--	}
+--})
+
 -- Caps can be cooked and eaten.
 minetest.register_node("fun_caves:mushroom_steak", {
 	description = "Mushroom Steak",
@@ -540,5 +561,12 @@ minetest.register_abm({
 			minetest.set_node(random, {name = node.name})
 		end
 	end
+})
+
+minetest.register_craft({
+	output = 'default:paper 6',
+	recipe = {
+		{'fun_caves:giant_mushroom_stem', 'fun_caves:giant_mushroom_stem', 'fun_caves:giant_mushroom_stem'},
+	}
 })
 

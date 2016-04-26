@@ -4,7 +4,11 @@
 
 local light_max = 9
 
-local colors = {"^[colorize:#FF00FF:60", "", "^[colorize:#0000FF:60", "^[colorize:#FF4500:80"}
+local colors = {}
+colors["^[colorize:#FF00FF:60"] = "dye:violet"
+colors["^[colorize:#0000FF:60"] = "dye:blue"
+colors["^[colorize:#FF4500:80"] = "dye:green"
+colors[""] = "dye:white"
 fun_caves.fungal_tree_leaves = {}
 
 -- all leaves
@@ -34,7 +38,7 @@ end
 
 -- multicolored growths
 local count = 0
-for _, color in pairs(colors) do
+for color, dye in pairs(colors) do
 	count = count + 1
 	local name = "fun_caves:fungal_tree_leaves_"..count
 	fun_caves.fungal_tree_leaves[#fun_caves.fungal_tree_leaves+1] = name
@@ -60,12 +64,28 @@ for _, color in pairs(colors) do
 	})
 
 	minetest.register_craft({
-		output = "default:stick",
-		recipe = {
-			{name}
-		}
+		type = "cooking",
+		output = "farming:straw",
+		recipe = name,
+		cooktime = 2,
 	})
+
+	if dye then
+		minetest.register_craft({
+			output = dye,
+			recipe = {
+				{name}
+			}
+		})
+	end
 end
+
+minetest.register_craft({
+	output = "dye:yellow",
+	recipe = {
+		{"flowers:mushroom_brown"}
+	}
+})
 
 
 local leaves_and_air = table.copy(fun_caves.fungal_tree_leaves)

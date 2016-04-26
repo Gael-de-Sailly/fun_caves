@@ -5,6 +5,11 @@ fun_caves.world = false
 fun_caves.time_factor = 10
 
 
+if not mobs or not mobs.mod then
+	dofile(fun_caves.path .. "/mobs_api.lua")
+end
+
+
 minetest.register_on_mapgen_init(function(mgparams)
 	minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 end)
@@ -85,6 +90,7 @@ end
 dofile(fun_caves.path .. "/nodes.lua")
 dofile(fun_caves.path .. "/fungal_tree.lua")
 dofile(fun_caves.path .. "/mapgen.lua")
+dofile(fun_caves.path .. "/mobs.lua")
 
 
 minetest.register_on_newplayer(fun_caves.respawn)

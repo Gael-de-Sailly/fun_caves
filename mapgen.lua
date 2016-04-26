@@ -488,8 +488,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					data[ivm] = node("air")
 					made_a_big_one = true
 				else
-					local n1 = (math.abs(cave_1[index3d]) < 0.08)
-					local n2 = (math.abs(cave_2[index3d]) < 0.08)
+					local n1 = (math.abs(cave_1[index3d]) < 0.2)
+					local n2 = (math.abs(cave_2[index3d]) < 0.2)
 
 					if n1 and n2 then
 						local sr = 1000
@@ -550,14 +550,17 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						end
 					elseif biome_val < -0.7 then
 						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < -0.3 then
+					elseif biome_val < -0.4 then
 						stone_type = node("fun_caves:stone_with_moss")
-					elseif biome_val < 0.2 then
+					elseif biome_val < 0.1 then
 						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < 0.5 then
+					elseif biome_val < 0.4 then
 						stone_type = node("fun_caves:stone_with_algae")
-					elseif biome_val < 0.6 then
+					elseif biome_val < 0.55 then
 						stone_type = node("fun_caves:stone_with_salt")
+						stone_depth = 2
+					elseif biome_val < 0.7 then
+						stone_type = node("default:sand")
 						stone_depth = 2
 					elseif biome_val < 0.8 then
 						stone_type = node("default:coalblock")
@@ -676,7 +679,7 @@ function fun_caves.respawn(player)
 	local biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
 	local biome = biome_n + biome_bn
 
-	while biome < 0.3 or biome > 0.5 do
+	while biome < -0.4 or biome > 0.4 do
 		pos.x = pos.x + math.random(20) - 10
 		pos.z = pos.z + math.random(20) - 10
 
