@@ -464,6 +464,10 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		end
 	end
 
+	vm:set_data(data)
+	minetest.generate_ores(vm, minp, maxp)
+	vm:get_data(data)
+
 	local made_a_big_one = false
 	local massive_cave = minetest.get_perlin_map(massive_cave_noise, csize):get3dMap_flat(minp)
 	local cave_1 = minetest.get_perlin_map(intersect_cave_noise_1, csize):get3dMap_flat(minp)

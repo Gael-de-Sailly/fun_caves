@@ -14,6 +14,7 @@ minetest.register_on_mapgen_init(function(mgparams)
 	minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 end)
 
+
 if default then
 	if default.register_ores then
 		default.register_ores()
@@ -29,6 +30,19 @@ if default then
 	end
 	if flowers.register_decorations then
 		flowers.register_decorations()
+	end
+
+	local ores = {}
+	for id, ore_table in pairs(minetest.registered_ores) do
+		local ore = table.copy(ore_table)
+		ore.y_min = -31000
+		ore.y_max = 31000
+		table.insert(ores, ore)
+	end
+	minetest.clear_registered_ores()
+
+	for _, ore in pairs(ores) do
+		minetest.register_ore(ore)
 	end
 end
 
