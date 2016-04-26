@@ -6,7 +6,7 @@ Players spawn into a massive cave, hopefully in an area with mushrooms, and star
 
 Hint: Find some giant mushrooms, first thing. They're handy.
 
-![screenshot](https://github.com/duane-r/fun_caves/raw/master/textures/screenshot2.jpg)
+![screenshot](https://github.com/duane-r/fun_caves/raw/master/textures/screenshot3.jpg)
 
 The source is available on github.
 
