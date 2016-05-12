@@ -1,22 +1,10 @@
--- Much of this code is translated directly from the Minetest
--- cavegen.cpp, and is likewise distributed under the LGPL2.1
-
-
 local DEBUG = false
--- Cave blend distance near YMIN, YMAX
-local massive_cave_blend = 128
--- noise threshold for massive caves
-local massive_cave_threshold = 0.6
--- mct: 1 = small rare caves, 0.5 1/3rd ground volume, 0 = 1/2 ground volume.
 
+local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 10, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
+local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
-local cave_noise_v6 = {offset = 6, scale = 6, seed = 34329, spread = {x = 250, y = 250, z = 250}, octaves = 3, persist = 0.5, lacunarity = 2}
-local intersect_cave_noise_1 = {offset = 0, scale = 1, seed = -8402, spread = {x = 64, y = 64, z = 64}, octaves = 3, persist = 0.5, lacunarity = 2}
-local intersect_cave_noise_2 = {offset = 0, scale = 1, seed = 3944, spread = {x = 64, y = 64, z = 64}, octaves = 3, persist = 0.5, lacunarity = 2}
-local massive_cave_noise = {offset = 0, scale = 1, seed = 59033, spread = {x = 768, y = 256, z = 768}, octaves = 6, persist = 0.63, lacunarity = 2}
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
 local biome_blend = {offset = 0.0, scale = 0.1, spread = {x = 8, y = 8, z = 8}, seed = 4023, octaves = 2, persist = 1.0, lacunarity = 2.0}
-
 
 
 local node = fun_caves.node
@@ -165,269 +153,8 @@ local function rangelim(x, y, z)
 	return math.max(math.min(x, z), y)
 end
 
-local function carveRoute(this, vec, f, randomize_xz)
-	local startp = vector.new(this.orp)
-	startp = vector.add(startp, this.of)
-
-	local fp = vector.add(this.orp, vector.multiply(vec, f))
-	fp.x = fp.x + 0.1 * math.random(-10, 10)
-	fp.z = fp.z + 0.1 * math.random(-10, 10)
-	local cp = vector.new(fp)
-
-	local d0 = -this.rs/2
-	local d1 = d0 + this.rs
-	if (randomize_xz) then
-		d0 = d0 + math.random(-1, 1)
-		d1 = d1 + math.random(-1, 1)
-	end
-
-	for z0 = d0, d1 do
-		local si = this.rs / 2 - math.max(0, math.abs(z0) - this.rs / 7 - 1)
-		for x0 = -si - math.random(0,1), si - 1 + math.random(0,1) do
-			local maxabsxz = math.max(math.abs(x0), math.abs(z0))
-			local si2 = this.rs / 2 - math.max(0, maxabsxz - this.rs / 7 - 1)
-			for y0 = -si2, si2 do
-				if (this.large_cave_is_flat) then
-					-- Make large caves not so tall
-					if (this.rs > 7 and math.abs(y0) >= this.rs / 3) then
-						--continue
-					else
-						local p = vector.new(cp.x + x0, cp.y + y0, cp.z + z0)
-						p = vector.add(p, this.of)
-
-						if not area:containsp(p) then
-							--continue
-						else
-							local i = area:indexp(vector.round(p))
-							local c = data[i]
-							--if (not ndef.get(c).is_ground_content) then
-							-- ** check for ground content? **
-							local donotdig = false
-							if c == node("default:desert_sand") then
-								donotdig = true
-							end
-
-							if donotdig then
-								--continue
-							else
-								if (this.large_cave) then
-									local full_ymin = minp.y - 16
-									local full_ymax = maxp.y + 16
-
-									if this.flooded and not this.lava_cave then
-										data[i] = (p.y <= this.water_level) and node("default:water_source") or node("air")
-									elseif this.flooded then
-										data[i] = (p.y < startp.y - 2) and node("default:lava_source") or node("air")
-									else
-										data[i] = node("air")
-									end
-								else
-									if (c == node("ignore") or c == node("air")) then
-										--continue
-									else
-										data[i] = node("air")
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-end
-
-local function makeV6Tunnel(this, dirswitch)
-	if dirswitch and not this.large_cave then
-		this.main_direction = vector.new(
-			((math.random() * 20) - 10) / 10,
-			((math.random() * 20) - 10) / 30,
-			((math.random() * 20) - 10) / 10
-		)
-		this.main_direction = vector.multiply(this.main_direction, math.random(0, 10) / 10)
-	end
-
-	-- Randomize size
-	local min_d = this.min_tunnel_diameter
-	local max_d = this.max_tunnel_diameter
-	this.rs = math.random(min_d, max_d)
-	local rs_part_max_length_rs = this.rs * this.part_max_length_rs
-
-	local maxlen
-	if this.large_cave then
-		maxlen = vector.new(
-			rs_part_max_length_rs,
-			rs_part_max_length_rs / 2,
-			rs_part_max_length_rs
-		)
-	else
-		maxlen = vector.new(
-			rs_part_max_length_rs,
-			math.random(1, rs_part_max_length_rs),
-			rs_part_max_length_rs
-		)
-	end
-
-	local vec = vector.new(
-		(math.random() * maxlen.x) - maxlen.x / 2,
-		(math.random() * maxlen.y) - maxlen.y / 2,
-		(math.random() * maxlen.z) - maxlen.z / 2
-	)
-
-	-- Jump downward sometimes
-	if not this.large_cave and math.random(0, 12) == 0 then
-		vec = vector.new(
-			(math.random() * maxlen.x) - maxlen.x / 2,
-			(math.random() * (maxlen.y * 2)) - maxlen.y,
-			(math.random() * maxlen.z) - maxlen.z / 2
-		)
-	end
-
-	vec = vector.add(vec, this.main_direction)
-
-	local rp = vector.add(this.orp, vec)
-	if (rp.x < 0) then
-		rp.x = 0
-	elseif (rp.x >= this.ar.x) then
-		rp.x = this.ar.x - 1
-	end
-
-	if (rp.y < this.route_y_min) then
-		rp.y = this.route_y_min
-	elseif (rp.y >= this.route_y_max) then
-		rp.y = this.route_y_max - 1
-	end
-
-	if (rp.z < 0) then
-		rp.z = 0
-	elseif (rp.z >= this.ar.z) then
-		rp.z = this.ar.z - 1
-	end
-
-	vec = vector.subtract(rp, this.orp)
-
-	local veclen = vector.length(vec)
-	-- As odd as it sounds, veclen is *exactly* 0.0 sometimes, causing a FPE
-	if (veclen < 0.05) then
-		veclen = 1.0
-	end
-
-	-- Every second section is rough
-	local randomize_xz = (math.random(1, 2) == 1)
-
-	-- Carve routes
-	for f = 0, 1, 1.0 / veclen do
-		--print(dump(vec))
-		carveRoute(this, vec, f, randomize_xz)
-	end
-
-	this.orp = rp
-end
-
-local function makeV6Cave(this)
-	this.max_stone_y = 32000
-	this.main_direction = vector.new(0, 0, 0)
-
-	-- Allowed route area size in nodes
-	this.ar = vector.add(vector.subtract(maxp, minp), 1)
-	-- Area starting point in nodes
-	this.of = minp
-
-	-- Allow a bit more
-	--(this should be more than the maximum radius of the tunnel)
-	local max_spread_amount = 16
-	local insure = 10
-	local more = math.max(max_spread_amount - this.max_tunnel_diameter / 2 - insure, 1)
-	this.ar = vector.add(this.ar, vector.multiply(vector.new(1,0,1), (more * 2)))
-	this.of = vector.subtract(this.of, vector.multiply(vector.new(1,0,1), more))
-
-	this.route_y_min = 0
-	-- Allow half a diameter + 7 over stone surface
-	this.route_y_max = -this.of.y + this.max_stone_y + this.max_tunnel_diameter / 2 + 7
-
-	-- Limit maximum to area
-	this.route_y_max = rangelim(this.route_y_max, 0, this.ar.y - 1)
-
-	if this.large_cave then
-		local min = 0
-		if minp.y < this.water_level and maxp.y > this.water_level then
-			min = this.water_level - this.max_tunnel_diameter/3 - this.of.y
-			this.route_y_max = this.water_level + this.max_tunnel_diameter/3 - this.of.y
-		end
-		this.route_y_min = math.random(min, min + this.max_tunnel_diameter)
-		this.route_y_min = rangelim(this.route_y_min, 0, this.route_y_max)
-	end
-
-	local route_start_y_min = this.route_y_min
-	local route_start_y_max = this.route_y_max
-
-	route_start_y_min = rangelim(route_start_y_min, 0, this.ar.y-1)
-	route_start_y_max = rangelim(route_start_y_max, route_start_y_min, this.ar.y-1)
-
-	-- Randomize starting position
-	this.orp = vector.new(
-		(math.random() * this.ar.x) + 0.5,
-		(math.random(route_start_y_min, route_start_y_max)) + 0.5,
-		(math.random() * this.ar.z) + 0.5
-	)
-
-	-- Generate some tunnel starting from orp
-	for j = 0, this.tunnel_routepoints do
-		--print(dump(this.orp))
-		makeV6Tunnel(this, j % this.dswitchint == 0)
-	end
-end
-
-local function CaveV6(is_large_cave)
-	local this = {}
-	this.water_level    = 1
-	this.large_cave     = is_large_cave
-
-	this.min_tunnel_diameter = 2
-	this.max_tunnel_diameter = math.random(2, 6)
-	this.dswitchint          = math.random(1, 14)
-	this.flooded             = true
-	this.lava_cave           = false
-
-	if math.random(2) == 1 then
-		this.lava_cave = true
-	end
-
-	if this.large_cave then
-		this.part_max_length_rs  = math.random(2,4)
-		this.tunnel_routepoints  = math.random(5, math.random(15,30))
-		this.min_tunnel_diameter = 5
-		this.max_tunnel_diameter = math.random(7, math.random(8,24))
-	else
-		this.part_max_length_rs = math.random(2,9)
-		this.tunnel_routepoints = math.random(10, math.random(15,30))
-	end
-
-	this.large_cave_is_flat = (math.random(0,1) == 0)
-	return this
-end
-
 local function getBiome(x, z)
 	return nil
-end
-
-local function generateV6Caves()
-	local cave_amount = minetest.get_perlin(cave_noise_v6):get2d({x=minp.x, y=minp.y})
-	local volume_nodes = (maxp.x - minp.x + 1) * (maxp.y - minp.y + 1) * 16
-	cave_amount = math.max(0.0, cave_amount)
-	local caves_count = cave_amount * volume_nodes / 50000
-	local bruises_count = 1
-
-	if (math.random(1, 6) == 1) then
-		bruises_count = math.random(0, math.random(0, 2))
-	end
-
-	for i = 0, caves_count + bruises_count do
-		local large_cave = (i >= caves_count)
-		local cave = CaveV6(large_cave)
-
-		makeV6Cave(cave)
-	end
 end
 
 
@@ -468,10 +195,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	minetest.generate_ores(vm, minp, maxp)
 	vm:get_data(data)
 
-	local made_a_big_one = false
-	local massive_cave = minetest.get_perlin_map(massive_cave_noise, csize):get3dMap_flat(minp)
-	local cave_1 = minetest.get_perlin_map(intersect_cave_noise_1, csize):get3dMap_flat(minp)
-	local cave_2 = minetest.get_perlin_map(intersect_cave_noise_2, csize):get3dMap_flat(minp)
+	local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
+	local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
 	local biome_n = minetest.get_perlin_map(biome_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 	local biome_bn = minetest.get_perlin_map(biome_blend, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 
@@ -488,39 +213,17 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			for y = minp.y, maxp.y do
 				local dy = y - minp.y
 
-				if massive_cave[index3d] > massive_cave_threshold then
+				local n1 = cave_2[index3d]
+				local n2 = cave_1[index3d]
+
+				if n1 * n2 > 0.05 then
 					data[ivm] = node("air")
-					made_a_big_one = true
-				else
-					local n1 = (math.abs(cave_1[index3d]) < 0.2)
-					local n2 = (math.abs(cave_2[index3d]) < 0.2)
-
-					if n1 and n2 then
-						local sr = 1000
-						if data[ivm] == node("default:stone") then
-							sr = math.random(1000)
-						end
-
-						--if sr == 1 then
-						--	data[ivm] = node("default:lava_source")
-						--elseif sr == 2 then
-						--	data[ivm] = node("default:water_source")
-						--else
-							data[ivm] = node("air")
-						--end
-					end
 				end
 
 				ivm = ivm + area.ystride
 				index3d = index3d + csize.x
 			end
 		end
-	end
-
-	if made_a_big_one then
-		--print("massive cave at "..minp.x..","..minp.y..","..minp.z)
-	else
-		generateV6Caves()
 	end
 
 	local index = 0
@@ -596,9 +299,9 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						local sr = math.random(1,1000)
 
 						-- fluids
-						if (not made_a_big_one) and data[ivm_below] == node("default:stone") and sr < 10 then
+						if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 10 then
 								data[ivm] = node("default:lava_source")
-						elseif (not made_a_big_one) and data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 10 then
+						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 5 then
 								data[ivm] = node("default:water_source")
 						-- hanging down
 						elseif data[ivm_above] == node("default:ice") and sr < 80 then
@@ -637,7 +340,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 								data[ivm + 2 * area.ystride] = node("fun_caves:giant_mushroom_cap")
 								data[ivm_above] = node("fun_caves:giant_mushroom_stem")
 								data[ivm] = node("fun_caves:giant_mushroom_stem")
-							elseif made_a_big_one and air_count > 5 and sr < 180 then
+							elseif air_count > 5 and sr < 180 then
 								fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)), node(fun_caves.fungal_tree_leaves[math.random(1,#fun_caves.fungal_tree_leaves)]), node("fun_caves:fungal_tree_fruit"))
 								data[ivm_below] = node("dirt")
 							elseif sr < 300 then
@@ -678,12 +381,13 @@ end
 
 function fun_caves.respawn(player)
 	local pos = {x=0,y=0,z=0}
-	local massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
+	local cave_1 = minetest.get_perlin(cave_noise_1):get3d(pos)
+	local cave_2 = minetest.get_perlin(cave_noise_2):get3d(pos)
 	local biome_n = minetest.get_perlin(biome_noise):get2d({x=pos.x, y=pos.z})
 	local biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
 	local biome = biome_n + biome_bn
 
-	while biome < -0.4 or biome > 0.4 do
+	while biome < -0.3 or biome > 0.3 do
 		pos.x = pos.x + math.random(20) - 10
 		pos.z = pos.z + math.random(20) - 10
 
@@ -692,14 +396,10 @@ function fun_caves.respawn(player)
 		biome = biome_n + biome_bn
 	end
 
-	while massive_cave <= massive_cave_threshold do
-		pos.y = pos.y + 80
-		massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
-	end
-
-	while massive_cave > massive_cave_threshold do
-		pos.y = pos.y - 1
-		massive_cave = minetest.get_perlin(massive_cave_noise):get3d(pos)
+	while cave_1 * cave_2 <= 0.05 do
+		pos.y = pos.y + 1
+		cave_1 = minetest.get_perlin(cave_noise_1):get3d(pos)
+		cave_2 = minetest.get_perlin(cave_noise_2):get3d(pos)
 	end
 
 	pos.y = pos.y + 1
