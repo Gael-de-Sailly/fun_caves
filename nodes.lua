@@ -8,6 +8,14 @@
 
 local light_max = 12
 
+minetest.override_item("default:river_water_source", {light_source = 8})
+minetest.override_item("default:river_water_flowing", {light_source = 8})
+minetest.override_item("default:water_source", {light_source = 8})
+minetest.override_item("default:water_flowing", {light_source = 8})
+
+minetest.add_group("default:ice", {surface_cold = 3})
+--minetest.override_item("default:ice", {damage_per_second = 1})
+
 minetest.register_node("fun_caves:huge_mushroom_cap", {
 	description = "Huge Mushroom Cap",
 	tiles = {"vmg_mushroom_giant_cap.png", "vmg_mushroom_giant_under.png", "vmg_mushroom_giant_cap.png"},
@@ -367,7 +375,7 @@ minetest.register_node("fun_caves:glow_obsidian_2", {
 	description = "Hot Glow Obsidian",
 	tiles = {"caverealms_glow_obsidian2.png"},
 	is_ground_content = true,
-	groups = {stone=2, crumbly=1, hot=1},
+	groups = {stone=2, crumbly=1, surface_hot=3, igniter=1},
 	damage_per_second = 1,
 	light_source = 9,
 	sounds = default.node_sound_stone_defaults({
@@ -411,7 +419,7 @@ minetest.register_node("fun_caves:hot_cobble", {
 	description = "Hot Cobble",
 	tiles = {"caverealms_hot_cobble.png"},
 	is_ground_content = true,
-	groups = {crumbly=2, hot=1},
+	groups = {crumbly=2, surface_hot=3},
 	damage_per_second = 1,
 	light_source = 6,
 	sounds = default.node_sound_stone_defaults({
@@ -419,23 +427,41 @@ minetest.register_node("fun_caves:hot_cobble", {
 	}),
 })
 
-minetest.register_abm({
-	nodenames = {"group:hot"},
-	interval = 2,
-	chance = 1,
-	action = function(pos, node, active_object_count, active_object_count_wider)
-		for _,object in ipairs(minetest.env:get_objects_inside_radius(pos, 0.95)) do
-			if not minetest.registered_nodes[node.name] then
-				return
-			end
-			local dps = minetest.registered_nodes[node.name]["damage_per_second"]
-			if object.set_hp and object.get_hp and dps then
-				--print("damage. "..object:get_hp().." hit points left")
-				object:set_hp(object:get_hp() - dps)
+local last_dps_check = 0
+minetest.register_globalstep(function(dtime)
+	if last_dps_check < 20 then
+		last_dps_check = last_dps_check + 1
+	else
+		last_dps_check = 0
+		for id, player in pairs(minetest.get_connected_players()) do
+			local minp = vector.subtract(player:getpos(), 0.5)
+			local maxp = vector.add(player:getpos(), 0.5)
+			local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot", "group:surface_cold"})
+			if #counts > 3 then
+				player:set_hp(player:get_hp() - 1)
 			end
 		end
-	end})
 
+		-- This just won't work.
+		--
+		--for id, ent in pairs(minetest.luaentities) do
+		--	if ent.object and not string.find(ent.name, "__built") then
+		--		local minp = vector.subtract(ent.object:getpos(), 1)
+		--		local maxp = vector.add(ent.object:getpos(), 1)
+		--		local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:hot"})
+		--		if #counts > 3 then
+		--			ent.object:set_hp(ent.object:get_hp() - 1)
+		--			ent.old_health = ent.health
+		--			ent.health = ent.health - 1
+		--			print(ent.name.." suffers, "..ent.object:get_hp().."/"..ent.health.." left")
+		--			--if ent.object:get_hp() < 1 then
+		--			--	print(dump(ent))
+		--			--end
+		--		end
+		--	end
+		--end
+	end
+end)
 
 -- mushroom growth
 minetest.register_abm({
@@ -609,7 +635,8 @@ for i in ipairs(spike_size) do
 		inventory_image = "fun_caves_hot_spike.png",
 		wield_image = "fun_caves_hot_spike.png",
 		is_ground_content = true,
-		groups = {cracky=3, oddly_breakable_by_hand=1},
+		groups = {cracky=3, oddly_breakable_by_hand=1, hot=3},
+		damage_per_second = 1,
 		sounds = default.node_sound_stone_defaults(),
 		light_source = 3,
 		paramtype = "light",

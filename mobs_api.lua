@@ -413,6 +413,22 @@ do_env_damage = function(self)
 		end
 	end
 
+	local minp = vector.subtract(pos, 1.5)
+	local maxp = vector.add(pos, 1.5)
+	if self.lava_damage > 0 then
+		local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot"})
+		if #counts > 0 then
+			self.health = self.health - self.lava_damage
+			effect(pos, 5, "fire_basic_flame.png")
+		end
+	end
+	if self.cold_damage > 0 then
+		local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_cold"})
+		if #counts > 0 then
+			self.health = self.health - self.cold_damage
+		end
+	end
+
 	check_for_death(self)
 end
 
@@ -2119,6 +2135,7 @@ minetest.register_entity(name, {
 	light_damage = def.light_damage or 0,
 	water_damage = def.water_damage or 0,
 	lava_damage = def.lava_damage or 0,
+	cold_damage = def.cold_damage or 1,
 	fall_damage = def.fall_damage or 1,
 	fall_speed = def.fall_speed or -10, -- must be lower than -2 (default: -10)
 	drops = def.drops or {},
