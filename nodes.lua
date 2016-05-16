@@ -588,3 +588,84 @@ minetest.register_craft({
 	}
 })
 
+--stone spike
+local spike_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+local hot_spikes = {}
+
+for i in ipairs(spike_size) do
+	if i == 1 then
+		nodename = "fun_caves:hot_spike"
+	else
+		nodename = "fun_caves:hot_spike_"..i
+	end
+
+	hot_spikes[#hot_spikes+1] = nodename
+
+	vs = spike_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Stone Spike",
+		tiles = {"fun_caves_hot_spike.png"},
+		inventory_image = "fun_caves_hot_spike.png",
+		wield_image = "fun_caves_hot_spike.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1},
+		sounds = default.node_sound_stone_defaults(),
+		light_source = 3,
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
+
+-- Spike spread and death
+minetest.register_abm({
+	nodenames = hot_spikes,
+	neighbors = {"default:lava_source", "default:lava_flowing"},
+	interval = 6 * fun_caves.time_factor,
+	chance = 50,
+	action = function(pos, node)
+		local spike_num
+		for i = 1, #hot_spikes do
+			if hot_spikes[i] == node.name then
+				spike_num = i
+			end
+		end
+		if not spike_num then
+			return
+		end
+
+		if spike_num < #hot_spikes then
+			minetest.set_node(pos, {name=hot_spikes[spike_num+1]})
+			return
+		end
+
+		local random = {
+			x = pos.x + math.random(-2, 2),
+			y = pos.y + math.random(-1, 1),
+			z = pos.z + math.random(-2, 2)
+		}
+		local random_node = minetest.get_node_or_nil(random)
+		if not random_node or (random_node.name ~= "air" and random_node.name ~= "default:lava_source" and random_node.name ~= "default:lava_flowing") then
+			return
+		end
+		local node_under = minetest.get_node_or_nil({x = random.x,
+			y = random.y - 1, z = random.z})
+		if not node_under then
+			return
+		end
+
+		print("node_under ("..random.x..","..(random.y-1)..","..random.z.."): "..node_under.name)
+		if node_under.name == "fun_caves:hot_cobble" or node_under.name == "default:coalblock" then
+			print("setting ("..random.x..","..random.y..","..random.z.."): "..node_under.name)
+			minetest.set_node(random, {name = hot_spikes[1]})
+		end
+	end
+})
+

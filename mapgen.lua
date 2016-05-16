@@ -180,26 +180,13 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	local px = math.floor((minp.x + 32) / csize.x)
 	local pz = math.floor((minp.z + 32) / csize.z)
 
-	-- Fill with stone.
-	for z = minp.z, maxp.z do
-		for y = minp.y, maxp.y do
-			local ivm = area:index(minp.x, y, z)
-			for x = minp.x, maxp.x do
-				data[ivm] = node("default:stone")
-				ivm = ivm + 1
-			end
-		end
-	end
-
-	vm:set_data(data)
-	minetest.generate_ores(vm, minp, maxp)
-	vm:get_data(data)
-
 	local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
 	local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
 	local biome_n = minetest.get_perlin_map(biome_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 	local biome_bn = minetest.get_perlin_map(biome_blend, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 
+	local biome_avg = 0
+	local biome_ct = 0
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
@@ -218,13 +205,25 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 
 				if n1 * n2 > 0.05 then
 					data[ivm] = node("air")
+				else
+					data[ivm] = node("default:stone")
 				end
+
+				local biome_val = biome_n[index] + biome_bn[index]
+				biome_avg = biome_avg + biome_val
+				biome_ct = biome_ct + 1
 
 				ivm = ivm + area.ystride
 				index3d = index3d + csize.x
 			end
 		end
 	end
+
+	vm:set_data(data)
+	biome_avg = biome_avg / biome_ct
+	fun_caves.set_ores(biome_avg)
+	minetest.generate_ores(vm, minp, maxp)
+	vm:get_data(data)
 
 	local index = 0
 	local index3d = 0
@@ -315,6 +314,12 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 								data[ivm] = node("fun_caves:stalactite")
 							end
 						-- standing up
+						elseif data[ivm_below] == node("fun_caves:hot_cobble") and sr < 20 then
+							if sr < 10 then
+								data[ivm] = node("fun_caves:hot_spike")
+							else
+								data[ivm] = node("fun_caves:hot_spike_"..(math.ceil(sr / 3) - 2))
+							end
 						elseif data[ivm_below] == node("default:coalblock") and sr < 20 then
 							data[ivm] = node("fun_caves:constant_flame")
 						elseif data[ivm_below] == node("default:ice") and sr < 80 then
@@ -365,7 +370,6 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 
 
 	vm:set_data(data)
-	minetest.generate_ores(vm, minp, maxp)
 	--vm:set_param2_data(p2data)
 	if DEBUG then
 		vm:set_lighting({day = 15, night = 15})

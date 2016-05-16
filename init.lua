@@ -15,6 +15,7 @@ minetest.register_on_mapgen_init(function(mgparams)
 end)
 
 
+fun_caves.ores = {}
 if default then
 	if default.register_ores then
 		default.register_ores()
@@ -35,6 +36,8 @@ if default then
 	local ores = {}
 	for id, ore_table in pairs(minetest.registered_ores) do
 		local ore = table.copy(ore_table)
+		local ore2 = table.copy(ore_table)
+		table.insert(fun_caves.ores, ore2)
 		ore.y_min = -31000
 		ore.y_max = 31000
 		table.insert(ores, ore)
@@ -43,6 +46,26 @@ if default then
 
 	for _, ore in pairs(ores) do
 		minetest.register_ore(ore)
+	end
+end
+
+
+function fun_caves.set_ores(biome)
+	local ores = fun_caves.ores
+
+	--print("generating ores based on biome: "..biome)
+	local y_factor = (math.abs(biome) - 0.4) * -3500
+	--print("y_factor: "..y_factor)
+
+	minetest.clear_registered_ores()
+	for id, ore_table in pairs(ores) do
+		local ore = table.copy(ore_table)
+		if ore.y_max >= y_factor then
+			--print("using ore: "..ore.ore..", y_max: "..ore.y_max)
+			ore.y_min = -31000
+			ore.y_max = 31000
+			minetest.register_ore(ore)
+		end
 	end
 end
 
