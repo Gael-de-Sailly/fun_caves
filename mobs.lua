@@ -36,6 +36,7 @@ fun_caves.goblin_drops = { "default:pick_steel",  "default:sword_steel", "defaul
 dofile(fun_caves.path.."/goblin_cobbler.lua")
 dofile(fun_caves.path.."/goblin_digger.lua")
 dofile(fun_caves.path.."/goblin_coal.lua")
+dofile(fun_caves.path.."/goblin_ice.lua")
 dofile(fun_caves.path.."/goblin_copper.lua")
 dofile(fun_caves.path.."/goblin_iron.lua")
 dofile(fun_caves.path.."/goblin_gold.lua")

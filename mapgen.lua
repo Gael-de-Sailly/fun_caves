@@ -298,7 +298,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						local sr = math.random(1,1000)
 
 						-- fluids
-						if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 10 then
+						if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 20 then
 								data[ivm] = node("default:lava_source")
 						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 5 then
 								data[ivm] = node("default:water_source")

@@ -416,37 +416,28 @@ minetest.register_node("fun_caves:hot_cobble", {
 
 local last_dps_check = 0
 minetest.register_globalstep(function(dtime)
-	if last_dps_check < 20 then
-		last_dps_check = last_dps_check + 1
-	else
+	last_dps_check = last_dps_check + 1
+	if last_dps_check > 20000 then
 		last_dps_check = 0
+	end
+
+	if last_dps_check % 20 == 0 then
 		for id, player in pairs(minetest.get_connected_players()) do
 			local minp = vector.subtract(player:getpos(), 0.5)
 			local maxp = vector.add(player:getpos(), 0.5)
-			local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot", "group:surface_cold"})
-			if #counts > 3 then
+
+			local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot"})
+			if #counts > 1 then
 				player:set_hp(player:get_hp() - 1)
 			end
-		end
 
-		-- This just won't work.
-		--
-		--for id, ent in pairs(minetest.luaentities) do
-		--	if ent.object and not string.find(ent.name, "__built") then
-		--		local minp = vector.subtract(ent.object:getpos(), 1)
-		--		local maxp = vector.add(ent.object:getpos(), 1)
-		--		local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:hot"})
-		--		if #counts > 3 then
-		--			ent.object:set_hp(ent.object:get_hp() - 1)
-		--			ent.old_health = ent.health
-		--			ent.health = ent.health - 1
-		--			print(ent.name.." suffers, "..ent.object:get_hp().."/"..ent.health.." left")
-		--			--if ent.object:get_hp() < 1 then
-		--			--	print(dump(ent))
-		--			--end
-		--		end
-		--	end
-		--end
+			if last_dps_check % 200 == 0 then
+				local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_cold"})
+				if #counts > 1 then
+					player:set_hp(player:get_hp() - 1)
+				end
+			end
+		end
 	end
 end)
 
