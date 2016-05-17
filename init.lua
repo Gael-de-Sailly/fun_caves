@@ -54,7 +54,7 @@ function fun_caves.set_ores(biome)
 	local ores = fun_caves.ores
 
 	--print("generating ores based on biome: "..biome)
-	local y_factor = (math.abs(biome) - 0.4) * -3500
+	local y_factor = (math.abs(biome) - 0.4) * -2000
 	--print("y_factor: "..y_factor)
 
 	minetest.clear_registered_ores()
