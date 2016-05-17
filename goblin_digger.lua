@@ -134,6 +134,7 @@ mobs:register_mob("fun_caves:goblin_digger", {
 	},
 	water_damage = 0,
 	lava_damage = 2,
+	cold_damage = 1,
 	light_damage = 0,
 	lifetimer = 360,
 	follow = {"default:diamond"},

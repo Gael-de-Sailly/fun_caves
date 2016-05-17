@@ -116,7 +116,7 @@ minetest.register_node("fun_caves:glowing_fungal_stone", {
 	description = "Glowing Fungal Stone",
 	tiles = {"default_stone.png^vmg_glowing_fungal.png",},
 	is_ground_content = true,
-	light_source = 14,
+	light_source = 10,
 	groups = {cracky=3, stone=1},
 	drop = {items={ {items={"default:cobble"},}, {items={"fun_caves:glowing_fungus",},},},},
 	sounds = default.node_sound_stone_defaults(),

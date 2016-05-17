@@ -20,6 +20,7 @@ end
 dofile(fun_caves.path .. "/mobs_crafts.lua")
 dofile(fun_caves.path .. "/danglers.lua")
 dofile(fun_caves.path .. "/spider.lua")
+dofile(fun_caves.path .. "/spider_ice.lua")
 dofile(fun_caves.path .. "/dirt_monster.lua")
 dofile(fun_caves.path .. "/stone_monster.lua")
 dofile(fun_caves.path .. "/lava_flan.lua")

@@ -33,6 +33,7 @@ mobs:register_mob("fun_caves:lava_flan", {
 		{name = "mobs:lava_orb", chance = 15, min = 1, max = 1},
 	},
 	water_damage = 5,
+	cold_damage = 5,
 	lava_damage = 0,
 	light_damage = 0,
 	animation = {

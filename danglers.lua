@@ -48,6 +48,7 @@ mobs:register_mob("fun_caves:dangler", {
 	},
 	water_damage = 1,
 	lava_damage = 5,
+	cold_damage = 1,
 	light_damage = 0,
 	fall_damage = 0,
 	lifetimer = 360,

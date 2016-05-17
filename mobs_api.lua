@@ -2135,7 +2135,7 @@ minetest.register_entity(name, {
 	light_damage = def.light_damage or 0,
 	water_damage = def.water_damage or 0,
 	lava_damage = def.lava_damage or 0,
-	cold_damage = def.cold_damage or 1,
+	cold_damage = def.cold_damage or 0,
 	fall_damage = def.fall_damage or 1,
 	fall_speed = def.fall_speed or -10, -- must be lower than -2 (default: -10)
 	drops = def.drops or {},

@@ -40,7 +40,8 @@ mobs:register_mob("fun_caves:goblin_king", {
 		chance = 5, min = 1, max = 1},
 	},
 	water_damage = 0,
-	lava_damage = 2,
+	lava_damage = 0,
+	cold_damage = 1,
 	light_damage = 0,
 	follow = "default:diamond",
 	view_range = 10,
@@ -119,5 +120,5 @@ mobs:register_mob("fun_caves:goblin_king", {
 })
 mobs:register_egg("fun_caves:goblin_king", "Goblin King Egg", "default_mossycobble.png", 1)
 mobs:register_spawn("fun_caves:goblin_king", {"default:stone_with_mese"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 1, 31000)
-mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, 31000)
+mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, 31000)
 

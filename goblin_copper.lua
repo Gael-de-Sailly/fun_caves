@@ -40,6 +40,7 @@ mobs:register_mob("fun_caves:goblin_copper", {
 	},
 	water_damage = 0,
 	lava_damage = 2,
+	cold_damage = 1,
 	light_damage = 0,
 	follow = "default:diamond",
 	view_range = 15,
