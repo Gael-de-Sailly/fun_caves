@@ -6,12 +6,7 @@
 --  These are instantiated by voxel.lua since the decoration manager
 --   only works at the surface of the world.
 
-local light_max = 12
-
-minetest.override_item("default:river_water_source", {light_source = 8})
-minetest.override_item("default:river_water_flowing", {light_source = 8})
-minetest.override_item("default:water_source", {light_source = 8})
-minetest.override_item("default:water_flowing", {light_source = 8})
+local light_max = 15
 
 minetest.add_group("default:ice", {surface_cold = 3})
 --minetest.override_item("default:ice", {damage_per_second = 1})
@@ -29,7 +24,7 @@ minetest.register_node("fun_caves:huge_mushroom_cap", {
 			{-0.33, -0.5, -0.33, 0.33, -0.33, -0.5}, 
 			{-0.33, -0.33, -0.33, 0.33, -0.17, 0.33}, 
 		} },
-	light_source = 10,
+	light_source = 14,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -47,7 +42,7 @@ minetest.register_node("fun_caves:giant_mushroom_cap", {
 			{-0.4, -0.5, -0.75, 0.4, -0.25, -0.4},
 			{-0.4, -0.5, 0.4, 0.4, -0.25, 0.75},
 		} },
-	light_source = 10,
+	light_source = 12,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -121,7 +116,7 @@ minetest.register_node("fun_caves:glowing_fungal_stone", {
 	description = "Glowing Fungal Stone",
 	tiles = {"default_stone.png^vmg_glowing_fungal.png",},
 	is_ground_content = true,
-	light_source = 12,
+	light_source = 14,
 	groups = {cracky=3, stone=1},
 	drop = {items={ {items={"default:cobble"},}, {items={"fun_caves:glowing_fungus",},},},},
 	sounds = default.node_sound_stone_defaults(),
@@ -192,7 +187,6 @@ for _, desc in pairs(spel) do
 		is_ground_content = true,
 		walkable = false,
 		paramtype = "light",
-		--light_source = 14,
 		drop = (desc.drop or "fun_caves:stalactite"),
 		drawtype = "nodebox",
 		node_box = { type = "fixed", 
@@ -211,7 +205,6 @@ for _, desc in pairs(spel) do
 		is_ground_content = true,
 		walkable = false,
 		paramtype = "light",
-		--light_source = 14,
 		drop = "fun_caves:stalagmite",
 		drawtype = "nodebox",
 		node_box = { type = "fixed", 
@@ -302,7 +295,6 @@ minetest.register_node("fun_caves:thin_ice", {
 	groups = {cracky=3},
 	sounds = default.node_sound_glass_defaults(),
 	use_texture_alpha = true,
-	light_source = 1,
 	drawtype = "glasslike",
 	sunlight_propagates = true,
 	freezemelt = "default:water_source",
@@ -313,7 +305,6 @@ minetest.register_node("fun_caves:stone_with_moss", {
 	description = "Cave Stone with Moss",
 	tiles = {"default_stone.png^fun_caves_moss.png"},
 	is_ground_content = true,
-	light_source = 10,
 	groups = {stone=1, crumbly=3},
 	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
@@ -325,7 +316,6 @@ minetest.register_node("fun_caves:stone_with_lichen", {
 	description = "Cave Stone with Lichen",
 	tiles = {"default_stone.png^fun_caves_lichen.png"},
 	is_ground_content = true,
-	light_source = 10,
 	groups = {stone=1, crumbly=3},
 	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
@@ -337,7 +327,6 @@ minetest.register_node("fun_caves:stone_with_algae", {
 	description = "Cave Stone with Algae",
 	tiles = {"default_stone.png^fun_caves_algae.png"},
 	is_ground_content = true,
-	light_source = 10,
 	groups = {stone=1, crumbly=3},
 	drop = 'default:cobble',
 	sounds = default.node_sound_dirt_defaults({
@@ -348,7 +337,6 @@ minetest.register_node("fun_caves:stone_with_algae", {
 minetest.register_node("fun_caves:stone_with_salt", {
 	description = "Cave Stone with Salt",
 	tiles = {"caverealms_salty2.png"},--{"caverealms_salty2.png^caverealms_salty.png", "caverealms_salty2.png", "caverealms_salty2.png^caverealms_salty_side.png"},
-	light_source = 9,
 	paramtype = "light",
 	use_texture_alpha = true,
 	drawtype = "glasslike",
@@ -364,7 +352,7 @@ minetest.register_node("fun_caves:glow_obsidian", {
 	tiles = {"caverealms_glow_obsidian.png"},
 	is_ground_content = true,
 	groups = {stone=2, crumbly=1},
-	light_source = 7,
+	--light_source = 7,
 	sounds = default.node_sound_stone_defaults({
 		footstep = {name="default_stone_footstep", gain=0.25},
 	}),
@@ -377,7 +365,7 @@ minetest.register_node("fun_caves:glow_obsidian_2", {
 	is_ground_content = true,
 	groups = {stone=2, crumbly=1, surface_hot=3, igniter=1},
 	damage_per_second = 1,
-	light_source = 9,
+	--light_source = 9,
 	sounds = default.node_sound_stone_defaults({
 		footstep = {name="default_stone_footstep", gain=0.25},
 	}),
@@ -421,7 +409,6 @@ minetest.register_node("fun_caves:hot_cobble", {
 	is_ground_content = true,
 	groups = {crumbly=2, surface_hot=3},
 	damage_per_second = 1,
-	light_source = 6,
 	sounds = default.node_sound_stone_defaults({
 		footstep = {name="default_stone_footstep", gain=0.25},
 	}),
@@ -638,7 +625,6 @@ for i in ipairs(spike_size) do
 		groups = {cracky=3, oddly_breakable_by_hand=1, hot=3},
 		damage_per_second = 1,
 		sounds = default.node_sound_stone_defaults(),
-		light_source = 3,
 		paramtype = "light",
 		drawtype = "plantlike",
 		walkable = false,
