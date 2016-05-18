@@ -32,7 +32,7 @@ mobs:register_mob("fun_caves:spider", {
 		{name = "mobs:meat_raw", chance = 1, min = 1, max = 3},
 		{name = "wool:black", chance = 1, min = 1, max = 3},
 	},
-	water_damage = 5,
+	water_damage = 0,
 	lava_damage = 5,
 	light_damage = 0,
 	animation = {

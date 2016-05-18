@@ -6,10 +6,9 @@
 --  These are instantiated by voxel.lua since the decoration manager
 --   only works at the surface of the world.
 
-local light_max = 15
+local light_max = 13
 
 minetest.add_group("default:ice", {surface_cold = 3})
---minetest.override_item("default:ice", {damage_per_second = 1})
 
 minetest.register_node("fun_caves:huge_mushroom_cap", {
 	description = "Huge Mushroom Cap",
@@ -24,7 +23,7 @@ minetest.register_node("fun_caves:huge_mushroom_cap", {
 			{-0.33, -0.5, -0.33, 0.33, -0.33, -0.5}, 
 			{-0.33, -0.33, -0.33, 0.33, -0.17, 0.33}, 
 		} },
-	light_source = 14,
+	light_source = 11,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -42,7 +41,7 @@ minetest.register_node("fun_caves:giant_mushroom_cap", {
 			{-0.4, -0.5, -0.75, 0.4, -0.25, -0.4},
 			{-0.4, -0.5, 0.4, 0.4, -0.25, 0.75},
 		} },
-	light_source = 12,
+	light_source = 14,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -116,7 +115,7 @@ minetest.register_node("fun_caves:glowing_fungal_stone", {
 	description = "Glowing Fungal Stone",
 	tiles = {"default_stone.png^vmg_glowing_fungal.png",},
 	is_ground_content = true,
-	light_source = 10,
+	light_source = 6,
 	groups = {cracky=3, stone=1},
 	drop = {items={ {items={"default:cobble"},}, {items={"fun_caves:glowing_fungus",},},},},
 	sounds = default.node_sound_stone_defaults(),
@@ -343,6 +342,7 @@ minetest.register_node("fun_caves:stone_with_salt", {
 	sunlight_propagates = true,
 	is_ground_content = true,
 	groups = {stone=1, crumbly=3},
+	--light_source = 1,
 	sounds = default.node_sound_glass_defaults(),
 })
 
@@ -408,6 +408,7 @@ minetest.register_node("fun_caves:hot_cobble", {
 	tiles = {"caverealms_hot_cobble.png"},
 	is_ground_content = true,
 	groups = {crumbly=2, surface_hot=3},
+	--light_source = 2,
 	damage_per_second = 1,
 	sounds = default.node_sound_stone_defaults({
 		footstep = {name="default_stone_footstep", gain=0.25},
@@ -619,6 +620,7 @@ for i in ipairs(spike_size) do
 		paramtype = "light",
 		drawtype = "plantlike",
 		walkable = false,
+		light_source = i * 2,
 		buildable_to = true,
 		visual_scale = vs,
 		selection_box = {
@@ -631,7 +633,7 @@ end
 -- Spike spread and death
 minetest.register_abm({
 	nodenames = hot_spikes,
-	neighbors = {"default:lava_source", "default:lava_flowing"},
+	--neighbors = {"default:lava_source", "default:lava_flowing"},
 	interval = 6 * fun_caves.time_factor,
 	chance = 50,
 	action = function(pos, node)

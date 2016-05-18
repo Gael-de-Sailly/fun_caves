@@ -26,7 +26,7 @@ dofile(fun_caves.path .. "/stone_monster.lua")
 dofile(fun_caves.path .. "/lava_flan.lua")
 --dofile(fun_caves.path .. "/dungeon_master.lua")
 --dofile(fun_caves.path .. "/mese_monster.lua")
---dofile(fun_caves.path .. "/sand_monster.lua")
+dofile(fun_caves.path .. "/sand_monster.lua")
 
 fun_caves.goblin_spawn_frequency = 150
 

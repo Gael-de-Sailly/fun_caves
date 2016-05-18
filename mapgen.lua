@@ -4,7 +4,6 @@ local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 
 local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
-local biome_blend = {offset = 0.0, scale = 0.1, spread = {x = 8, y = 8, z = 8}, seed = 4023, octaves = 2, persist = 1.0, lacunarity = 2.0}
 
 
 local node = fun_caves.node
@@ -176,14 +175,9 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	-- use the same seed (based on perlin noise).
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
-	-- Keep this first after seeding!
-	local px = math.floor((minp.x + 32) / csize.x)
-	local pz = math.floor((minp.z + 32) / csize.z)
-
 	local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
 	local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
-	local biome_n = minetest.get_perlin_map(biome_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
-	local biome_bn = minetest.get_perlin_map(biome_blend, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
+	local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
 
 	local biome_avg = 0
 	local biome_ct = 0
@@ -209,7 +203,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					data[ivm] = node("default:stone")
 				end
 
-				local biome_val = biome_n[index] + biome_bn[index]
+				local biome_val = biome_n[index3d]
 				biome_avg = biome_avg + biome_val
 				biome_ct = biome_ct + 1
 
@@ -225,6 +219,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	minetest.generate_ores(vm, minp, maxp)
 	vm:get_data(data)
 
+	local noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
@@ -232,7 +227,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		for x = minp.x, maxp.x do
 			index = index + 1
 			local dx = x - minp.x
-			index3d = (dz + 1) * csize.y * csize.x + dx
+			index3d = noise_area:index(dx, csize.y - 1, dz)
 			local air_count = 0
 			local ivm = area:index(x, maxp.y, z)
 
@@ -245,7 +240,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					-------------------
 					local stone_type = node("default:stone")
 					local stone_depth = 1
-					local biome_val = biome_n[index] + biome_bn[index]
+					local biome_val = biome_n[index3d]
 					if biome_val < -0.8 then
 						if true then
 							stone_type = node("default:ice")
@@ -298,9 +293,9 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						local sr = math.random(1,1000)
 
 						-- fluids
-						if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 20 then
+						if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 3 then
 								data[ivm] = node("default:lava_source")
-						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 5 then
+						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 3 then
 								data[ivm] = node("default:water_source")
 						-- hanging down
 						elseif data[ivm_above] == node("default:ice") and sr < 80 then
@@ -332,6 +327,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 							elseif data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("default:stone") then
 								data[ivm] = node("fun_caves:stalagmite")
 							end
+						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 100 then
+							data[ivm_below] = node("fun_caves:glowing_fungal_stone")
 						-- vegetation
 						elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae")) and biome_val >= -0.7 then
 							if sr < 110 then
@@ -387,17 +384,15 @@ function fun_caves.respawn(player)
 	local pos = {x=0,y=0,z=0}
 	local cave_1 = minetest.get_perlin(cave_noise_1):get3d(pos)
 	local cave_2 = minetest.get_perlin(cave_noise_2):get3d(pos)
-	local biome_n = minetest.get_perlin(biome_noise):get2d({x=pos.x, y=pos.z})
-	local biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
-	local biome = biome_n + biome_bn
+	local biome_n = minetest.get_perlin(biome_noise):get3d({x=pos.x, y=pos.y, z=pos.z})
+	local biome = biome_n
 
 	while biome < -0.3 or biome > 0.3 do
 		pos.x = pos.x + math.random(20) - 10
 		pos.z = pos.z + math.random(20) - 10
 
-		biome_n = minetest.get_perlin(biome_noise):get2d({x=pos.x, y=pos.z})
-		biome_bn = minetest.get_perlin(biome_blend):get2d({x=pos.x, y=pos.z})
-		biome = biome_n + biome_bn
+		biome_n = minetest.get_perlin(biome_noise):get3d({x=pos.x, y=pos.y, z=pos.z})
+		biome = biome_n
 	end
 
 	while cave_1 * cave_2 <= 0.05 do

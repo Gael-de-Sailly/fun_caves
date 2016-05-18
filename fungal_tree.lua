@@ -22,13 +22,13 @@ function fun_caves.make_fungal_tree(data, area, pos, height, leaves, fruit)
 		local force_y = math.random(1,3) - 2
 		for z = -radius,radius do
 			for x = -radius,radius do
-				local sr = math.random(1,27)
+				local sr = math.random(1,100)
 				local i = pos + z*area.zstride + y*area.ystride + x
 				if force_x == x and force_y == y then
 					data[i] = leaves
 				elseif sr == 1 then
 					data[i] = fruit
-				elseif sr < 14 then
+				elseif sr < 50 then
 					data[i] = leaves
 				end
 			end

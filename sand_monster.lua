@@ -1,7 +1,7 @@
 
 -- Sand Monster by PilzAdam
 
-mobs:register_mob("mobs_monster:sand_monster", {
+mobs:register_mob("fun_caves:sand_monster", {
 	type = "monster",
 	passive = false,
 	attack_type = "dogfight",
@@ -15,7 +15,7 @@ mobs:register_mob("mobs_monster:sand_monster", {
 	visual = "mesh",
 	mesh = "mobs_sand_monster.b3d",
 	textures = {
-		{"mobs_sand_monster.png"},
+		{"fun_caves_sand_monster.png"},
 	},
 	makes_footstep_sound = true,
 	sounds = {
@@ -27,7 +27,7 @@ mobs:register_mob("mobs_monster:sand_monster", {
 	jump = true,
 	floats = 0,
 	drops = {
-		{name = "default:desert_sand", chance = 1, min = 3, max = 5},
+		{name = "default:sand", chance = 1, min = 3, max = 5},
 	},
 	water_damage = 3,
 	lava_damage = 4,
@@ -47,9 +47,9 @@ mobs:register_mob("mobs_monster:sand_monster", {
 	},
 })
 
-mobs:register_spawn("mobs_monster:sand_monster", {"default:desert_sand"}, 20, 0, 7000, 1, 31000)
+mobs:register_spawn("fun_caves:sand_monster", {"group:sand"}, 20, 0, 4000, 3, 31000)
 
-mobs:register_egg("mobs_monster:sand_monster", "Sand Monster", "default_desert_sand.png", 1)
+mobs:register_egg("fun_caves:sand_monster", "Sand Monster", "default_sand.png", 1)
 
 -- compatibility
-mobs:alias_mob("mobs:sand_monster", "mobs_monster:sand_monster")
+mobs:alias_mob("mobs:sand_monster", "fun_caves:sand_monster")

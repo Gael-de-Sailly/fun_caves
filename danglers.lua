@@ -46,7 +46,7 @@ mobs:register_mob("fun_caves:dangler", {
 		{name = "mobs:meat_raw", chance = 2, min = 1, max = 1},
 		{name = "farming:cotton", chance = 2, min = 1, max = 2},
 	},
-	water_damage = 1,
+	water_damage = 0,
 	lava_damage = 5,
 	cold_damage = 1,
 	light_damage = 0,
