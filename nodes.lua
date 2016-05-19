@@ -141,16 +141,9 @@ minetest.register_node("fun_caves:moon_juice", {
 	sounds = default.node_sound_glass_defaults(),
 })
 
-minetest.register_node("fun_caves:moon_glass", {
-	description = "Moon Glass",
-	drawtype = "glasslike",
-	tiles = {"default_glass.png",},
-	inventory_image = minetest.inventorycube("default_glass.png"),
-	is_ground_content = true,
-	light_source = default.LIGHT_MAX,
-	groups = {cracky=3},
-	sounds = default.node_sound_glass_defaults(),
-})
+local newnode = fun_caves.clone_node("default:glass")
+newnode.light_source = default.LIGHT_MAX
+minetest.register_node("fun_caves:moon_glass", newnode)
 
 minetest.register_craft({
 	output = "fun_caves:moon_juice",
@@ -236,46 +229,35 @@ minetest.register_craft({
 	},
 })
 
-minetest.register_node("fun_caves:glowing_dirt", {
-	description = "Glowing Dirt",
-	tiles = {"default_dirt.png"},
-	groups = {crumbly = 3, soil = 1},
-	light_source = default.LIGHT_MAX,
-	sounds = default.node_sound_dirt_defaults(),
-	soil = {
-		base = "fun_caves:glowing_dirt",
-		dry = "fun_caves:glowing_soil",
-		wet = "fun_caves:glowing_soil_wet"
-	},
-})
+newnode = fun_caves.clone_node("default:dirt")
+newnode.description = "Glowing Dirt"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
-minetest.register_node("fun_caves:glowing_soil", {
-	description = "Glowing Soil",
-	tiles = {"default_dirt.png^farming_soil.png", "default_dirt.png"},
-	drop = "fun_caves:glowing_dirt",
-	groups = {crumbly=3, not_in_creative_inventory=1, soil=2, grassland = 1, field = 1},
-	sounds = default.node_sound_dirt_defaults(),
-	light_source = default.LIGHT_MAX,
-	soil = {
-		base = "fun_caves:glowing_dirt",
-		dry = "fun_caves:glowing_soil",
-		wet = "fun_caves:glowing_soil_wet"
-	},
-})
+newnode = fun_caves.clone_node("farming:soil")
+newnode.description = "Glowing Soil"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
-minetest.register_node("fun_caves:glowing_soil_wet", {
-	description = "Wet Glowing Soil",
-	tiles = {"default_dirt.png^farming_soil_wet.png", "default_dirt.png^farming_soil_wet_side.png"},
-	drop = "fun_caves:glowing_dirt",
-	groups = {crumbly=3, not_in_creative_inventory=1, soil=3, wet = 1, grassland = 1, field = 1},
-	sounds = default.node_sound_dirt_defaults(),
-	light_source = default.LIGHT_MAX,
-	soil = {
-		base = "fun_caves:glowing_dirt",
-		dry = "fun_caves:glowing_soil",
-		wet = "fun_caves:glowing_soil_wet"
-	},
-})
+newnode = fun_caves.clone_node("farming:soil_wet")
+newnode.description = "Wet Glowing Soil"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
 minetest.register_craft({
 	output = "fun_caves:glowing_dirt",
@@ -300,51 +282,50 @@ minetest.register_node("fun_caves:thin_ice", {
 	paramtype = "light",
 })
 
-minetest.register_node("fun_caves:stone_with_moss", {
-	description = "Cave Stone with Moss",
-	tiles = {"default_stone.png^fun_caves_moss.png"},
-	is_ground_content = true,
-	groups = {stone=1, crumbly=3},
-	drop = 'default:cobble',
-	sounds = default.node_sound_dirt_defaults({
-		footstep = {name="default_grass_footstep", gain=0.25},
-	}),
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Moss"
+newnode.tiles = {"default_stone.png^fun_caves_moss.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
 })
+minetest.register_node("fun_caves:stone_with_moss", newnode)
 
-minetest.register_node("fun_caves:stone_with_lichen", {
-	description = "Cave Stone with Lichen",
-	tiles = {"default_stone.png^fun_caves_lichen.png"},
-	is_ground_content = true,
-	groups = {stone=1, crumbly=3},
-	drop = 'default:cobble',
-	sounds = default.node_sound_dirt_defaults({
-		footstep = {name="default_grass_footstep", gain=0.25},
-	}),
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Lichen"
+newnode.tiles = {"default_stone.png^fun_caves_lichen.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
 })
+minetest.register_node("fun_caves:stone_with_lichen", newnode)
 
-minetest.register_node("fun_caves:stone_with_algae", {
-	description = "Cave Stone with Algae",
-	tiles = {"default_stone.png^fun_caves_algae.png"},
-	is_ground_content = true,
-	groups = {stone=1, crumbly=3},
-	drop = 'default:cobble',
-	sounds = default.node_sound_dirt_defaults({
-		footstep = {name="default_grass_footstep", gain=0.25},
-	}),
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Algae"
+newnode.tiles = {"default_stone.png^fun_caves_algae.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
 })
+minetest.register_node("fun_caves:stone_with_algae", newnode)
 
 minetest.register_node("fun_caves:stone_with_salt", {
 	description = "Cave Stone with Salt",
-	tiles = {"caverealms_salty2.png"},--{"caverealms_salty2.png^caverealms_salty.png", "caverealms_salty2.png", "caverealms_salty2.png^caverealms_salty_side.png"},
+	tiles = {"caverealms_salty2.png"},
 	paramtype = "light",
 	use_texture_alpha = true,
 	drawtype = "glasslike",
-	sunlight_propagates = true,
+	sunlight_propagates = false,
 	is_ground_content = true,
 	groups = {stone=1, crumbly=3},
-	--light_source = 1,
 	sounds = default.node_sound_glass_defaults(),
 })
+newnode = fun_caves.clone_node("fun_caves:stone_with_salt")
+newnode.description = "Salt With Radioactive Ore"
+newnode.tiles = {"caverealms_salty2.png^[colorize:#004000:250"}
+newnode.light_source = 4
+minetest.register_node("fun_caves:radioactive_ore", newnode)
+
 
 --Glow Obsidian
 minetest.register_node("fun_caves:glow_obsidian", {

@@ -236,56 +236,66 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 				local ivm_above = ivm + area.ystride
 				local dy = y - minp.y
 
-				if data[ivm] == node("air") then
-					-------------------
-					local stone_type = node("default:stone")
-					local stone_depth = 1
-					local biome_val = biome_n[index3d]
-					if biome_val < -0.8 then
-						if true then
-							stone_type = node("default:ice")
-							stone_depth = 2
-						else
-							stone_type = node("fun_caves:thinice")
-							stone_depth = 2
-						end
-					elseif biome_val < -0.7 then
-						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < -0.4 then
-						stone_type = node("fun_caves:stone_with_moss")
-					elseif biome_val < 0.1 then
-						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < 0.4 then
-						stone_type = node("fun_caves:stone_with_algae")
-					elseif biome_val < 0.55 then
-						stone_type = node("fun_caves:stone_with_salt")
-						stone_depth = 2
-					elseif biome_val < 0.7 then
-						stone_type = node("default:sand")
-						stone_depth = 2
-					elseif biome_val < 0.8 then
-						stone_type = node("default:coalblock")
+				-------------------
+				local stone_type = node("default:stone")
+				local stone_depth = 1
+				local biome_val = biome_n[index3d]
+				-------------------
+				--biome_val = 0.3
+				-------------------
+				if biome_val < -0.6 then
+					if true then
+						stone_type = node("default:ice")
 						stone_depth = 2
 					else
-						stone_type = node("fun_caves:hot_cobble")
+						stone_type = node("fun_caves:thinice")
+						stone_depth = 2
 					end
-					--	"glow"
+				elseif biome_val < -0.5 then
+					stone_type = node("fun_caves:stone_with_lichen")
+				elseif biome_val < -0.3 then
+					stone_type = node("fun_caves:stone_with_moss")
+				elseif biome_val < -0.0 then
+					stone_type = node("fun_caves:stone_with_lichen")
+				elseif biome_val < 0.2 then
+					stone_type = node("fun_caves:stone_with_algae")
+				elseif biome_val < 0.35 then
+					stone_type = node("fun_caves:stone_with_salt")
+					stone_depth = 2
+					if data[ivm] == node("default:stone") then
+						data[ivm] = stone_type
+					end
+				elseif biome_val < 0.5 then
+					stone_type = node("default:sand")
+					stone_depth = 2
+				elseif biome_val < 0.6 then
+					stone_type = node("default:coalblock")
+					stone_depth = 2
+				else
+					stone_type = node("fun_caves:hot_cobble")
+				end
+				--	"glow"
 
+				if data[ivm] == node("air") then
 					-- Change stone per biome.
-					if data[ivm_below] == node("default:stone") then
+					if data[ivm_below] == node("default:stone") or (stone_type == node("fun_caves:stone_with_salt") and data[ivm_below] ~= node("fun_caves:stone_with_salt") and data[ivm_below] ~= node("air")) then
 						data[ivm_below] = stone_type
-						if stone_depth == 2 then
+						if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
+							data[ivm_below - area.ystride] = node("fun_caves:radioactive_ore")
+						elseif stone_depth == 2 then
 							data[ivm_below - area.ystride] = stone_type
 						end
 					end
-					if data[ivm_above] == node("default:stone") then
+					if data[ivm_above] == node("default:stone") or (stone_type == node("fun_caves:stone_with_salt") and data[ivm_above] ~= node("fun_caves:stone_with_salt") and data[ivm_above] ~= node("air")) then
 						data[ivm_above] = stone_type
-						if stone_depth == 2 then
+						if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
+							data[ivm_above - area.ystride] = node("fun_caves:radioactive_ore")
+						elseif stone_depth == 2 then
 							data[ivm_above + area.ystride] = stone_type
 						end
 					end
 
-					if (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss")) and math.random(1,20) == 1 then
+					if (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss")) and math.random(1,50) == 1 then
 						data[ivm_above] = node("fun_caves:glowing_fungal_stone")
 					end
 
@@ -327,10 +337,10 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 							elseif data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("default:stone") then
 								data[ivm] = node("fun_caves:stalagmite")
 							end
-						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 100 then
+						elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 90 then
 							data[ivm_below] = node("fun_caves:glowing_fungal_stone")
 						-- vegetation
-						elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae")) and biome_val >= -0.7 then
+						elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae")) and biome_val >= -0.5 then
 							if sr < 110 then
 								data[ivm] = node("flowers:mushroom_red")
 							elseif sr < 140 then
@@ -387,7 +397,7 @@ function fun_caves.respawn(player)
 	local biome_n = minetest.get_perlin(biome_noise):get3d({x=pos.x, y=pos.y, z=pos.z})
 	local biome = biome_n
 
-	while biome < -0.3 or biome > 0.3 do
+	while biome < -0.2 or biome > 0.0 do
 		pos.x = pos.x + math.random(20) - 10
 		pos.z = pos.z + math.random(20) - 10
 
