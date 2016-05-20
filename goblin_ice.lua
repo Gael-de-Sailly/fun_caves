@@ -116,7 +116,7 @@ mobs:register_mob("fun_caves:goblin_ice", {
 
 })
 mobs:register_egg("fun_caves:goblin_ice", "Goblin Egg (ice)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_ice", {"default:ice"}, 100, 0, 5 * fun_caves.goblin_spawn_frequency, 3, -50)
+mobs:register_spawn("fun_caves:goblin_ice", {"default:ice"}, 100, 0, 5 * fun_caves.goblin_spawn_frequency, 3, 101)
 
 minetest.register_node("fun_caves:ice_trap", {
 	description = "Ice Trap",

@@ -206,7 +206,7 @@ mobs:register_mob("fun_caves:goblin_digger", {
 		fun_caves.goblin_tunneling(self, "digger")
 
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
-		fun_caves.search_replace(self.object:getpos(), 10, {"default:stone"}, "default:mossycobble")
+		fun_caves.search_replace(self.object:getpos(), 10, {"default:stone", "default:desert_stone", "default:sandstone"}, "default:mossycobble")
 		fun_caves.search_replace(self.object:getpos(), 50, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
 
 		fun_caves.surface_damage(self)
@@ -214,6 +214,6 @@ mobs:register_mob("fun_caves:goblin_digger", {
 })
 
 mobs:register_egg("fun_caves:goblin_digger", "Goblin Egg (digger)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_digger", {"group:stone"}, 100, 0, 20 * fun_caves.goblin_spawn_frequency, 3, -50)
-mobs:register_spawn("fun_caves:goblin_digger", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -50)
+mobs:register_spawn("fun_caves:goblin_digger", {"group:stone"}, 100, 0, 20 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_digger", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 101)
 
