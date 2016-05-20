@@ -7,6 +7,17 @@ local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 
 
 
 local node = fun_caves.node
+local group_stone = {}
+group_stone[node("default:sandstone")] = true
+for n, s in pairs(minetest.registered_nodes) do
+	if s.groups and s.groups['stone'] then
+		group_stone[node(n)] = true
+	end
+end
+for _, s in pairs(minetest.registered_ores) do
+	group_stone[node(s.ore)] = true
+end
+local min_surface = -80
 
 local data = {}
 local p2data = {}  -- vm rotation data buffer
@@ -194,8 +205,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if y <= heightmap[index] - 10 or (y <= heightmap[index] and data[ivm] == node("default:stone")) then
-					if cave_1[index3d] * cave_2[index3d] > 0.05 then
+				if y < 40 and (y < min_surface or y <= heightmap[index]) and group_stone[data[ivm]] then
+					if cave_1[index3d] * cave_2[index3d] > 0.05 and (y < min_surface or y < heightmap[index] - 10 or cave_1[index3d] * cave_2[index3d] < 0.2) then
 						data[ivm] = node("air")
 					end
 
@@ -222,7 +233,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, maxp.y, z)
 
 			for y = maxp.y, minp.y, -1 do
-				if y <= heightmap[index] - 20 then
+				if y < min_surface or y <= heightmap[index] - 20 then
 					local ivm_below = ivm - area.ystride
 					local ivm_above = ivm + area.ystride
 					local dy = y - minp.y
@@ -231,8 +242,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					local stone_type = node("default:stone")
 					local stone_depth = 1
 					local biome_val = biome_n[index3d]
-					if y > heightmap[index] - 500 then
-						biome_val = biome_val / math.max(1, math.log(500 - (heightmap[index] - y)))
+					if y > -500 then
+						biome_val = biome_val / math.max(1, math.log(500 + y))
 					end
 					-------------------
 					--biome_val = 0.7

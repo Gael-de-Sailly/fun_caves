@@ -1,11 +1,3 @@
-----------------------
--- Cave Decorations --
-----------------------
-
--- Mushrooms and Speleothems
---  These are instantiated by voxel.lua since the decoration manager
---   only works at the surface of the world.
-
 local light_max = 13
 
 minetest.add_group("default:ice", {surface_cold = 3})
