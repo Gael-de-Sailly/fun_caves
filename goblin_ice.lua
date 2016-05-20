@@ -110,11 +110,13 @@ mobs:register_mob("fun_caves:goblin_ice", {
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
 		--fun_caves.search_replace(self.object:getpos(), 20, {"default:stone"}, "default:mossycobble")
 		fun_caves.search_replace(self.object:getpos(), 50, {"default:ice"}, "fun_caves:ice_trap")
+
+		fun_caves.surface_damage(self, true)
 	end,
 
 })
 mobs:register_egg("fun_caves:goblin_ice", "Goblin Egg (ice)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_ice", {"default:ice"}, 100, 0, 5 * fun_caves.goblin_spawn_frequency, 3, 31000)
+mobs:register_spawn("fun_caves:goblin_ice", {"default:ice"}, 100, 0, 5 * fun_caves.goblin_spawn_frequency, 3, -50)
 
 minetest.register_node("fun_caves:ice_trap", {
 	description = "Ice Trap",

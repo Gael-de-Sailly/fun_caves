@@ -5,50 +5,9 @@ fun_caves.world = false
 fun_caves.time_factor = 10
 
 
-if not mobs or not mobs.mod then
-	dofile(fun_caves.path .. "/mobs_api.lua")
-end
-
-
---fun_caves.ores = {}
-
 minetest.register_on_mapgen_init(function(mgparams)
-	--minetest.set_mapgen_params({mgname="singlenode", flags="nolight"})
 	minetest.set_mapgen_params({flags="nocaves,nodungeons"})
-
-	--local ores = {}
-	--for id, ore_table in pairs(minetest.registered_ores) do
-	--	local ore = table.copy(ore_table)
-	--	local ore2 = table.copy(ore_table)
-	--	table.insert(fun_caves.ores, ore2)
-	--	ore.y_min = -31000
-	--	ore.y_max = 31000
-	--	table.insert(ores, ore)
-	--	print(dump(ore))
-	--end
-	--minetest.clear_registered_ores()
 end)
-
-
---function fun_caves.set_ores(biome, y)
---	local ores = fun_caves.ores
---
---	--print("generating ores based on biome: "..biome)
---	local y_factor = (math.abs(biome) - 0.4) * -2000
---	--print("y_factor: "..y_factor)
---
---	minetest.clear_registered_ores()
---	for id, ore_table in pairs(ores) do
---		local ore = table.copy(ore_table)
---		if ore.y_max >= y_factor and y <= ore.y_max then
---		--if ore.y_max >= y_factor then
---			--print("using ore: "..ore.ore..", y_max: "..ore.y_max)
---			ore.y_min = -31000
---			ore.y_max = 31000
---			minetest.register_ore(ore)
---		end
---	end
---end
 
 
 -- Check if the table contains an element.
@@ -111,12 +70,5 @@ dofile(fun_caves.path .. "/mapgen.lua")
 dofile(fun_caves.path .. "/mobs.lua")
 
 
---minetest.register_on_newplayer(fun_caves.respawn)
---minetest.register_on_respawnplayer(fun_caves.respawn)
-
 -- Inserting helps to ensure that fun_caves operates first.
 table.insert(minetest.registered_on_generateds, 1, fun_caves.generate)
-
---minetest.register_on_joinplayer(function(player)
---	player:set_sky("#000000", "plain", {})
---end)

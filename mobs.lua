@@ -16,17 +16,48 @@ fun_caves.search_replace = function(pos, search_rate, replace_what, replace_with
 	end
 end
 
+fun_caves.surface_damage = function(self, cold_natured)
+	if not self.fun_caves_damage_timer then
+		self.fun_caves_damage_timer = 0
+	end
 
-dofile(fun_caves.path .. "/mobs_crafts.lua")
+	self.fun_caves_damage_timer = self.fun_caves_damage_timer + 1
+	if self.fun_caves_damage_timer > 30 then
+		self.fun_caves_damage_timer = 0
+		local pos = self.object:getpos()
+		local minp = vector.subtract(pos, 1.5)
+		local maxp = vector.add(pos, 1.5)
+		local counts = 0
+		if self.lava_damage > 0 then
+			counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot"})
+			if #counts > 0 then
+				self.health = self.health - self.lava_damage
+				effect(pos, 5, "fire_basic_flame.png")
+			end
+		end
+
+		if not cold_natured then
+			counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_cold"})
+			if #counts > 0 then
+				self.health = self.health - 1
+			end
+		end
+
+		check_for_death(self)
+	end
+end
+
+
 dofile(fun_caves.path .. "/danglers.lua")
 dofile(fun_caves.path .. "/spider.lua")
 dofile(fun_caves.path .. "/spider_ice.lua")
-dofile(fun_caves.path .. "/dirt_monster.lua")
-dofile(fun_caves.path .. "/stone_monster.lua")
-dofile(fun_caves.path .. "/lava_flan.lua")
---dofile(fun_caves.path .. "/dungeon_master.lua")
---dofile(fun_caves.path .. "/mese_monster.lua")
+--dofile(fun_caves.path .. "/dirt_monster.lua")
 dofile(fun_caves.path .. "/sand_monster.lua")
+
+--if minetest.registered_entities["mobs_monster:dirt_monster"] then
+--	-- check this
+--	mobs:register_spawn("mobs_monster:dirt_monster", {"default:dirt"}, 7, 0, 7000, 1, -50, false)
+--end
 
 fun_caves.goblin_spawn_frequency = 150
 

@@ -116,9 +116,11 @@ mobs:register_mob("fun_caves:goblin_king", {
 		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_copper_trap")
 		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_gold_trap")
 		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_iron_trap")
+
+		fun_caves.surface_damage(self)
 	end,
 })
 mobs:register_egg("fun_caves:goblin_king", "Goblin King Egg", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_king", {"default:stone_with_mese"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 1, 31000)
-mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, 31000)
+mobs:register_spawn("fun_caves:goblin_king", {"default:stone_with_mese"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 1, -50)
+mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, -50)
 

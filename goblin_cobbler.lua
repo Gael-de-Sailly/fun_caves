@@ -115,11 +115,13 @@ mobs:register_mob("fun_caves:goblin_cobble", {
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:stone"}, "default:mossycobble")
 		fun_caves.search_replace(self.object:getpos(), 50, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
+
+		fun_caves.surface_damage(self)
 	end,
 })
 mobs:register_egg("fun_caves:goblin_cobble", "Goblin Egg (cobble)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_cobble", {"group:stone"}, 100, 0, 10 * fun_caves.goblin_spawn_frequency, 3, 31000)
-mobs:register_spawn("fun_caves:goblin_cobble", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 31000)
+mobs:register_spawn("fun_caves:goblin_cobble", {"group:stone"}, 100, 0, 10 * fun_caves.goblin_spawn_frequency, 3, -50)
+mobs:register_spawn("fun_caves:goblin_cobble", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -50)
 
 minetest.register_node("fun_caves:mossycobble_trap", {
 	description = "Messy Gobblestone",

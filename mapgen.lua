@@ -235,7 +235,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						biome_val = biome_val / math.max(1, math.log(500 - (heightmap[index] - y)))
 					end
 					-------------------
-					--biome_val = 0.3
+					--biome_val = 0.7
 					-------------------
 					if biome_val < -0.6 then
 						if true then

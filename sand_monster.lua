@@ -47,9 +47,6 @@ mobs:register_mob("fun_caves:sand_monster", {
 	},
 })
 
-mobs:register_spawn("fun_caves:sand_monster", {"group:sand"}, 20, 0, 4000, 3, 31000)
+mobs:register_spawn("fun_caves:sand_monster", {"group:sand"}, 20, 0, 4000, 3, -50)
 
-mobs:register_egg("fun_caves:sand_monster", "Sand Monster", "default_sand.png", 1)
-
--- compatibility
-mobs:alias_mob("mobs:sand_monster", "fun_caves:sand_monster")
+mobs:register_egg("fun_caves:sand_monster", "Deep Sand Monster", "default_sand.png", 1)

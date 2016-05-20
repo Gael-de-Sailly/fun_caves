@@ -48,6 +48,9 @@ mobs:register_mob("fun_caves:spider_ice", {
 		punch_start = 50,
 		punch_end = 90,
 	},
+	do_custom = function(self)
+		fun_caves.surface_damage(self, true)
+	end,
 })
 
 mobs:register_spawn("fun_caves:spider_ice", {"default:ice"}, 14, 0, 1000, 2, 31000)

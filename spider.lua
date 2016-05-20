@@ -47,11 +47,15 @@ mobs:register_mob("fun_caves:spider", {
 		punch_start = 50,
 		punch_end = 90,
 	},
+	do_custom = function(self)
+		if not self.fun_caves_damage_timer then
+			self.fun_caves_damage_timer = 0
+		end
+
+		fun_caves.surface_damage(self)
+	end,
 })
 
 mobs:register_spawn("fun_caves:spider", {"fun_caves:stone_with_moss", "fun_caves:stone_with_lichen", "fun_caves:stone_with_algae"}, 14, 0, 5000, 2, 31000)
 
-mobs:register_egg("fun_caves:spider", "Spider", "mobs_cobweb.png", 1)
-
--- compatibility
-mobs:alias_mob("mobs:spider", "fun_caves:spider")
+mobs:register_egg("fun_caves:spider", "Deep Spider", "mobs_cobweb.png", 1)

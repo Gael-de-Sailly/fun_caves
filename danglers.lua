@@ -72,6 +72,8 @@ mobs:register_mob("fun_caves:dangler", {
 	do_custom = function(self)
 		fun_caves.climb(self)
 		fun_caves.search_replace(self.object:getpos(), 200, {"air"}, "mobs:cobweb")
+
+		fun_caves.surface_damage(self)
 	end,
 })
 
@@ -88,32 +90,35 @@ minetest.register_abm({
 	end
 })
 
--- cobweb
-minetest.register_node(":mobs:cobweb", {
-	description = "Cobweb",
-	drawtype = "plantlike",
-	visual_scale = 1.1,
-	tiles = {"mobs_cobweb.png"},
-	inventory_image = "mobs_cobweb.png",
-	paramtype = "light",
-	sunlight_propagates = true,
-	liquid_viscosity = 11,
-	liquidtype = "source",
-	liquid_alternative_flowing = "mobs:cobweb",
-	liquid_alternative_source = "mobs:cobweb",
-	liquid_renewable = false,
-	liquid_range = 0,
-	walkable = false,
-	groups = {snappy = 1, liquid = 3},
-	drop = "farming:cotton",
-	sounds = default.node_sound_leaves_defaults(),
-})
 
-minetest.register_craft({
-	output = "mobs:cobweb",
-	recipe = {
-		{"farming:string", "", "farming:string"},
-		{"", "farming:string", ""},
-		{"farming:string", "", "farming:string"},
-	}
-})
+-- cobweb
+if not minetest.registered_nodes['mobs:cobweb'] then
+	minetest.register_node(":mobs:cobweb", {
+		description = "Cobweb",
+		drawtype = "plantlike",
+		visual_scale = 1.1,
+		tiles = {"mobs_cobweb.png"},
+		inventory_image = "mobs_cobweb.png",
+		paramtype = "light",
+		sunlight_propagates = true,
+		liquid_viscosity = 11,
+		liquidtype = "source",
+		liquid_alternative_flowing = "mobs:cobweb",
+		liquid_alternative_source = "mobs:cobweb",
+		liquid_renewable = false,
+		liquid_range = 0,
+		walkable = false,
+		groups = {snappy = 1, liquid = 3},
+		drop = "farming:cotton",
+		sounds = default.node_sound_leaves_defaults(),
+	})
+
+	minetest.register_craft({
+		output = "mobs:cobweb",
+		recipe = {
+			{"farming:string", "", "farming:string"},
+			{"", "farming:string", ""},
+			{"farming:string", "", "farming:string"},
+		}
+	})
+end
