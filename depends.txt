@@ -2,6 +2,6 @@ default
 flowers
 wool
 mobs
-mobs_monster?
+mobs_monster
 mobs_slimes?
 mobs_creeper?
