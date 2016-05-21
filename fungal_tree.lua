@@ -12,19 +12,17 @@ colors[""] = "dye:white"
 fun_caves.fungal_tree_leaves = {}
 
 -- all leaves
-function fun_caves.make_fungal_tree(data, area, pos, height, leaves, fruit)
+function fun_caves.make_fungal_tree(data, area, ivm, height, leaves, fruit)
 	for y = 0, height do
 		local radius = 1
 		if y > 1 and y < height - 2 then
 			radius = 2
 		end
-		local force_x = math.random(1,3) - 2
-		local force_y = math.random(1,3) - 2
 		for z = -radius,radius do
 			for x = -radius,radius do
 				local sr = math.random(1,100)
-				local i = pos + z*area.zstride + y*area.ystride + x
-				if force_x == x and force_y == y then
+				local i = ivm + z*area.zstride + y*area.ystride + x
+				if x == 0 and y == 0 and z == 0 then
 					data[i] = leaves
 				elseif sr == 1 then
 					data[i] = fruit

@@ -8,86 +8,13 @@ local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 
 
 
 local node = fun_caves.node
---local replaceable = {}
---for n, s in pairs(minetest.registered_nodes) do
---	if s.is_ground_content and n ~= "air" then
---		replaceable[node(n)] = true
---		print(n)
---	end
---end
 local min_surface = -80
+local coral_biomes = {"desert_ocean", "savanna_ocean", "rainforest_ocean", }
 
 local data = {}
-local p2data = {}  -- vm rotation data buffer
-local lightmap = {}
+--local p2data = {}  -- vm rotation data buffer
 local vm, emin, emax, area, noise_area, csize
-local div_sz_x, div_sz_z, minp, maxp, terrain, cave
-
-if fun_caves.world then
-	fun_caves.biomes = {}
-	local biomes = fun_caves.biomes
-	local biome_names = {}
-	biome_names["common"] = {}
-	biome_names["uncommon"] = {}
-	do
-		local biome_terrain_scale = {}
-		biome_terrain_scale["coniferous_forest"] = 0.75
-		biome_terrain_scale["rainforest"] = 0.33
-		biome_terrain_scale["underground"] = 1.5
-
-		local tree_biomes = {}
-		tree_biomes["deciduous_forest"] = {"deciduous_trees"}
-		tree_biomes["coniferous_forest"] = {"conifer_trees"}
-		tree_biomes["taiga"] = {"conifer_trees"}
-		tree_biomes["rainforest"] = {"jungle_trees"}
-		tree_biomes["rainforest_swamp"] = {"jungle_trees"}
-		tree_biomes["coniferous_forest"] = {"conifer_trees"}
-		tree_biomes["savanna"] = {"acacia_trees"}
-
-		for i, obiome in pairs(minetest.registered_biomes) do
-			local biome = table.copy(obiome)
-			biome.special_tree_prob = 2
-			if biome.name == "savanna" then
-				biome.special_tree_prob = 30
-			end
-			local rarity = "common"
-			biome.terrain_scale = biome_terrain_scale[biome] or 0.5
-			if string.find(biome.name, "ocean") then
-				biome.terrain_scale = 1
-				rarity = "uncommon"
-			end
-			if string.find(biome.name, "swamp") then
-				biome.terrain_scale = 0.25
-				rarity = "uncommon"
-			end
-			if string.find(biome.name, "beach") then
-				biome.terrain_scale = 0.25
-				rarity = "uncommon"
-			end
-			if string.find(biome.name, "^underground$") then
-				biome.node_top = "default:stone"
-				rarity = "uncommon"
-			end
-			biome.special_trees = tree_biomes[biome.name]
-			biomes[biome.name] = biome
-			biome_names[rarity][#biome_names[rarity]+1] = biome.name
-		end
-	end
-	biomes["control"] = {}
-end
-
-if false then
-	local cave_stones = {
-		"fun_caves:stone_with_moss",
-		"fun_caves:stone_with_lichen",
-		"fun_caves:stone_with_algae",
-		"fun_caves:stone_with_salt",
-	}
-	local mushroom_stones = {}
-	mushroom_stones[node("default:stone")] = true
-	mushroom_stones[node("fun_caves:stone_with_algae")] = true
-	mushroom_stones[node("fun_caves:stone_with_lichen")] = true
-end
+local minp, maxp
 
 local function place_schematic(pos, schem, center)
 	local rot = math.random(4) - 1
@@ -157,15 +84,6 @@ local function get_decoration(biome)
 end
 
 
-local function rangelim(x, y, z)
-	return math.max(math.min(x, z), y)
-end
-
-local function getBiome(x, z)
-	return nil
-end
-
-
 function fun_caves.generate(p_minp, p_maxp, seed)
 	minp, maxp = p_minp, p_maxp
 	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
@@ -175,6 +93,24 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 	csize = vector.add(vector.subtract(maxp, minp), 1)
 	noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
+
+	-- There's a bug in the heightmap from valleys_c. Check for it.
+	local bullshit_heightmap = false
+	do
+		local j = -31000
+		local k = 0
+		for i = 1, #heightmap do
+			if j == heightmap[i] then
+				k = k + 1
+				if k > (csize.x ^ 2) * 0.5 then
+					bullshit_heightmap = true
+				end
+			else
+				k = 0
+			end
+			j = heightmap[i]
+		end
+	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	local mem = math.floor(collectgarbage("count")/1024)
@@ -202,9 +138,9 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if (y < min_surface or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+				if (y < min_surface or bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
 					data[ivm] = node("air")
-					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y then
+					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y and not bullshit_heightmap then
 						local ivm2 = ivm
 						for y2 = y + 1, maxp.y + 8 do
 							ivm2 = ivm2 + area.ystride
@@ -228,160 +164,24 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		for x = minp.x, maxp.x do
 			index = index + 1
 			local dx = x - minp.x
-			index3d = noise_area:index(dx, csize.y - 1, dz)
-			local air_count = 0
-			local ivm = area:index(x, maxp.y, z)
+			index3d = noise_area:index(dx, 0, dz)
+			local ivm = area:index(x, minp.y, z)
 
-			for y = maxp.y, minp.y, -1 do
-				if y < min_surface or y <= heightmap[index] - 20 then
-					local ivm_below = ivm - area.ystride
-					local ivm_above = ivm + area.ystride
-					local dy = y - minp.y
-
-					-------------------
-					local stone_type = node("default:stone")
-					local stone_depth = 1
-					local biome_val = biome_n[index3d]
-					if y > -500 then
-						biome_val = biome_val / math.max(1, math.log(500 + y))
+			for y = minp.y, maxp.y do
+				if y < min_surface or bullshit_heightmap or y <= heightmap[index] - 20 then
+					local i = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d])
+					if i then
+						data[ivm] = i
 					end
-					-------------------
-					--biome_val = 0.7
-					-------------------
-					if biome_val < -0.6 then
-						if true then
-							stone_type = node("default:ice")
-							stone_depth = 2
-						else
-							stone_type = node("fun_caves:thinice")
-							stone_depth = 2
-						end
-					elseif biome_val < -0.5 then
-						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < -0.3 then
-						stone_type = node("fun_caves:stone_with_moss")
-					elseif biome_val < -0.0 then
-						stone_type = node("fun_caves:stone_with_lichen")
-					elseif biome_val < 0.2 then
-						stone_type = node("fun_caves:stone_with_algae")
-					elseif biome_val < 0.35 then
-						stone_type = node("fun_caves:stone_with_salt")
-						stone_depth = 2
-						if data[ivm] == node("default:stone") then
-							data[ivm] = stone_type
-						end
-					elseif biome_val < 0.5 then
-						stone_type = node("default:sand")
-						stone_depth = 2
-					elseif biome_val < 0.6 then
-						stone_type = node("default:coalblock")
-						stone_depth = 2
-					else
-						stone_type = node("fun_caves:hot_cobble")
-					end
-					--	"glow"
-
-					if data[ivm] == node("air") then
-						-- Change stone per biome.
-						if data[ivm_below] == node("default:stone") or (stone_type == node("fun_caves:stone_with_salt") and data[ivm_below] ~= node("fun_caves:stone_with_salt") and data[ivm_below] ~= node("air")) then
-							data[ivm_below] = stone_type
-							if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
-								data[ivm_below - area.ystride] = node("fun_caves:radioactive_ore")
-							elseif stone_depth == 2 then
-								data[ivm_below - area.ystride] = stone_type
-							end
-						end
-						if data[ivm_above] == node("default:stone") or (stone_type == node("fun_caves:stone_with_salt") and data[ivm_above] ~= node("fun_caves:stone_with_salt") and data[ivm_above] ~= node("air")) then
-							data[ivm_above] = stone_type
-							if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
-								data[ivm_above - area.ystride] = node("fun_caves:radioactive_ore")
-							elseif stone_depth == 2 then
-								data[ivm_above + area.ystride] = stone_type
-							end
-						end
-
-						if (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss")) and math.random(1,50) == 1 then
-							data[ivm_above] = node("fun_caves:glowing_fungal_stone")
-						end
-
-						if data[ivm] == node("air") then
-							local sr = math.random(1,1000)
-
-							-- fluids
-							if (data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:hot_cobble")) and sr < 3 then
-								data[ivm] = node("default:lava_source")
-							elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 3 then
-								data[ivm] = node("default:water_source")
-								-- hanging down
-							elseif data[ivm_above] == node("default:ice") and sr < 80 then
-								data[ivm] = node("fun_caves:icicle_down")
-							elseif (data[ivm_above] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("fun_caves:stone_with_moss") or data[ivm_above] == node("fun_caves:stone_with_algae") or data[ivm_above] == node("default:stone")) and sr < 80 then
-								if data[ivm_above] == node("fun_caves:stone_with_algae") then
-									data[ivm] = node("fun_caves:stalactite_slimy")
-								elseif data[ivm_above] == node("fun_caves:stone_with_moss") then
-									data[ivm] = node("fun_caves:stalactite_mossy")
-								else
-									data[ivm] = node("fun_caves:stalactite")
-								end
-								-- standing up
-							elseif data[ivm_below] == node("fun_caves:hot_cobble") and sr < 20 then
-								if sr < 10 then
-									data[ivm] = node("fun_caves:hot_spike")
-								else
-									data[ivm] = node("fun_caves:hot_spike_"..(math.ceil(sr / 3) - 2))
-								end
-							elseif data[ivm_below] == node("default:coalblock") and sr < 20 then
-								data[ivm] = node("fun_caves:constant_flame")
-							elseif data[ivm_below] == node("default:ice") and sr < 80 then
-								data[ivm] = node("fun_caves:icicle_up")
-							elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae") or data[ivm_below] == node("default:stone") or data[ivm_below] == node("fun_caves:stone_with_moss")) and sr < 80 then
-								if data[ivm_below] == node("fun_caves:stone_with_algae") then
-									data[ivm] = node("fun_caves:stalagmite_slimy")
-								elseif data[ivm_below] == node("fun_caves:stone_with_moss") then
-									data[ivm] = node("fun_caves:stalagmite_mossy")
-								elseif data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_above] == node("default:stone") then
-									data[ivm] = node("fun_caves:stalagmite")
-								end
-							elseif data[ivm_below] == node("fun_caves:stone_with_moss") and sr < 90 then
-								data[ivm_below] = node("fun_caves:glowing_fungal_stone")
-								-- vegetation
-							elseif (data[ivm_below] == node("fun_caves:stone_with_lichen") or data[ivm_below] == node("fun_caves:stone_with_algae")) and biome_val >= -0.5 then
-								if sr < 110 then
-									data[ivm] = node("flowers:mushroom_red")
-								elseif sr < 140 then
-									data[ivm] = node("flowers:mushroom_brown")
-								elseif air_count > 1 and sr < 160 then
-									data[ivm_above] = node("fun_caves:huge_mushroom_cap")
-									data[ivm] = node("fun_caves:giant_mushroom_stem")
-								elseif air_count > 2 and sr < 170 then
-									data[ivm + 2 * area.ystride] = node("fun_caves:giant_mushroom_cap")
-									data[ivm_above] = node("fun_caves:giant_mushroom_stem")
-									data[ivm] = node("fun_caves:giant_mushroom_stem")
-								elseif air_count > 5 and sr < 180 then
-									fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)), node(fun_caves.fungal_tree_leaves[math.random(1,#fun_caves.fungal_tree_leaves)]), node("fun_caves:fungal_tree_fruit"))
-									data[ivm_below] = node("dirt")
-								elseif sr < 300 then
-									data[ivm_below] = node("dirt")
-								end
-								if data[ivm] ~= node("air") then
-									data[ivm_below] = node("dirt")
-								end
-							end
-						end
-
-						if data[ivm] == node("air") then
-							air_count = air_count + 1
-						end
-					end
-				elseif y < heightmap[index] then
+				elseif y < heightmap[index] and not bullshit_heightmap then
 					local ivm_below = ivm - area.ystride
 					if data[ivm] == node("air") and data[ivm_below] ~= node('air') then
 						data[ivm_below] = node("dirt")
 					end
 				end
 
-				ivm = ivm - area.ystride
-				index3d = index3d - csize.x
+				ivm = ivm + area.ystride
+				index3d = index3d + csize.x
 			end
 		end
 	end
@@ -392,37 +192,10 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	if DEBUG then
 		vm:set_lighting({day = 15, night = 15})
 	else
-		vm:set_lighting({day = 0, night = 0})
 		vm:calc_lighting()
 	end
 	vm:update_liquids()
 	vm:write_to_map()
 
-	vm, area, lightmap, terrain, cave = nil, nil, nil, nil, nil
-end
-
-function fun_caves.respawn(player)
-	local pos = {x=0,y=0,z=0}
-	local cave_1 = minetest.get_perlin(cave_noise_1):get3d(pos)
-	local cave_2 = minetest.get_perlin(cave_noise_2):get3d(pos)
-	local biome_n = minetest.get_perlin(biome_noise):get3d({x=pos.x, y=pos.y, z=pos.z})
-	local biome = biome_n
-
-	while biome < -0.2 or biome > 0.0 do
-		pos.x = pos.x + math.random(20) - 10
-		pos.z = pos.z + math.random(20) - 10
-
-		biome_n = minetest.get_perlin(biome_noise):get3d({x=pos.x, y=pos.y, z=pos.z})
-		biome = biome_n
-	end
-
-	while cave_1 * cave_2 <= 0.05 do
-		pos.y = pos.y + 1
-		cave_1 = minetest.get_perlin(cave_noise_1):get3d(pos)
-		cave_2 = minetest.get_perlin(cave_noise_2):get3d(pos)
-	end
-
-	pos.y = pos.y + 1
-	player:setpos(pos)
-	return true -- Disable default player spawner
+	vm, area, noise_area = nil, nil, nil
 end
