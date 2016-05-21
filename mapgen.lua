@@ -2,21 +2,19 @@ local DEBUG = false
 
 local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 10, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
+local cave_noise_3 = {offset = 15, scale = 10, seed = 3721, spread = {x = 40, y = 40, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
 
 
 local node = fun_caves.node
-local group_stone = {}
-group_stone[node("default:sandstone")] = true
-for n, s in pairs(minetest.registered_nodes) do
-	if s.groups and s.groups['stone'] then
-		group_stone[node(n)] = true
-	end
-end
-for _, s in pairs(minetest.registered_ores) do
-	group_stone[node(s.ore)] = true
-end
+--local replaceable = {}
+--for n, s in pairs(minetest.registered_nodes) do
+--	if s.is_ground_content and n ~= "air" then
+--		replaceable[node(n)] = true
+--		print(n)
+--	end
+--end
 local min_surface = -80
 
 local data = {}
@@ -180,7 +178,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	local mem = math.floor(collectgarbage("count")/1024)
-	if mem > 400 then
+	if mem > 300 then
 		print("Fun Caves: Manually collecting garbage...")
 		collectgarbage("collect")
 	end
@@ -190,10 +188,9 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 
 	local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
 	local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
+	local cave_3 = minetest.get_perlin_map(cave_noise_3, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 	local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
 
-	local biome_avg = 0
-	local biome_ct = 0
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
@@ -205,14 +202,17 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if y < 40 and (y < min_surface or y <= heightmap[index]) and group_stone[data[ivm]] then
-					if cave_1[index3d] * cave_2[index3d] > 0.05 and (y < min_surface or y < heightmap[index] - 10 or cave_1[index3d] * cave_2[index3d] < 0.2) then
-						data[ivm] = node("air")
+				if (y < min_surface or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+					data[ivm] = node("air")
+					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y then
+						local ivm2 = ivm
+						for y2 = y + 1, maxp.y + 8 do
+							ivm2 = ivm2 + area.ystride
+							if data[ivm2] ~= node("default:water_source") then
+								data[ivm2] = node("air")
+							end
+						end
 					end
-
-					local biome_val = biome_n[index3d]
-					biome_avg = biome_avg + biome_val
-					biome_ct = biome_ct + 1
 				end
 
 				ivm = ivm + area.ystride
@@ -372,6 +372,11 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 						if data[ivm] == node("air") then
 							air_count = air_count + 1
 						end
+					end
+				elseif y < heightmap[index] then
+					local ivm_below = ivm - area.ystride
+					if data[ivm] == node("air") and data[ivm_below] ~= node('air') then
+						data[ivm_below] = node("dirt")
 					end
 				end
 
