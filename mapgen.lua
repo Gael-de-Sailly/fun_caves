@@ -140,7 +140,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			for y = minp.y, maxp.y do
 				if (y < min_surface or bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
 					data[ivm] = node("air")
-					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y and not bullshit_heightmap then
+					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y and y > 0 then
 						local ivm2 = ivm
 						for y2 = y + 1, maxp.y + 8 do
 							ivm2 = ivm2 + area.ystride
@@ -168,7 +168,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if y < min_surface or bullshit_heightmap or y <= heightmap[index] - 20 then
+				if y < min_surface or (bullshit_heightmap and y < 0) or (not bullshit_heightmap and y <= heightmap[index] - 20) then
 					local i = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d])
 					if i then
 						data[ivm] = i
