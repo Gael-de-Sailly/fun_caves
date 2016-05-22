@@ -16,6 +16,15 @@ local data = {}
 local vm, emin, emax, area, noise_area, csize
 local minp, maxp
 
+-- Create a table of biome ids, so I can use the biomemap.
+if not fun_caves.biome_ids then
+	fun_caves.biome_ids = {}
+	for name, desc in pairs(minetest.registered_biomes) do
+		local i = minetest.get_biome_id(desc.name)
+		fun_caves.biome_ids[i] = desc.name
+	end
+end
+
 local function place_schematic(pos, schem, center)
 	local rot = math.random(4) - 1
 	local yslice = {}
@@ -84,37 +93,44 @@ local function get_decoration(biome)
 end
 
 
+local function detect_bull(heightmap, csize)
+	local j = -31000
+	local k = 0
+	local cutoff = (csize.x * csize.z) * 0.3
+	for i = 1, #heightmap do
+		if j == heightmap[i] then
+			k = k + 1
+			if k > cutoff then
+				return true
+			end
+		else
+			k = 0
+		end
+		j = heightmap[i]
+	end
+
+	return false
+end
+
+
 function fun_caves.generate(p_minp, p_maxp, seed)
 	minp, maxp = p_minp, p_maxp
 	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	vm:get_data(data)
 	--p2data = vm:get_param2_data()
 	local heightmap = minetest.get_mapgen_object("heightmap")
+	local biomemap = minetest.get_mapgen_object("biomemap")
 	area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 	csize = vector.add(vector.subtract(maxp, minp), 1)
 	noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
 
 	-- There's a bug in the heightmap from valleys_c. Check for it.
-	local bullshit_heightmap = false
-	do
-		local j = -31000
-		local k = 0
-		for i = 1, #heightmap do
-			if j == heightmap[i] then
-				k = k + 1
-				if k > (csize.x ^ 2) * 0.5 then
-					bullshit_heightmap = true
-				end
-			else
-				k = 0
-			end
-			j = heightmap[i]
-		end
-	end
+	local bullshit_heightmap = detect_bull(heightmap, csize)
+	local write = false
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	local mem = math.floor(collectgarbage("count")/1024)
-	if mem > 300 then
+	if mem > 200 then
 		print("Fun Caves: Manually collecting garbage...")
 		collectgarbage("collect")
 	end
@@ -138,9 +154,11 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if (y < min_surface or bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+				if (y < min_surface or (bullshit_heightmap and y < 0) or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
 					data[ivm] = node("air")
-					if y > min_surface and cave_3[index] < 1 and heightmap[index] == y and y > 0 then
+					write = true
+
+					if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
 						local ivm2 = ivm
 						for y2 = y + 1, maxp.y + 8 do
 							ivm2 = ivm2 + area.ystride
@@ -157,6 +175,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		end
 	end
 
+	-- Air needs to be placed prior to decorations.
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
@@ -172,11 +191,20 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					local i = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d])
 					if i then
 						data[ivm] = i
+						write = true
 					end
 				elseif y < heightmap[index] and not bullshit_heightmap then
 					local ivm_below = ivm - area.ystride
 					if data[ivm] == node("air") and data[ivm_below] ~= node('air') then
 						data[ivm_below] = node("dirt")
+					end
+				else
+					local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+					local biome = fun_caves.biome_ids[biomemap[index]]
+					local i = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
+					if i then
+						data[ivm] = i
+						write = true
 					end
 				end
 
@@ -187,15 +215,17 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	end
 
 
-	vm:set_data(data)
-	--vm:set_param2_data(p2data)
-	if DEBUG then
-		vm:set_lighting({day = 15, night = 15})
-	else
-		vm:calc_lighting()
+	if write then
+		vm:set_data(data)
+		--vm:set_param2_data(p2data)
+		if DEBUG then
+			vm:set_lighting({day = 15, night = 15})
+		else
+			vm:calc_lighting()
+		end
+		vm:update_liquids()
+		vm:write_to_map()
 	end
-	vm:update_liquids()
-	vm:write_to_map()
 
 	vm, area, noise_area = nil, nil, nil
 end

@@ -3,6 +3,7 @@ fun_caves.version = "1.0"
 fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
 fun_caves.world = false
 fun_caves.time_factor = 10
+fun_caves.node_match_cache = {}
 
 
 minetest.register_on_mapgen_init(function(mgparams)
