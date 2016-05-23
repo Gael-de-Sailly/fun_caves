@@ -9,12 +9,10 @@ local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 
 
 local node = fun_caves.node
 local min_surface = -80
-local coral_biomes = {"desert_ocean", "savanna_ocean", "rainforest_ocean", }
 
 local data = {}
 --local p2data = {}  -- vm rotation data buffer
-local vm, emin, emax, area, noise_area, csize
-local minp, maxp
+local vm, emin, emax, area, noise_area, csize, minp, maxp
 
 -- Create a table of biome ids, so I can use the biomemap.
 if not fun_caves.biome_ids then
@@ -94,23 +92,34 @@ end
 
 
 local function detect_bull(heightmap, csize)
+	local probably = false
+
+	if minp.y >= 8 + csize.y / 2 then
+		return false
+	end
+
+	if maxp.y <= 8 - csize.y / 2 then
+		probably = true
+	end
+
 	local j = -31000
 	local k = 0
-	local cutoff = (csize.x * csize.z) * 0.3
+	local cutoff = (csize.x * csize.z) * 0.1
 	for i = 1, #heightmap do
 		if j == heightmap[i] then
 			k = k + 1
 			if k > cutoff then
 				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", heightmap stuck at: "..heightmap[i])
 				return true
+			elseif not probably and i > 2 * cutoff then
+				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", guessing good heightmap")
+				return false
 			end
 		else
 			k = 0
 		end
 		j = heightmap[i]
 	end
-
-	return false
 end
 
 
@@ -147,31 +156,35 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
-		local dz = z - minp.z
 		for x = minp.x, maxp.x do
 			index = index + 1
-			local dx = x - minp.x
-			index3d = noise_area:index(dx, 0, dz)
-			local ivm = area:index(x, minp.y, z)
 
-			for y = minp.y, maxp.y do
-				if (y < min_surface or (bullshit_heightmap and y < 0) or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
-					data[ivm] = node("air")
-					write = true
+			if bullshit_heightmap and maxp.y > 0 then
+				-- nop
+			else
+				write = true
+				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+				local ivm = area:index(x, minp.y, z)
 
-					if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
-						local ivm2 = ivm
-						for y2 = y + 1, maxp.y + 8 do
-							ivm2 = ivm2 + area.ystride
-							if data[ivm2] ~= node("default:water_source") then
-								data[ivm2] = node("air")
+				for y = minp.y, maxp.y do
+					if (bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+						data[ivm] = node("air")
+
+						if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
+							-- Clear the air above a cave mouth.
+							local ivm2 = ivm
+							for y2 = y + 1, maxp.y + 8 do
+								ivm2 = ivm2 + area.ystride
+								if data[ivm2] ~= node("default:water_source") then
+									data[ivm2] = node("air")
+								end
 							end
 						end
 					end
-				end
 
-				ivm = ivm + area.ystride
-				index3d = index3d + csize.x
+					ivm = ivm + area.ystride
+					index3d = index3d + csize.x
+				end
 			end
 		end
 	end
@@ -180,37 +193,31 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
-		local dz = z - minp.z
 		for x = minp.x, maxp.x do
 			index = index + 1
-			local dx = x - minp.x
-			index3d = noise_area:index(dx, 0, dz)
-			local ivm = area:index(x, minp.y, z)
+			if bullshit_heightmap and maxp.y > 0 then
+				-- nop
+			else
+				local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+				local biome = fun_caves.biome_ids[biomemap[index]]
+				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+				local ivm = area:index(x, minp.y, z)
+				write = true
 
-			for y = minp.y, maxp.y do
-				if y < min_surface or (bullshit_heightmap and y < 0) or (not bullshit_heightmap and y <= heightmap[index] - 20) then
-					local i = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d])
-					if i then
-						data[ivm] = i
-						write = true
+				for y = minp.y, maxp.y do
+					if bullshit_heightmap or y <= heightmap[index] - 20 then
+						data[ivm] = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
+					elseif y < heightmap[index] and not bullshit_heightmap then
+						if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
+							data[ivm - area.ystride] = node("dirt")
+						end
+					else
+						data[ivm] = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
 					end
-				elseif y < heightmap[index] and not bullshit_heightmap then
-					local ivm_below = ivm - area.ystride
-					if data[ivm] == node("air") and data[ivm_below] ~= node('air') then
-						data[ivm_below] = node("dirt")
-					end
-				else
-					local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-					local biome = fun_caves.biome_ids[biomemap[index]]
-					local i = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
-					if i then
-						data[ivm] = i
-						write = true
-					end
+
+					ivm = ivm + area.ystride
+					index3d = index3d + csize.x
 				end
-
-				ivm = ivm + area.ystride
-				index3d = index3d + csize.x
 			end
 		end
 	end
@@ -222,7 +229,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		if DEBUG then
 			vm:set_lighting({day = 15, night = 15})
 		else
-			vm:calc_lighting()
+			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z},maxp)
 		end
 		vm:update_liquids()
 		vm:write_to_map()
