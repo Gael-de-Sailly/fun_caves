@@ -3,7 +3,7 @@ local light_depth = -13
 local water_level = 1
 
 local water_lily_biomes = {}
-for _, i in pairs({"rainforest_swamp", "rainforest", "savanna_swamp", "savanna",  "deciduous_forest_swamp", "deciduous_forest", }) do
+for _, i in pairs({"rainforest_swamp", "rainforest", "savanna_swamp", "savanna",  "deciduous_forest_swamp", "deciduous_forest", "desertstone_grassland", }) do
 	water_lily_biomes[i] = true
 end
 local coral_biomes = {}

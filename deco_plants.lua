@@ -151,21 +151,19 @@ local function register_flower(name, seed, biomes)
 
 	-- Let rainforest plants show up more often.
 	local key1 = table.contains(biomes, "rainforest")
-	--local key2 = table.contains(biomes, "desertstone_grassland")
-	--if key1 or key2 then
-	if key1 then
+	local key2 = table.contains(biomes, "desertstone_grassland")
+	if key1 or key2 then
 		if key1 then
 			table.remove(param.biomes, key1)
-		--else
-		--	table.remove(param.biomes, key2)
+		else
+			table.remove(param.biomes, key2)
 		end
 		if #param.biomes > 0 then
 			minetest.register_decoration(param)
 		end
 
 		local param2 = table.copy(param)
-		--param2.biomes = {"rainforest", "desertstone_grassland", }
-		param2.biomes = {"rainforest", }
+		param2.biomes = {"rainforest", "desertstone_grassland", }
 		param2.noise_params.seed = param2.noise_params.seed + 20
 		param2.noise_params.offset = param2.noise_params.offset + 0.01
 		minetest.register_decoration(param2)
@@ -174,11 +172,11 @@ local function register_flower(name, seed, biomes)
 	end
 end
 
-register_flower("bird_of_paradise", 8402, {"rainforest", })
-register_flower("orchid", 3944, {"sandstone_grassland", "tundra", "taiga", "stone_grassland", "coniferous_forest", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp", })
-register_flower("hibiscus", 7831, {"sandstone_grassland", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp", })
---register_flower("calla_lily", 7985, {"sandstone_grassland", "stone_grassland", "deciduous_forest", "rainforest", })
-register_flower("gerbera", 1976, {"savanna", "rainforest", })
+register_flower("bird_of_paradise", 8402, {"rainforest", "desertstone_grassland", })
+register_flower("orchid", 3944, {"sandstone_grassland", "tundra", "taiga", "stone_grassland", "coniferous_forest", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp", "desertstone_grassland", })
+register_flower("hibiscus", 7831, {"sandstone_grassland", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp", "desertstone_grassland", })
+--register_flower("calla_lily", 7985, {"sandstone_grassland", "stone_grassland", "deciduous_forest", "rainforest", "desertstone_grassland", })
+register_flower("gerbera", 1976, {"savanna", "rainforest", "desertstone_grassland", })
 
 do
 	-- Water Plant
@@ -187,7 +185,7 @@ do
 		place_on = {"group:sand"},
 		decoration = {"fun_caves:water_plant_1_water_sand"},
 		--biomes = {"sandstone_grassland", "stone_grassland", "coniferous_forest", "deciduous_forest", "desert", "savanna", "rainforest", "rainforest_swamp", },
-		biomes = {"sandstone_grassland", "stone_grassland", "coniferous_forest", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp","sandstone_grassland_ocean", "stone_grassland_ocean", "coniferous_forest_ocean", "deciduous_forest_ocean", "desert_ocean", "savanna_ocean", },
+		biomes = {"sandstone_grassland", "stone_grassland", "coniferous_forest", "deciduous_forest", "savanna", "rainforest", "rainforest_swamp","sandstone_grassland_ocean", "stone_grassland_ocean", "coniferous_forest_ocean", "deciduous_forest_ocean", "desert_ocean", "savanna_ocean", "desertstone_grassland", },
 		y_max = 60,
 	}
 	local water_plant_1_def_soil = table.copy(water_plant_1_def_sand)

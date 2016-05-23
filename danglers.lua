@@ -81,15 +81,6 @@ mobs:register_spawn("fun_caves:dangler", {"fun_caves:stone_with_moss", "fun_cave
 
 mobs:register_egg("fun_caves:dangler", "Dangling Spider", "mobs_cobweb.png", 1)
 
-minetest.register_abm({
-	nodenames = {"mobs:cobweb"},
-	interval = 500,
-	chance = 50,
-	action = function(pos, node)
-		minetest.set_node(pos, {name = "air"})
-	end
-})
-
 
 -- cobweb
 if not minetest.registered_nodes['mobs:cobweb'] then
@@ -122,3 +113,12 @@ if not minetest.registered_nodes['mobs:cobweb'] then
 		}
 	})
 end
+
+minetest.register_abm({
+	nodenames = {"mobs:cobweb"},
+	interval = 500,
+	chance = 50,
+	action = function(pos, node)
+		minetest.set_node(pos, {name = "air"})
+	end
+})
