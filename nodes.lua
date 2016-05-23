@@ -411,6 +411,11 @@ minetest.register_globalstep(function(dtime)
 					player:set_hp(player:get_hp() - 1)
 				end
 			end
+
+			-- hunger
+			if last_dps_check % 2000 == 0 then
+				player:set_hp(player:get_hp() - 1)
+			end
 		end
 	end
 end)

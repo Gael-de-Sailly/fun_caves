@@ -3,7 +3,7 @@
 mobs:register_mob("fun_caves:goblin_cobble", {
 	description = "Cobble Goblin",
 	type = "animal",
-	passive = false,
+	passive = true,
 	damage = 1,
 	attack_type = "dogfight",
 	attacks_monsters = true,

@@ -11,6 +11,10 @@ colors["^[colorize:#FF4500:80"] = "dye:green"
 colors[""] = "dye:white"
 fun_caves.fungal_tree_leaves = {}
 
+local newnode = fun_caves.clone_node("farming:straw")
+newnode.description = "Dry Fiber"
+minetest.register_node("fun_caves:dry_fiber", newnode)
+
 -- all leaves
 function fun_caves.make_fungal_tree(data, area, ivm, height, leaves, fruit)
 	for y = 0, height do
@@ -63,7 +67,7 @@ for color, dye in pairs(colors) do
 
 	minetest.register_craft({
 		type = "cooking",
-		output = "farming:straw",
+		output = "fun_caves:dry_fiber",
 		recipe = name,
 		cooktime = 2,
 	})
