@@ -423,8 +423,8 @@ end)
 -- mushroom growth
 minetest.register_abm({
 	nodenames = {"flowers:mushroom_brown", "flowers:mushroom_red"},
-	interval = 50 * fun_caves.time_factor,
-	chance = 100,
+	interval = 200 * fun_caves.time_factor,
+	chance = 25,
 	action = function(pos, node)
 		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
 		local node_up = minetest.get_node_or_nil(pos_up)
@@ -449,8 +449,8 @@ minetest.register_abm({
 -- mushroom growth
 minetest.register_abm({
 	nodenames = {"fun_caves:huge_mushroom_cap"},
-	interval = 100 * fun_caves.time_factor,
-	chance = 150,
+	interval = 500 * fun_caves.time_factor,
+	chance = 30,
 	action = function(pos, node)
 		if minetest.get_node_light(pos, nil) >= 14 then
 			minetest.set_node(pos, {name = "air"})
@@ -483,8 +483,8 @@ minetest.register_abm({
 -- mushroom growth
 minetest.register_abm({
 	nodenames = {"fun_caves:giant_mushroom_stem"},
-	interval = 5 * fun_caves.time_factor,
-	chance = 5,
+	interval = 15 * fun_caves.time_factor,
+	chance = 10,
 	action = function(pos, node)
 		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
 		local node_up = minetest.get_node_or_nil(pos_up)
@@ -503,8 +503,8 @@ minetest.register_abm({
 -- mushroom spread
 minetest.register_abm({
 	nodenames = {"fun_caves:giant_mushroom_cap", "fun_caves:huge_mushroom_cap"},
-	interval = 3 * fun_caves.time_factor,
-	chance = 40,
+	interval = 15 * fun_caves.time_factor,
+	chance = 10,
 	action = function(pos, node)
 		if minetest.get_node_light(pos, nil) >= 14 then
 			minetest.set_node(pos, {name = "air"})
@@ -533,8 +533,8 @@ minetest.register_abm({
 -- Mushroom spread and death
 minetest.register_abm({
 	nodenames = {"flowers:mushroom_brown", "flowers:mushroom_red"},
-	interval = 3 * fun_caves.time_factor,
-	chance = 50,
+	interval = 15 * fun_caves.time_factor,
+	chance = 10,
 	action = function(pos, node)
 		if minetest.get_node_light(pos, nil) == 15 then
 			minetest.remove_node(pos)
@@ -612,8 +612,8 @@ end
 minetest.register_abm({
 	nodenames = hot_spikes,
 	--neighbors = {"default:lava_source", "default:lava_flowing"},
-	interval = 6 * fun_caves.time_factor,
-	chance = 50,
+	interval = 30 * fun_caves.time_factor,
+	chance = 10,
 	action = function(pos, node)
 		local spike_num
 		for i = 1, #hot_spikes do

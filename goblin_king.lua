@@ -111,11 +111,11 @@ mobs:register_mob("fun_caves:goblin_king", {
 	do_custom = function(self)
 		fun_caves.search_replace(self.object:getpos(), 2, {"default:torch"}, "air")
 		fun_caves.search_replace(self.object:getpos(), 20, {"default:stone"}, "default:mossycobble")
-		fun_caves.search_replace(self.object:getpos(), 50, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
-		fun_caves.search_replace(self.object:getpos(), 50, {"group:stone"}, "fun_caves:stone_with_coal_trap")
-		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_copper_trap")
-		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_gold_trap")
-		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_iron_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, {"group:stone"}, "fun_caves:stone_with_coal_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, 5, {"group:stone"}, "fun_caves:stone_with_copper_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, 5, {"group:stone"}, "fun_caves:stone_with_gold_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, 5, {"group:stone"}, "fun_caves:stone_with_iron_trap")
 
 		fun_caves.surface_damage(self)
 	end,

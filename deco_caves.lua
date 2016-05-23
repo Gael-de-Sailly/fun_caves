@@ -14,9 +14,9 @@ function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
 	local stone_type = node("default:stone")
 	local stone_depth = 1
 
-	if y > -500 then
-		biome_val = biome_val / math.max(1, math.log(500 + y))
-	end
+	--if y > -500 then
+	--	biome_val = biome_val / math.max(1, math.log(500 + y))
+	--end
 	-------------------
 	--biome_val = 0.7
 	-------------------
@@ -62,7 +62,7 @@ function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
 			end
 		end
 
-		if node_above == node("air") and (stone_type == node("fun_caves:stone_with_algae") or stone_type == node("fun_caves:stone_with_lichen")) and math.random(4) == 1 then
+		if node_above == node("air") and (stone_type == node("fun_caves:stone_with_algae") or stone_type == node("fun_caves:stone_with_lichen")) and math.random(10) == 1 then
 			return node("dirt")
 		end
 

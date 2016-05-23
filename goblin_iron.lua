@@ -112,7 +112,7 @@ mobs:register_mob("fun_caves:goblin_iron", {
 	do_custom = function(self)
 		fun_caves.search_replace(self.object:getpos(), 5, 1, {"default:torch"}, "air")
 		fun_caves.search_replace(self.object:getpos(), 20, 1, {"default:stone"}, "default:mossycobble")
-		fun_caves.search_replace(self.object:getpos(), 50, 5, {"group:stone"}, "fun_caves:stone_with_iron_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, 5, {"group:stone"}, "fun_caves:stone_with_iron_trap")
 
 		fun_caves.surface_damage(self)
 	end,
@@ -125,7 +125,7 @@ minetest.register_node("fun_caves:stone_with_iron_trap", {
 	description = "Iron Trap",
 	tiles = {"default_cobble.png^default_mineral_iron.png"},
 	groups = {cracky = 3},
-	drop = 'default:iron_lump',
+	--drop = 'default:iron_lump',
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
 })

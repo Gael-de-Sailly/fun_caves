@@ -208,7 +208,8 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 					if bullshit_heightmap or y <= heightmap[index] - 20 then
 						data[ivm] = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
 					elseif y < heightmap[index] and not bullshit_heightmap then
-						if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
+						--if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
+						if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
 							data[ivm - area.ystride] = node("dirt")
 						end
 					else

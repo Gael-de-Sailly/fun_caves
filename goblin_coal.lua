@@ -2,7 +2,7 @@
 
 mobs:register_mob("fun_caves:goblin_coal", {
 	description = "Coal Goblin",
-	type = "animal",
+	type = "monster",
 	passive = false,
 	damage = 1,
 	attack_type = "dogfight",
@@ -110,7 +110,7 @@ mobs:register_mob("fun_caves:goblin_coal", {
 	do_custom = function(self)
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
 		fun_caves.search_replace(self.object:getpos(), 20, {"default:stone"}, "default:mossycobble")
-		fun_caves.search_replace(self.object:getpos(), 50, {"group:stone"}, "fun_caves:stone_with_coal_trap")
+		fun_caves.search_replace(self.object:getpos(), 500, {"group:stone"}, "fun_caves:stone_with_coal_trap")
 
 		fun_caves.surface_damage(self)
 	end,
@@ -124,7 +124,7 @@ minetest.register_node("fun_caves:stone_with_coal_trap", {
 	description = "Coal Trap",
 	tiles = {"default_cobble.png^default_mineral_coal.png"},
 	groups = {cracky = 3},
-	drop = 'default:coal_lump',
+	--drop = 'default:coal_lump',
 	is_ground_content = false,
 	sounds = default.node_sound_stone_defaults(),
 })
