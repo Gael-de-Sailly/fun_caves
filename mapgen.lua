@@ -101,6 +101,7 @@ local function detect_bull(heightmap, csize)
 		if j == heightmap[i] then
 			k = k + 1
 			if k > cutoff then
+				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", heightmap stuck at: "..heightmap[i])
 				return true
 			end
 		else

@@ -91,12 +91,10 @@ function fun_caves.decorate_water(data, area, minp, maxp, pos, ivm, biome_in, pn
 				end
 			end
 		end
-	elseif pos.y > minp.y and node_below == node("default:river_water_source") and data[ivm] == node("air") then
+	elseif pos.y > minp.y and node_below == node("default:river_water_source") and data[ivm] == node("air") and water_lily_biomes[biome] and pn > 0.5 and math.random(15) == 1 then
 		-- on top of the water
 		-- I haven't figured out what the decoration manager is
 		--  doing with the noise functions, but this works ok.
-		if water_lily_biomes[biome] and pn > 0.5 and math.random(15) == 1 then
-			return node("flowers:waterlily")
-		end
+		return node("flowers:waterlily")
 	end
 end
