@@ -50,6 +50,7 @@ end
 
 dofile(fun_caves.path .. "/danglers.lua")
 dofile(fun_caves.path .. "/spider.lua")
+dofile(fun_caves.path .. "/tarantula.lua")
 dofile(fun_caves.path .. "/spider_ice.lua")
 --dofile(fun_caves.path .. "/dirt_monster.lua")
 dofile(fun_caves.path .. "/sand_monster.lua")
