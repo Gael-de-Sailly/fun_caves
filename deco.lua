@@ -95,7 +95,7 @@ minetest.register_biome({
 	--node_water = "",
 	--node_river_water = "",
 	y_min = 5,
-	y_max = 31000,
+	y_max = 80,
 	heat_point = 25,
 	humidity_point = 0,
 })

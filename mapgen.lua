@@ -94,14 +94,6 @@ end
 local function detect_bull(heightmap, csize)
 	local probably = false
 
-	if minp.y >= 8 + csize.y / 2 then
-		return false
-	end
-
-	if maxp.y <= 8 - csize.y / 2 then
-		probably = true
-	end
-
 	local j = -31000
 	local k = 0
 	local cutoff = (csize.x * csize.z) * 0.1
@@ -111,7 +103,7 @@ local function detect_bull(heightmap, csize)
 			if k > cutoff then
 				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", heightmap stuck at: "..heightmap[i])
 				return true
-			elseif not probably and i > 2 * cutoff then
+			elseif i > 2 * cutoff then
 				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", guessing good heightmap")
 				return false
 			end
@@ -159,32 +151,28 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		for x = minp.x, maxp.x do
 			index = index + 1
 
-			if bullshit_heightmap and maxp.y > 0 then
-				-- nop
-			else
-				write = true
-				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-				local ivm = area:index(x, minp.y, z)
+			write = true
+			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+			local ivm = area:index(x, minp.y, z)
 
-				for y = minp.y, maxp.y do
-					if (bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
-						data[ivm] = node("air")
+			for y = minp.y, maxp.y do
+				if (bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+					data[ivm] = node("air")
 
-						if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
-							-- Clear the air above a cave mouth.
-							local ivm2 = ivm
-							for y2 = y + 1, maxp.y + 8 do
-								ivm2 = ivm2 + area.ystride
-								if data[ivm2] ~= node("default:water_source") then
-									data[ivm2] = node("air")
-								end
+					if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
+						-- Clear the air above a cave mouth.
+						local ivm2 = ivm
+						for y2 = y + 1, maxp.y + 8 do
+							ivm2 = ivm2 + area.ystride
+							if data[ivm2] ~= node("default:water_source") then
+								data[ivm2] = node("air")
 							end
 						end
 					end
-
-					ivm = ivm + area.ystride
-					index3d = index3d + csize.x
 				end
+
+				ivm = ivm + area.ystride
+				index3d = index3d + csize.x
 			end
 		end
 	end
@@ -195,30 +183,26 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 	for z = minp.z, maxp.z do
 		for x = minp.x, maxp.x do
 			index = index + 1
-			if bullshit_heightmap and maxp.y > 0 then
-				-- nop
-			else
-				local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-				local biome = fun_caves.biome_ids[biomemap[index]]
-				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-				local ivm = area:index(x, minp.y, z)
-				write = true
+			local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+			local biome = fun_caves.biome_ids[biomemap[index]]
+			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+			local ivm = area:index(x, minp.y, z)
+			write = true
 
-				for y = minp.y, maxp.y do
-					if bullshit_heightmap or y <= heightmap[index] - 20 then
-						data[ivm] = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
-					elseif y < heightmap[index] and not bullshit_heightmap then
-						--if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
-						if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
-							data[ivm - area.ystride] = node("dirt")
-						end
-					else
-						data[ivm] = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
+			for y = minp.y, maxp.y do
+				if bullshit_heightmap or y <= heightmap[index] - 20 then
+					data[ivm] = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
+				elseif y < heightmap[index] and not bullshit_heightmap then
+					--if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
+					if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
+						data[ivm - area.ystride] = node("dirt")
 					end
-
-					ivm = ivm + area.ystride
-					index3d = index3d + csize.x
+				else
+					data[ivm] = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
 				end
+
+				ivm = ivm + area.ystride
+				index3d = index3d + csize.x
 			end
 		end
 	end
