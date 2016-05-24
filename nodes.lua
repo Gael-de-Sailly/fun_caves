@@ -2,6 +2,21 @@ local light_max = 13
 
 minetest.add_group("default:ice", {surface_cold = 3})
 
+--thin (transparent) ice
+minetest.register_node("fun_caves:thin_ice", {
+	description = "Thin Ice",
+	tiles = {"caverealms_thin_ice.png"},
+	is_ground_content = true,
+	groups = {cracky=3},
+	sounds = default.node_sound_glass_defaults(),
+	use_texture_alpha = true,
+	light_source = 1,
+	drawtype = "glasslike",
+	sunlight_propagates = true,
+	freezemelt = "default:water_source",
+	paramtype = "light",
+})
+
 minetest.register_node("fun_caves:huge_mushroom_cap", {
 	description = "Huge Mushroom Cap",
 	tiles = {"vmg_mushroom_giant_cap.png", "vmg_mushroom_giant_under.png", "vmg_mushroom_giant_cap.png"},

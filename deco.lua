@@ -48,8 +48,8 @@ local biome_mod = {
 	stone_grassland_ocean = { heat_point = 35, humidity_point = 40, },
 	taiga = {},
 	taiga_ocean = {},
-	tundra = {},
-	tundra_beach = {},
+	tundra = { node_river_water = "fun_caves:thin_ice", },
+	tundra_beach = { node_river_water = "fun_caves:thin_ice", },
 	tundra_ocean = {},
 }
 local rereg = {}
@@ -81,42 +81,6 @@ for _, dec in pairs(rereg) do
 end
 rereg = nil
 
-
-minetest.register_biome({
-	name = "cold_desert",
-	--node_dust = "",
-	node_top = "default:desert_sand",
-	depth_top = 1,
-	node_filler = "default:desert_sand",
-	depth_filler = 1,
-	node_stone = "default:desert_stone",
-	--node_water_top = "",
-	--depth_water_top = ,
-	--node_water = "",
-	--node_river_water = "",
-	y_min = 5,
-	y_max = 80,
-	heat_point = 25,
-	humidity_point = 0,
-})
-
-minetest.register_biome({
-	name = "cold_desert_ocean",
-	--node_dust = "",
-	node_top = "default:sand",
-	depth_top = 1,
-	node_filler = "default:sand",
-	depth_filler = 3,
-	node_stone = "default:desert_stone",
-	--node_water_top = "",
-	--depth_water_top = ,
-	--node_water = "",
-	--node_river_water = "",
-	y_min = -112,
-	y_max = 4,
-	heat_point = 25,
-	humidity_point = 10,
-})
 
 minetest.register_biome({
 	name = "desertstone_grassland",
