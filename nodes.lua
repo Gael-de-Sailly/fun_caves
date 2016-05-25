@@ -1,4 +1,4 @@
-local light_max = 13
+local light_max = 8
 
 minetest.add_group("default:ice", {surface_cold = 3})
 
@@ -30,7 +30,7 @@ minetest.register_node("fun_caves:huge_mushroom_cap", {
 			{-0.33, -0.5, -0.33, 0.33, -0.33, -0.5}, 
 			{-0.33, -0.33, -0.33, 0.33, -0.17, 0.33}, 
 		} },
-	light_source = 11,
+	light_source = light_max,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -48,7 +48,7 @@ minetest.register_node("fun_caves:giant_mushroom_cap", {
 			{-0.4, -0.5, -0.75, 0.4, -0.25, -0.4},
 			{-0.4, -0.5, 0.4, 0.4, -0.25, 0.75},
 		} },
-	light_source = 14,
+	light_source = light_max,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
 })
 
@@ -122,7 +122,7 @@ minetest.register_node("fun_caves:glowing_fungal_stone", {
 	description = "Glowing Fungal Stone",
 	tiles = {"default_stone.png^vmg_glowing_fungal.png",},
 	is_ground_content = true,
-	light_source = 6,
+	light_source = light_max - 4,
 	groups = {cracky=3, stone=1},
 	drop = {items={ {items={"default:cobble"},}, {items={"fun_caves:glowing_fungus",},},},},
 	sounds = default.node_sound_stone_defaults(),
@@ -467,7 +467,7 @@ minetest.register_abm({
 	interval = 500 * fun_caves.time_factor,
 	chance = 30,
 	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) >= 14 then
+		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
 			minetest.set_node(pos, {name = "air"})
 			return
 		end
@@ -551,7 +551,7 @@ minetest.register_abm({
 	interval = 15 * fun_caves.time_factor,
 	chance = 10,
 	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) == 15 then
+		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
 			minetest.remove_node(pos)
 			return
 		end

@@ -7,7 +7,23 @@ local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y 
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
 
 
-local node = fun_caves.node
+local node_cache = {}
+local function get_node(name)
+	if not node_cache then
+		node_cache = {}
+	end
+
+	if not node_cache[name] then
+		node_cache[name] = minetest.get_content_id(name)
+		if name ~= "ignore" and node_cache[name] == 127 then
+			print("*** Failure to find node: "..name)
+		end
+	end
+
+	return node_cache[name]
+end
+
+local node = get_node
 local min_surface = -80
 
 local data = {}
@@ -15,80 +31,78 @@ local data = {}
 local vm, emin, emax, area, noise_area, csize, minp, maxp
 
 -- Create a table of biome ids, so I can use the biomemap.
-if not fun_caves.biome_ids then
-	fun_caves.biome_ids = {}
-	for name, desc in pairs(minetest.registered_biomes) do
-		local i = minetest.get_biome_id(desc.name)
-		fun_caves.biome_ids[i] = desc.name
-	end
+local biome_ids = {}
+for name, desc in pairs(minetest.registered_biomes) do
+	local i = minetest.get_biome_id(desc.name)
+	biome_ids[i] = desc.name
 end
 
-local function place_schematic(pos, schem, center)
-	local rot = math.random(4) - 1
-	local yslice = {}
-	if schem.yslice_prob then
-		for _, ys in pairs(schem.yslice_prob) do
-			yslice[ys.ypos] = ys.prob
-		end
-	end
+--local function place_schematic(pos, schem, center)
+--	local rot = math.random(4) - 1
+--	local yslice = {}
+--	if schem.yslice_prob then
+--		for _, ys in pairs(schem.yslice_prob) do
+--			yslice[ys.ypos] = ys.prob
+--		end
+--	end
+--
+--	if center then
+--		pos.x = pos.x - math.floor(schem.size.x / 2)
+--		pos.z = pos.z - math.floor(schem.size.z / 2)
+--	end
+--
+--	for z1 = 0, schem.size.z - 1 do
+--		for x1 = 0, schem.size.x - 1 do
+--			local x, z
+--			if rot == 0 then
+--				x, z = x1, z1
+--			elseif rot == 1 then
+--				x, z = schem.size.z - z1 - 1, x1
+--			elseif rot == 2 then
+--				x, z = schem.size.x - x1 - 1, schem.size.z - z1 - 1
+--			elseif rot == 3 then
+--				x, z = z1, schem.size.x - x1 - 1
+--			end
+--			local dz = pos.z - minp.z + z
+--			local dx = pos.x - minp.x + x
+--			if pos.x + x > minp.x and pos.x + x < maxp.x and pos.z + z > minp.z and pos.z + z < maxp.z then
+--				local ivm = area:index(pos.x + x, pos.y, pos.z + z)
+--				local isch = z1 * schem.size.y * schem.size.x + x1 + 1
+--				for y = 0, schem.size.y - 1 do
+--					local dy = pos.y - minp.y + y
+--					if math.min(dx, csize.x - dx) + math.min(dy, csize.y - dy) + math.min(dz, csize.z - dz) > bevel then
+--						if yslice[y] or 255 >= math.random(255) then
+--							local prob = schem.data[isch].prob or schem.data[isch].param1 or 255
+--							if prob >= math.random(255) and schem.data[isch].name ~= "air" then
+--								data[ivm] = node(schem.data[isch].name)
+--							end
+--							local param2 = schem.data[isch].param2 or 0
+--							p2data[ivm] = param2
+--						end
+--					end
+--
+--					ivm = ivm + area.ystride
+--					isch = isch + schem.size.x
+--				end
+--			end
+--		end
+--	end
+--end
 
-	if center then
-		pos.x = pos.x - math.floor(schem.size.x / 2)
-		pos.z = pos.z - math.floor(schem.size.z / 2)
-	end
-
-	for z1 = 0, schem.size.z - 1 do
-		for x1 = 0, schem.size.x - 1 do
-			local x, z
-			if rot == 0 then
-				x, z = x1, z1
-			elseif rot == 1 then
-				x, z = schem.size.z - z1 - 1, x1
-			elseif rot == 2 then
-				x, z = schem.size.x - x1 - 1, schem.size.z - z1 - 1
-			elseif rot == 3 then
-				x, z = z1, schem.size.x - x1 - 1
-			end
-			local dz = pos.z - minp.z + z
-			local dx = pos.x - minp.x + x
-			if pos.x + x > minp.x and pos.x + x < maxp.x and pos.z + z > minp.z and pos.z + z < maxp.z then
-				local ivm = area:index(pos.x + x, pos.y, pos.z + z)
-				local isch = z1 * schem.size.y * schem.size.x + x1 + 1
-				for y = 0, schem.size.y - 1 do
-					local dy = pos.y - minp.y + y
-					if math.min(dx, csize.x - dx) + math.min(dy, csize.y - dy) + math.min(dz, csize.z - dz) > bevel then
-						if yslice[y] or 255 >= math.random(255) then
-							local prob = schem.data[isch].prob or schem.data[isch].param1 or 255
-							if prob >= math.random(255) and schem.data[isch].name ~= "air" then
-								data[ivm] = node(schem.data[isch].name)
-							end
-							local param2 = schem.data[isch].param2 or 0
-							p2data[ivm] = param2
-						end
-					end
-
-					ivm = ivm + area.ystride
-					isch = isch + schem.size.x
-				end
-			end
-		end
-	end
-end
-
-local function get_decoration(biome)
-	for i, deco in pairs(fun_caves.decorations) do
-		if not deco.biomes or deco.biomes[biome] then
-			local range = 1000
-			if deco.deco_type == "simple" then
-				if deco.fill_ratio and math.random(range) - 1 < deco.fill_ratio * 1000 then
-					return deco.decoration
-				end
-			else
-				-- nop
-			end
-		end
-	end
-end
+--local function get_decoration(biome)
+--	for i, deco in pairs(fun_caves.decorations) do
+--		if not deco.biomes or deco.biomes[biome] then
+--			local range = 1000
+--			if deco.deco_type == "simple" then
+--				if deco.fill_ratio and math.random(range) - 1 < deco.fill_ratio * 1000 then
+--					return deco.decoration
+--				end
+--			else
+--				-- nop
+--			end
+--		end
+--	end
+--end
 
 
 local function detect_bull(heightmap, csize)
@@ -115,7 +129,7 @@ local function detect_bull(heightmap, csize)
 end
 
 
-function fun_caves.generate(p_minp, p_maxp, seed)
+local function generate(p_minp, p_maxp, seed)
 	minp, maxp = p_minp, p_maxp
 	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	vm:get_data(data)
@@ -184,21 +198,21 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 		for x = minp.x, maxp.x do
 			index = index + 1
 			local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-			local biome = fun_caves.biome_ids[biomemap[index]]
+			local biome = biome_ids[biomemap[index]]
 			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
 			local ivm = area:index(x, minp.y, z)
 			write = true
 
 			for y = minp.y, maxp.y do
 				if bullshit_heightmap or y <= heightmap[index] - 20 then
-					data[ivm] = fun_caves.decorate_cave(data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
+					data[ivm] = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
 				elseif y < heightmap[index] and not bullshit_heightmap then
 					--if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
 					if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
 						data[ivm - area.ystride] = node("dirt")
 					end
 				else
-					data[ivm] = fun_caves.decorate_water(data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
+					data[ivm] = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
 				end
 
 				ivm = ivm + area.ystride
@@ -222,3 +236,7 @@ function fun_caves.generate(p_minp, p_maxp, seed)
 
 	vm, area, noise_area = nil, nil, nil
 end
+
+
+-- Inserting helps to ensure that fun_caves operates first.
+table.insert(minetest.registered_on_generateds, 1, generate)

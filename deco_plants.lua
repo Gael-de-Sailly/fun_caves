@@ -1,5 +1,5 @@
 fun_caves.water_plants = {}
-function fun_caves.register_water_plant(desc)
+local function register_water_plant(desc)
 	fun_caves.water_plants[#fun_caves.water_plants+1] = desc
 end
 
@@ -192,8 +192,8 @@ do
 	water_plant_1_def_soil.place_on = {"group:soil"}
 	water_plant_1_def_soil.decoration = {"fun_caves:water_plant_1_water_soil",}
 
-	fun_caves.register_water_plant(water_plant_1_def_sand)
-	fun_caves.register_water_plant(water_plant_1_def_soil)
+	register_water_plant(water_plant_1_def_sand)
+	register_water_plant(water_plant_1_def_soil)
 end
 
 

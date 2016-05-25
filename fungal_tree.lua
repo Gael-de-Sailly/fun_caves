@@ -2,179 +2,19 @@
 -- Fungal Tree   --
 -------------------
 
-local light_max = 9
+local light_max = 8
 
 local colors = {}
 colors["^[colorize:#FF00FF:60"] = "dye:violet"
 colors["^[colorize:#0000FF:60"] = "dye:blue"
 colors["^[colorize:#FF4500:80"] = "dye:green"
 colors[""] = "dye:white"
-fun_caves.fungal_tree_leaves = {}
+local fungal_tree_leaves = {}
 
 local newnode = fun_caves.clone_node("farming:straw")
 newnode.description = "Dry Fiber"
 minetest.register_node("fun_caves:dry_fiber", newnode)
 
--- all leaves
-function fun_caves.make_fungal_tree(data, area, ivm, height, leaves, fruit)
-	for y = 0, height do
-		local radius = 1
-		if y > 1 and y < height - 2 then
-			radius = 2
-		end
-		for z = -radius,radius do
-			for x = -radius,radius do
-				local sr = math.random(1,100)
-				local i = ivm + z*area.zstride + y*area.ystride + x
-				if x == 0 and y == 0 and z == 0 then
-					data[i] = leaves
-				elseif sr == 1 then
-					data[i] = fruit
-				elseif sr < 50 then
-					data[i] = leaves
-				end
-			end
-		end
-	end
-end
-
--- multicolored growths
-local count = 0
-for color, dye in pairs(colors) do
-	count = count + 1
-	local name = "fun_caves:fungal_tree_leaves_"..count
-	fun_caves.fungal_tree_leaves[#fun_caves.fungal_tree_leaves+1] = name
-
-	minetest.register_node(name, {
-		description = "Fungal tree growths",
-		drawtype = "allfaces_optional",
-		waving = 1,
-		visual_scale = 1.3,
-		tiles = {"fun_caves_fungal_tree_leaves.png"..color},
-		paramtype = "light",
-		is_ground_content = false,
-		groups = {snappy=3, flammable=3, leaves=1, plant=1},
-		drop = {
-			max_items = 1,
-			items = {
-				--{items = {"fun_caves:"..tree.name.."_sapling"}, rarity = tree.drop_rarity },
-				{items = {name} }
-			}
-		},
-		sounds = default.node_sound_leaves_defaults(),
-		after_place_node = default.after_place_leaves,
-	})
-
-	minetest.register_craft({
-		type = "cooking",
-		output = "fun_caves:dry_fiber",
-		recipe = name,
-		cooktime = 2,
-	})
-
-	if dye then
-		minetest.register_craft({
-			output = dye,
-			recipe = {
-				{name}
-			}
-		})
-	end
-end
-
-minetest.register_craft({
-	output = "dye:yellow",
-	recipe = {
-		{"flowers:mushroom_brown"}
-	}
-})
-
-
-local leaves_and_air = table.copy(fun_caves.fungal_tree_leaves)
-leaves_and_air[#leaves_and_air+1] = "air"
-local good_stone = {}
-good_stone["fun_caves:stone_with_lichen"] = true
-good_stone["fun_caves:stone_with_algae"] = true
-
-local function find_ground(pos)
-	for y1 = 1, 16 do
-		local node = minetest.get_node_or_nil({x=pos.x, y=pos.y-y1, z=pos.z})
-		if node then
-			if minetest.get_item_group(node.name, "soil") ~= 0 or
-				good_stone[node.name] then
-				return y1
-			end
-		end
-	end
-
-	return 1000
-end
-
-
--- fungal spread
-minetest.register_abm({
-	nodenames = fun_caves.fungal_tree_leaves,
-	interval = 2 * fun_caves.time_factor,
-	chance = 10,
-	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) == 15 then
-			minetest.remove_node(pos)
-			return
-		end
-		if find_ground(pos) > 16 then
-			minetest.remove_node(pos)
-			return
-		end
-
-		local grow_pos = {x=pos.x, y=pos.y-1, z=pos.z}
-		local grow_node = minetest.get_node_or_nil(grow_pos)
-		if grow_node and grow_node.name == "air" then
-			minetest.set_node(grow_pos, {name = node.name})
-			return
-		end
-		if math.random(1,3) ~= 1 then
-			return
-		end
-
-		local foreign = {}
-		for _, i in pairs(fun_caves.fungal_tree_leaves) do
-			if i ~= node.name then
-				foreign[#foreign+1] = i
-			end
-		end
-		local pos1, count = minetest.find_nodes_in_area(vector.subtract(pos, 3), vector.add(pos, 3), foreign)
-		if #pos1 > 0 then
-			minetest.set_node(pos1[math.random(1,#pos1)], {name="air"})
-			return
-		end
-
-		if math.random(1,201) == 1 then
-			local new = fun_caves.fungal_tree_leaves[math.random(1,#fun_caves.fungal_tree_leaves)]
-			local pos1, count = minetest.find_nodes_in_area({x=pos.x-8, y=pos.y-16, z=pos.z-8}, {x=pos.x+8, y=pos.y+16, z=pos.z+8}, node.name)
-			for _, p in pairs(pos1) do
-				minetest.set_node(p, {name=new})
-			end
-			return
-		end
-
-		grow_pos = {x = pos.x + math.random(-1,1), y = pos.y + math.random(-1,1), z = pos.z + math.random(-1,1)}
-		grow_node = minetest.get_node_or_nil(grow_pos)
-		--if math.random(1,2) == 1 then
-			minetest.set_node(pos, {name = "air"})
-		--end
-		if not grow_node or not table.contains(leaves_and_air, grow_node.name) or find_ground(grow_pos) > 16 then
-			return
-		end
-		if minetest.get_node_light(grow_pos, nil) <= light_max then
-			minetest.set_node(pos, {name = "air"})
-			if math.random(1,27) == 1 then
-				minetest.set_node(grow_pos, {name = "fun_caves:fungal_tree_fruit"})
-			else
-				minetest.set_node(grow_pos, {name = node.name})
-			end
-		end
-	end
-})
 
 -- Fill a list with data for content IDs, after all nodes are registered
 local cid_data = {}
@@ -302,7 +142,6 @@ local function entity_physics(pos, radius)
 	end
 end
 
-
 local function boom(pos)
 	if not pos then
 		return
@@ -324,6 +163,23 @@ local function burn(pos)
 	minetest.get_node_timer(pos):start(1)
 end
 
+local good_stone = {}
+good_stone["fun_caves:stone_with_lichen"] = true
+good_stone["fun_caves:stone_with_algae"] = true
+local function find_ground(pos)
+	for y1 = 1, 16 do
+		local node = minetest.get_node_or_nil({x=pos.x, y=pos.y-y1, z=pos.z})
+		if node then
+			if minetest.get_item_group(node.name, "soil") ~= 0 or
+				good_stone[node.name] then
+				return y1
+			end
+		end
+	end
+
+	return 1000
+end
+
 
 -- Exploding fruit
 minetest.register_abm({
@@ -337,7 +193,7 @@ minetest.register_abm({
 			return
 		end
 
-		local pos1, count = minetest.find_nodes_in_area(vector.subtract(pos, 1), vector.add(pos, 1), fun_caves.fungal_tree_leaves)
+		local pos1, count = minetest.find_nodes_in_area(vector.subtract(pos, 1), vector.add(pos, 1), fungal_tree_leaves)
 		if #pos1 < 3 then
 			minetest.set_node(pos, {name="air"})
 			return
@@ -377,4 +233,148 @@ minetest.register_node("fun_caves:fungal_tree_fruit", {
 	on_punch = boom,
 })
 
+local fruit = minetest.get_content_id("fun_caves:fungal_tree_fruit")
 
+function fun_caves.make_fungal_tree(data, area, ivm, height)
+	local leaf = minetest.get_content_id(fungal_tree_leaves[math.random(#fungal_tree_leaves)])
+	for y = 0, height do
+		local radius = 1
+		if y > 1 and y < height - 2 then
+			radius = 2
+		end
+		for z = -radius,radius do
+			for x = -radius,radius do
+				local sr = math.random(1,100)
+				local i = ivm + z*area.zstride + y*area.ystride + x
+				if x == 0 and y == 0 and z == 0 then
+					data[i] = leaf
+				elseif sr == 1 then
+					data[i] = fruit
+				elseif sr < 50 then
+					data[i] = leaf
+				end
+			end
+		end
+	end
+end
+
+-- multicolored growths
+local count = 0
+for color, dye in pairs(colors) do
+	count = count + 1
+	local name = "fun_caves:fungal_tree_leaves_"..count
+	fungal_tree_leaves[#fungal_tree_leaves+1] = name
+
+	minetest.register_node(name, {
+		description = "Fungal tree growths",
+		drawtype = "allfaces_optional",
+		waving = 1,
+		visual_scale = 1.3,
+		tiles = {"fun_caves_fungal_tree_leaves.png"..color},
+		paramtype = "light",
+		is_ground_content = false,
+		groups = {snappy=3, flammable=3, leaves=1, plant=1},
+		drop = {
+			max_items = 1,
+			items = {
+				--{items = {"fun_caves:"..tree.name.."_sapling"}, rarity = tree.drop_rarity },
+				{items = {name} }
+			}
+		},
+		sounds = default.node_sound_leaves_defaults(),
+		after_place_node = default.after_place_leaves,
+	})
+
+	minetest.register_craft({
+		type = "cooking",
+		output = "fun_caves:dry_fiber",
+		recipe = name,
+		cooktime = 2,
+	})
+
+	if dye then
+		minetest.register_craft({
+			output = dye,
+			recipe = {
+				{name}
+			}
+		})
+	end
+end
+
+minetest.register_craft({
+	output = "dye:yellow",
+	recipe = {
+		{"flowers:mushroom_brown"}
+	}
+})
+
+
+local leaves_and_air = table.copy(fungal_tree_leaves)
+leaves_and_air[#leaves_and_air+1] = "air"
+
+
+-- fungal spread
+minetest.register_abm({
+	nodenames = fungal_tree_leaves,
+	interval = 2 * fun_caves.time_factor,
+	chance = 10,
+	action = function(pos, node)
+		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
+			minetest.remove_node(pos)
+			return
+		end
+		if find_ground(pos) > 16 then
+			minetest.remove_node(pos)
+			return
+		end
+
+		local grow_pos = {x=pos.x, y=pos.y-1, z=pos.z}
+		local grow_node = minetest.get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" then
+			minetest.set_node(grow_pos, {name = node.name})
+			return
+		end
+		if math.random(1,3) ~= 1 then
+			return
+		end
+
+		local foreign = {}
+		for _, i in pairs(fungal_tree_leaves) do
+			if i ~= node.name then
+				foreign[#foreign+1] = i
+			end
+		end
+		local pos1, count = minetest.find_nodes_in_area(vector.subtract(pos, 3), vector.add(pos, 3), foreign)
+		if #pos1 > 0 then
+			minetest.set_node(pos1[math.random(1,#pos1)], {name="air"})
+			return
+		end
+
+		if math.random(1,201) == 1 then
+			local new = fungal_tree_leaves[math.random(1,#fungal_tree_leaves)]
+			local pos1, count = minetest.find_nodes_in_area({x=pos.x-8, y=pos.y-16, z=pos.z-8}, {x=pos.x+8, y=pos.y+16, z=pos.z+8}, node.name)
+			for _, p in pairs(pos1) do
+				minetest.set_node(p, {name=new})
+			end
+			return
+		end
+
+		grow_pos = {x = pos.x + math.random(-1,1), y = pos.y + math.random(-1,1), z = pos.z + math.random(-1,1)}
+		grow_node = minetest.get_node_or_nil(grow_pos)
+		--if math.random(1,2) == 1 then
+			minetest.set_node(pos, {name = "air"})
+		--end
+		if not grow_node or not table.contains(leaves_and_air, grow_node.name) or find_ground(grow_pos) > 16 then
+			return
+		end
+		if minetest.get_node_light(grow_pos, nil) <= light_max then
+			minetest.set_node(pos, {name = "air"})
+			if math.random(1,27) == 1 then
+				minetest.set_node(grow_pos, {name = "fun_caves:fungal_tree_fruit"})
+			else
+				minetest.set_node(grow_pos, {name = node.name})
+			end
+		end
+	end
+})

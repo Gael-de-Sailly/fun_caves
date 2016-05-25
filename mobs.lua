@@ -48,12 +48,13 @@ fun_caves.surface_damage = function(self, cold_natured)
 end
 
 
-dofile(fun_caves.path .. "/danglers.lua")
-dofile(fun_caves.path .. "/spider.lua")
-dofile(fun_caves.path .. "/tarantula.lua")
-dofile(fun_caves.path .. "/spider_ice.lua")
---dofile(fun_caves.path .. "/dirt_monster.lua")
-dofile(fun_caves.path .. "/sand_monster.lua")
+local path = minetest.get_modpath(minetest.get_current_modname())
+dofile(path .. "/danglers.lua")
+dofile(path .. "/spider.lua")
+dofile(path .. "/tarantula.lua")
+dofile(path .. "/spider_ice.lua")
+--dofile(path .. "/dirt_monster.lua")
+dofile(path .. "/sand_monster.lua")
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
@@ -90,12 +91,12 @@ fun_caves.goblin_spawn_frequency = 150
 fun_caves.goblin_drops = { "default:pick_steel",  "default:sword_steel", "default:shovel_steel", "farming:bread", "bucket:bucket_water", "default:pick_stone", "default:sword_stone" }
 --{"group:stone"} = { "default:stone", "default:mossycobble", "default:sandstone", "default:desert_stone", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_diamond" }
 
-dofile(fun_caves.path.."/goblin_cobbler.lua")
-dofile(fun_caves.path.."/goblin_digger.lua")
-dofile(fun_caves.path.."/goblin_coal.lua")
-dofile(fun_caves.path.."/goblin_ice.lua")
-dofile(fun_caves.path.."/goblin_copper.lua")
-dofile(fun_caves.path.."/goblin_iron.lua")
-dofile(fun_caves.path.."/goblin_gold.lua")
-dofile(fun_caves.path.."/goblin_diamond.lua")
-dofile(fun_caves.path.."/goblin_king.lua")
+dofile(path.."/goblin_cobbler.lua")
+dofile(path.."/goblin_digger.lua")
+dofile(path.."/goblin_coal.lua")
+dofile(path.."/goblin_ice.lua")
+dofile(path.."/goblin_copper.lua")
+dofile(path.."/goblin_iron.lua")
+dofile(path.."/goblin_gold.lua")
+dofile(path.."/goblin_diamond.lua")
+dofile(path.."/goblin_king.lua")

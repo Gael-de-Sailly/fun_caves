@@ -1,7 +1,6 @@
-local node = fun_caves.node
 local min_surface = -80
 
-function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
+function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 	if not (data[ivm] == node("air") or data[ivm] == node("default:stone")) then
 		return
 	end
@@ -113,9 +112,9 @@ function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
 		end
 
 		-- fluids
-		if y > minp.y and (node_below == node("default:stone") or node_below == node("fun_caves:hot_cobble")) and sr < 3 then
+		if y > minp.y and y < -100 and (node_below == node("default:stone") or node_below == node("fun_caves:hot_cobble")) and sr < 3 then
 			return node("default:lava_source")
-		elseif node_below == node("fun_caves:stone_with_moss") and sr < 3 then
+		elseif y < -100 and node_below == node("fun_caves:stone_with_moss") and sr < 3 then
 			return node("default:water_source")
 
 		-- standing up
@@ -130,7 +129,7 @@ function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
 		elseif node_below == node("default:stone") and sr < 80 then
 			return node("fun_caves:stalagmite")
 		elseif node_below == node("fun_caves:hot_cobble") and sr < 80 then
-			if sr < 20 then
+			if sr <= 20 then
 				return node("fun_caves:hot_spike")
 			else
 				return node("fun_caves:hot_spike_"..math.ceil(sr / 20))
@@ -155,7 +154,7 @@ function fun_caves.decorate_cave(data, area, minp, y, ivm, biome_val_in)
 					end
 				end
 				if air_count > 5 then
-					fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)), node(fun_caves.fungal_tree_leaves[math.random(1,#fun_caves.fungal_tree_leaves)]), node("fun_caves:fungal_tree_fruit"))
+					fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)))
 				end
 			end
 		elseif node_below == node("fun_caves:giant_mushroom_stem") and data[ivm - area.ystride * 2] == node("fun_caves:giant_mushroom_stem") then

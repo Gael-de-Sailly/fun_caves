@@ -1,4 +1,3 @@
-local node = fun_caves.node
 local light_depth = -13
 local water_level = 1
 
@@ -13,7 +12,7 @@ end
 
 plant_noise = {offset = 0.0, scale = 1.0, spread = {x = 200, y = 200, z = 200}, seed = 33, octaves = 3, persist = 0.7, lacunarity = 2.0}
 
-local function surround(data, area, ivm)
+local function surround(node, data, area, ivm)
 	local n
 
 	-- Check to make sure that a plant root is fully surrounded.
@@ -35,7 +34,9 @@ local function surround(data, area, ivm)
 	return true
 end
 
-function fun_caves.decorate_water(data, area, minp, maxp, pos, ivm, biome_in, pn)
+local node_match_cache = {}
+
+function fun_caves.decorate_water(node, data, area, minp, maxp, pos, ivm, biome_in, pn)
 	if pos.y < light_depth then
 		return
 	end
@@ -50,7 +51,7 @@ function fun_caves.decorate_water(data, area, minp, maxp, pos, ivm, biome_in, pn
 		inside = true
 	end
 
-	if pos.y < water_level and data[ivm] == node("default:sand") and node_above == node("default:water_source") and data[ivm + area.ystride * 2] == node("default:water_source") and coral_biomes[biome] and pn < -0.1 and math.random(5) == 1 and surround(data, area, ivm) then
+	if pos.y < water_level and data[ivm] == node("default:sand") and node_above == node("default:water_source") and data[ivm + area.ystride * 2] == node("default:water_source") and coral_biomes[biome] and pn < -0.1 and math.random(5) == 1 and surround(node, data, area, ivm) then
 		return node("fun_caves:staghorn_coral_water_sand")
 	elseif pos.y < water_level and node_below == node("default:sand") and node_above == node("default:water_source") and data[ivm] == node("default:water_source") and coral_biomes[biome] and pn < -0.1 and math.random(5) < 3 then
 		local sr = math.random(65)
@@ -63,30 +64,30 @@ function fun_caves.decorate_water(data, area, minp, maxp, pos, ivm, biome_in, pn
 		end
 	elseif inside and (node_above == node("default:water_source") or node_above == node("default:river_water_source")) and (data[ivm] == node("default:sand") or data[ivm] == node("default:dirt")) then
 		-- Check the biomes and plant water plants, if called for.
-		if not surround(data, area, ivm) then
+		if not surround(node, data, area, ivm) then
 			return
 		end
 
 		for _, desc in pairs(fun_caves.water_plants) do
 			if desc.content_id then
-				if not fun_caves.node_match_cache[desc.content_id] then
-					fun_caves.node_match_cache[desc.content_id] = {}
+				if not node_match_cache[desc.content_id] then
+					node_match_cache[desc.content_id] = {}
 				end
 
-				if not fun_caves.node_match_cache[desc.content_id][data[ivm]] then
+				if not node_match_cache[desc.content_id][data[ivm]] then
 					-- This is a great way to match all node type strings
 					-- against a given node (or nodes). However, it's slow.
 					-- To speed it up, we cache the results for each plant
 					-- on each node, and avoid calling find_nodes every time.
 					local posm, count = minetest.find_nodes_in_area(pos, pos, desc.place_on)
 					if #posm > 0 then
-						fun_caves.node_match_cache[desc.content_id][data[ivm]] = "good" 
+						node_match_cache[desc.content_id][data[ivm]] = "good" 
 					else
-						fun_caves.node_match_cache[desc.content_id][data[ivm]] = "bad" 
+						node_match_cache[desc.content_id][data[ivm]] = "bad" 
 					end
 				end
 
-				if fun_caves.node_match_cache[desc.content_id][data[ivm]] == "good" and desc.fill_ratio and (not desc.biomes or (biome and desc.biomes and table.contains(desc.biomes, biome))) and math.random() <= desc.fill_ratio then
+				if node_match_cache[desc.content_id][data[ivm]] == "good" and desc.fill_ratio and (not desc.biomes or (biome and desc.biomes and table.contains(desc.biomes, biome))) and math.random() <= desc.fill_ratio then
 					return desc.content_id
 				end
 			end

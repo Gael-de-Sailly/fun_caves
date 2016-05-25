@@ -9,7 +9,7 @@ local diggable_nodes = {"group:stone", "group:sand", "group:soil", "group:plant"
 -- This translates yaw into vectors.
 local cardinals = {{x=0,y=0,z=0.75}, {x=-0.75,y=0,z=0}, {x=0,y=0,z=-0.75}, {x=0.75,y=0,z=0}}
 
-fun_caves.goblin_tunneling = function(self, type)
+local goblin_tunneling = function(self, type)
 	-- Types are available for fine-tuning.
 	if type == nil then
 		type = "digger"
@@ -203,7 +203,7 @@ mobs:register_mob("fun_caves:goblin_digger", {
 	end,
 
 	do_custom = function(self)
-		fun_caves.goblin_tunneling(self, "digger")
+		goblin_tunneling(self, "digger")
 
 		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
 		fun_caves.search_replace(self.object:getpos(), 10, {"default:stone", "default:desert_stone", "default:sandstone"}, "default:mossycobble")

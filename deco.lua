@@ -113,10 +113,11 @@ minetest.register_decoration({
 })
 
 
-dofile(fun_caves.path.."/deco_caves.lua")
---dofile(fun_caves.path.."/deco_dirt.lua")
-dofile(fun_caves.path.."/deco_plants.lua")
-dofile(fun_caves.path.."/deco_rocks.lua")
---dofile(fun_caves.path.."/deco_ferns.lua")
---dofile(fun_caves.path.."/deco_ferns_tree.lua")
-dofile(fun_caves.path.."/deco_water.lua")
+local path = minetest.get_modpath(minetest.get_current_modname())
+dofile(path.."/deco_caves.lua")
+--dofile(path.."/deco_dirt.lua")
+dofile(path.."/deco_plants.lua")
+dofile(path.."/deco_rocks.lua")
+--dofile(path.."/deco_ferns.lua")
+--dofile(path.."/deco_ferns_tree.lua")
+dofile(path.."/deco_water.lua")

@@ -1,9 +1,8 @@
 fun_caves = {}
 fun_caves.version = "1.0"
-fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
-fun_caves.world = false
 fun_caves.time_factor = 10
-fun_caves.node_match_cache = {}
+
+local path = minetest.get_modpath(minetest.get_current_modname())
 
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -49,28 +48,9 @@ function fun_caves.clone_node(name)
 	return node2
 end
 
-function fun_caves.node(name)
-	if not fun_caves.node_cache then
-		fun_caves.node_cache = {}
-	end
 
-	if not fun_caves.node_cache[name] then
-		fun_caves.node_cache[name] = minetest.get_content_id(name)
-		if name ~= "ignore" and fun_caves.node_cache[name] == 127 then
-			print("*** Failure to find node: "..name)
-		end
-	end
-
-	return fun_caves.node_cache[name]
-end
-
-
-dofile(fun_caves.path .. "/nodes.lua")
-dofile(fun_caves.path .. "/deco.lua")
-dofile(fun_caves.path .. "/fungal_tree.lua")
-dofile(fun_caves.path .. "/mapgen.lua")
-dofile(fun_caves.path .. "/mobs.lua")
-
-
--- Inserting helps to ensure that fun_caves operates first.
-table.insert(minetest.registered_on_generateds, 1, fun_caves.generate)
+dofile(path .. "/nodes.lua")
+dofile(path .. "/deco.lua")
+dofile(path .. "/fungal_tree.lua")
+dofile(path .. "/mapgen.lua")
+dofile(path .. "/mobs.lua")
