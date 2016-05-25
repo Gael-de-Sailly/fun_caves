@@ -170,7 +170,7 @@ local function generate(p_minp, p_maxp, seed)
 			local ivm = area:index(x, minp.y, z)
 
 			for y = minp.y, maxp.y do
-				if (bullshit_heightmap or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+				if ((bullshit_heightmap and cave_3[index] < 1) or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
 					data[ivm] = node("air")
 
 					if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
@@ -204,10 +204,9 @@ local function generate(p_minp, p_maxp, seed)
 			write = true
 
 			for y = minp.y, maxp.y do
-				if bullshit_heightmap or y <= heightmap[index] - 20 then
+				if y < 0 and (bullshit_heightmap or y <= heightmap[index] - 20) then
 					data[ivm] = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
 				elseif y < heightmap[index] and not bullshit_heightmap then
-					--if data[ivm] == node("air") and data[ivm - area.ystride] ~= node('air') then
 					if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
 						data[ivm - area.ystride] = node("dirt")
 					end
