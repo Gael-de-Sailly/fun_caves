@@ -668,3 +668,9 @@ minetest.register_abm({
 	end
 })
 
+local newnode = fun_caves.clone_node("default:sand")
+newnode.description = "Black Sand"
+newnode.tiles = {"fun_caves_black_sand.png"}
+newnode.groups['falling_node'] = 0
+minetest.register_node("fun_caves:black_sand", newnode)
+

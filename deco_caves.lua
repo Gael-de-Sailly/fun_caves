@@ -13,11 +13,11 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 	local stone_type = node("default:stone")
 	local stone_depth = 1
 
-	--if y > -500 then
-	--	biome_val = biome_val / math.max(1, math.log(500 + y))
-	--end
+	if y > -200 then
+		biome_val = biome_val / math.max(1, math.log(200 + y))
+	end
 	-------------------
-	--biome_val = 0.7
+	--biome_val = 0.55
 	-------------------
 	if biome_val < -0.65 then
 		stone_type = node("default:ice")
@@ -40,7 +40,7 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 		stone_type = node("default:sand")
 		stone_depth = 2
 	elseif biome_val < 0.6 then
-		stone_type = node("default:coalblock")
+		stone_type = node("fun_caves:black_sand")
 		stone_depth = 2
 	else
 		stone_type = node("fun_caves:hot_cobble")
@@ -68,6 +68,8 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 		if air_above then
 			if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
 				return node("fun_caves:radioactive_ore")
+			elseif stone_type == node("fun_caves:black_sand") and math.random(100) == 1 then
+				return node("default:coalblock")
 			elseif node_above == node("air") and stone_type == node("fun_caves:stone_with_moss") and math.random(50) == 1 then
 				return node("fun_caves:glowing_fungal_stone")
 			else
@@ -85,6 +87,8 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 		if data[ivm] == node("default:stone") and air_below then
 			if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
 				return node("fun_caves:radioactive_ore")
+			elseif stone_type == node("fun_caves:black_sand") and math.random(100) == 1 then
+				return node("default:coalblock")
 			elseif node_below == node("air") and (stone_type == node("fun_caves:stone_with_lichen") or stone_type == node("fun_caves:stone_with_moss")) and math.random(50) == 1 then
 				return node("fun_caves:glowing_fungal_stone")
 			else
@@ -112,9 +116,9 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 		end
 
 		-- fluids
-		if y > minp.y and y < -100 and (node_below == node("default:stone") or node_below == node("fun_caves:hot_cobble")) and sr < 3 then
+		if y > minp.y and (node_below == node("default:stone") or node_below == node("fun_caves:hot_cobble")) and sr < 3 then
 			return node("default:lava_source")
-		elseif y < -100 and node_below == node("fun_caves:stone_with_moss") and sr < 3 then
+		elseif node_below == node("fun_caves:stone_with_moss") and sr < 3 then
 			return node("default:water_source")
 
 		-- standing up
@@ -134,7 +138,7 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 			else
 				return node("fun_caves:hot_spike_"..math.ceil(sr / 20))
 			end
-		elseif node_below == node("default:coalblock") and sr < 20 then
+		elseif node_below == node("fun_caves:black_sand") and sr < 20 then
 			return node("fun_caves:constant_flame")
 
 		-- vegetation

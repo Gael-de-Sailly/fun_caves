@@ -55,6 +55,7 @@ dofile(path .. "/tarantula.lua")
 dofile(path .. "/spider_ice.lua")
 --dofile(path .. "/dirt_monster.lua")
 dofile(path .. "/sand_monster.lua")
+dofile(path .. "/tar_monster.lua")
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
