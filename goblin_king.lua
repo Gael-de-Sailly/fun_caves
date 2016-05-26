@@ -109,10 +109,7 @@ mobs:register_mob("fun_caves:goblin_king", {
 	end,
 
 	do_custom = function(self)
-		if not self.custom_time or self.custom_time % fun_caves.custom_delay == 0 then
-			self.custom_time = fun_caves.custom_delay - 1
-		else
-			self.custom_time = self.custom_time - 1
+		if not fun_caves.custom_ready(self) then
 			return
 		end
 

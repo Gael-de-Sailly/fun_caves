@@ -48,6 +48,10 @@ mobs:register_mob("fun_caves:spider", {
 		punch_end = 90,
 	},
 	do_custom = function(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
 		fun_caves.surface_damage(self)
 	end,
 })

@@ -48,7 +48,16 @@ fun_caves.surface_damage = function(self, cold_natured)
 end
 
 
-fun_caves.custom_delay = 50
+local custom_delay = 1000000
+fun_caves.custom_ready = function(self)
+	local time = minetest.get_us_time()
+	if not self.custom_time or time - self.custom_time > custom_delay then
+		self.custom_time = time
+		return true
+	else
+		return false
+	end
+end
 
 local path = minetest.get_modpath(minetest.get_current_modname())
 dofile(path .. "/danglers.lua")
