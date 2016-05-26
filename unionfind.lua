@@ -1,9 +1,12 @@
+-- All arrays are zero-based.
+
+
 function table.shuffle(self)
 	local j
 	local t = self
 
-	for i = #t, 2, -1 do
-		j = math.random(i)
+	for i = #t, 1, -1 do
+		j = math.random(0, i)
 		t[i], t[j] = t[j], t[i]
 	end
 end
@@ -12,9 +15,9 @@ end
 function unionfind(max)
 	local u = { _parent = {}, _rank = {} }
 
-	for i = 1, max do
+	for i = 0, max-1 do
 		u._parent[i] = i
-		u._rank[i] = 1
+		u._rank[i] = 0
 	end
 
 	u.find = function(self, i)
@@ -27,6 +30,8 @@ function unionfind(max)
 	end
 
 	u.union = function(self, i, j)
+		i = i or 0
+		j = j or 0
 		local root1 = self:find(i)
 		local root2 = self:find(j)
 
@@ -46,3 +51,18 @@ function unionfind(max)
 
 	return u
 end
+
+--local u = unionfind(5)
+--print(dump(u))
+--u:union(1,2)
+--print(dump(u))
+--u:union(1,2)
+--print(dump(u))
+--u:union(3,4)
+--print(dump(u))
+--u:union(1,0)
+--print(dump(u))
+--u:union(1,3)
+--print(dump(u))
+--u:union(4)
+--print(dump(u))
