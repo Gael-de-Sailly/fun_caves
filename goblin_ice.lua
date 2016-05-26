@@ -107,6 +107,13 @@ mobs:register_mob("fun_caves:goblin_ice", {
 	end,
 
 	do_custom = function(self)
+		if not self.custom_time or self.custom_time % fun_caves.custom_delay == 0 then
+			self.custom_time = fun_caves.custom_delay - 1
+		else
+			self.custom_time = self.custom_time - 1
+			return
+		end
+
 		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_torch_freq, {"default:torch"}, "air")
 		--fun_caves.search_replace(self.object:getpos(), 20, {"default:stone"}, "default:mossycobble")
 		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_trap_freq, {"default:ice"}, "fun_caves:ice_trap")

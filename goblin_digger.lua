@@ -87,7 +87,7 @@ local goblin_tunneling = function(self, type)
 		end
 	end
 
-	if self.state == "stand" and math.random() < 0.05 then
+	if self.state == "stand" and math.random() < 0.5 then
 		self.state = "tunnel"
 	elseif self.state == "tunnel" and math.random() < 0.05 then
 		self.state = "room"
@@ -204,6 +204,13 @@ mobs:register_mob("fun_caves:goblin_digger", {
 	end,
 
 	do_custom = function(self)
+		if not self.custom_time or self.custom_time % fun_caves.custom_delay == 0 then
+			self.custom_time = fun_caves.custom_delay - 1
+		else
+			self.custom_time = self.custom_time - 1
+			return
+		end
+
 		goblin_tunneling(self, "digger")
 
 		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_torch_freq, {"default:torch"}, "air")

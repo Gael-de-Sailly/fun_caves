@@ -17,13 +17,13 @@ fun_caves.search_replace = function(pos, search_rate, replace_what, replace_with
 end
 
 fun_caves.surface_damage = function(self, cold_natured)
-	if not self.fun_caves_damage_timer then
-		self.fun_caves_damage_timer = 0
-	end
+	--if not self.fun_caves_damage_timer then
+	--	self.fun_caves_damage_timer = 0
+	--end
 
-	self.fun_caves_damage_timer = self.fun_caves_damage_timer + 1
-	if self.fun_caves_damage_timer > 30 then
-		self.fun_caves_damage_timer = 0
+	--self.fun_caves_damage_timer = self.fun_caves_damage_timer + 1
+	--if self.fun_caves_damage_timer > 30 then
+	--	self.fun_caves_damage_timer = 0
 		local pos = self.object:getpos()
 		local minp = vector.subtract(pos, 1.5)
 		local maxp = vector.add(pos, 1.5)
@@ -44,9 +44,11 @@ fun_caves.surface_damage = function(self, cold_natured)
 		end
 
 		check_for_death(self)
-	end
+	--end
 end
 
+
+fun_caves.custom_delay = 50
 
 local path = minetest.get_modpath(minetest.get_current_modname())
 dofile(path .. "/danglers.lua")
@@ -88,8 +90,8 @@ end
 
 
 fun_caves.goblin_spawn_frequency = 150
-fun_caves.goblin_trap_freq = 500
-fun_caves.goblin_torch_freq = 10
+fun_caves.goblin_trap_freq = 25
+fun_caves.goblin_torch_freq = 2
 
 fun_caves.goblin_drops = { "default:pick_steel",  "default:sword_steel", "default:shovel_steel", "farming:bread", "bucket:bucket_water", "default:pick_stone", "default:sword_stone" }
 --{"group:stone"} = { "default:stone", "default:mossycobble", "default:sandstone", "default:desert_stone", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_diamond" }
