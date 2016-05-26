@@ -120,89 +120,95 @@ local function generate(p_minp, p_maxp, seed)
 	-- use the same seed (based on perlin noise).
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
-	local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
-	local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
-	local cave_3 = minetest.get_perlin_map(cave_noise_3, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
-	local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
+	local fortress = maxp.y / 3100
+	if maxp.y < -250 and (DEBUG or math.random(200) == 1) then
+		fun_caves.fortress(node, data, area, minp, maxp, math.ceil(maxp.y / 3100))
+		write = true
+	else
+		local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
+		local cave_2 = minetest.get_perlin_map(cave_noise_2, csize):get3dMap_flat(minp)
+		local cave_3 = minetest.get_perlin_map(cave_noise_3, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
+		local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
 
-	local ivm, ivm2, height, new_node
+		local ivm, ivm2, height, new_node
 
-	local index = 0
-	local index3d = 0
-	for z = minp.z, maxp.z do
-		for x = minp.x, maxp.x do
-			index = index + 1
-			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-			ivm = area:index(x, minp.y, z)
+		local index = 0
+		local index3d = 0
+		for z = minp.z, maxp.z do
+			for x = minp.x, maxp.x do
+				index = index + 1
+				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+				ivm = area:index(x, minp.y, z)
 
-			height = heightmap[index]
-			if height >= maxp.y - 1 and data[area:index(x, maxp.y, z)] ~= node('air') then
-				height = 31000
-				heightmap[index] = height
-			elseif height <= minp.y then
-				height = -31000
-				heightmap[index] = height
-			end
+				height = heightmap[index]
+				if height >= maxp.y - 1 and data[area:index(x, maxp.y, z)] ~= node('air') then
+					height = 31000
+					heightmap[index] = height
+				elseif height <= minp.y then
+					height = -31000
+					heightmap[index] = height
+				end
 
-			for y = minp.y, maxp.y do
-				if data[ivm] ~= node('air') and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > 0.05 then
-					data[ivm] = node("air")
-					write = true
+				for y = minp.y, maxp.y do
+					if data[ivm] ~= node('air') and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > 0.05 then
+						data[ivm] = node("air")
+						write = true
 
-					if y > 0 and cave_3[index] < 1 and y == height then
-						-- Clear the air above a cave mouth.
-						ivm2 = ivm
-						for y2 = y + 1, maxp.y + 8 do
-							ivm2 = ivm2 + area.ystride
-							if data[ivm2] ~= node("default:water_source") then
-								data[ivm2] = node("air")
+						if y > 0 and cave_3[index] < 1 and y == height then
+							-- Clear the air above a cave mouth.
+							ivm2 = ivm
+							for y2 = y + 1, maxp.y + 8 do
+								ivm2 = ivm2 + area.ystride
+								if data[ivm2] ~= node("default:water_source") then
+									data[ivm2] = node("air")
+								end
 							end
 						end
 					end
-				end
 
-				ivm = ivm + area.ystride
-				index3d = index3d + csize.x
+					ivm = ivm + area.ystride
+					index3d = index3d + csize.x
+				end
 			end
 		end
-	end
 
-	-- Air needs to be placed prior to decorations.
-	local index = 0
-	local index3d = 0
-	local pn, biome
-	for z = minp.z, maxp.z do
-		for x = minp.x, maxp.x do
-			index = index + 1
-			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-			ivm = area:index(x, minp.y, z)
+		-- Air needs to be placed prior to decorations.
+		local index = 0
+		local index3d = 0
+		local pn, biome
+		for z = minp.z, maxp.z do
+			for x = minp.x, maxp.x do
+				index = index + 1
+				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
+				ivm = area:index(x, minp.y, z)
 
-			height = heightmap[index]
+				height = heightmap[index]
 
-			for y = minp.y, maxp.y do
-				if y <= height - deco_depth and (height < 31000 or y < 0) then
-					new_node = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d])
-					if new_node then
-						data[ivm] = new_node
-						write = true
+				for y = minp.y, maxp.y do
+					if y <= height - deco_depth and (height < 31000 or y < 0) then
+						new_node = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d])
+						if new_node then
+							data[ivm] = new_node
+							write = true
+						end
+					elseif y < height then
+						if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
+							data[ivm - area.ystride] = node("dirt")
+							write = true
+						end
+					else
+						pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+						biome = biome_ids[biomemap[index]]
+						new_node = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
+						if new_node then
+							data[ivm] = new_node
+							write = true
+						end
 					end
-				elseif y < height then
-					if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
-						data[ivm - area.ystride] = node("dirt")
-						write = true
-					end
-				else
-					pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-					biome = biome_ids[biomemap[index]]
-					new_node = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
-					if new_node then
-						data[ivm] = new_node
-						write = true
-					end
+
+					ivm = ivm + area.ystride
+					index3d = index3d + csize.x
 				end
-
-				ivm = ivm + area.ystride
-				index3d = index3d + csize.x
 			end
 		end
 	end
