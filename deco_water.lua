@@ -68,6 +68,7 @@ function fun_caves.decorate_water(node, data, area, minp, maxp, pos, ivm, biome_
 			return
 		end
 
+		local posm, count
 		for _, desc in pairs(fun_caves.water_plants) do
 			if desc.content_id then
 				if not node_match_cache[desc.content_id] then
@@ -79,7 +80,7 @@ function fun_caves.decorate_water(node, data, area, minp, maxp, pos, ivm, biome_
 					-- against a given node (or nodes). However, it's slow.
 					-- To speed it up, we cache the results for each plant
 					-- on each node, and avoid calling find_nodes every time.
-					local posm, count = minetest.find_nodes_in_area(pos, pos, desc.place_on)
+					posm, count = minetest.find_nodes_in_area(pos, pos, desc.place_on)
 					if #posm > 0 then
 						node_match_cache[desc.content_id][data[ivm]] = "good" 
 					else

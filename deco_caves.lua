@@ -151,8 +151,9 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 				return node("fun_caves:giant_mushroom_stem")
 			elseif sr < 360 then
 				local air_count = 0
+				local j
 				for i = 1, 12 do
-					local j = ivm + area.ystride * i
+					j = ivm + area.ystride * i
 					if j <= #data and data[j] == node("air") then
 						air_count = air_count + 1
 					end

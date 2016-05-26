@@ -1,4 +1,4 @@
-local DEBUG = false
+local DEBUG = true
 
 local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 10, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
@@ -24,17 +24,16 @@ local function get_node(name)
 end
 
 local node = get_node
-local min_surface = -80
+local deco_depth = 30
 
 local data = {}
 --local p2data = {}  -- vm rotation data buffer
-local vm, emin, emax, area, noise_area, csize, minp, maxp
+local vm, emin, emax, area, noise_area, csize, minp, maxp, heightmap, biomemap
 
 -- Create a table of biome ids, so I can use the biomemap.
 local biome_ids = {}
 for name, desc in pairs(minetest.registered_biomes) do
-	local i = minetest.get_biome_id(desc.name)
-	biome_ids[i] = desc.name
+	biome_ids[minetest.get_biome_id(desc.name)] = desc.name
 end
 
 --local function place_schematic(pos, schem, center)
@@ -105,51 +104,18 @@ end
 --end
 
 
-local function detect_bull(heightmap, csize)
-	local probably = false
-
-	local j = -31000
-	local k = 0
-	local cutoff = (csize.x * csize.z) * 0.1
-	for i = 1, #heightmap do
-		if j == heightmap[i] then
-			k = k + 1
-			if k > cutoff then
-				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", heightmap stuck at: "..heightmap[i])
-				return true
-			elseif i > 2 * cutoff then
-				--print("maxp.y: "..maxp.y..", minp.y: "..minp.y..", guessing good heightmap")
-				return false
-			end
-		else
-			k = 0
-		end
-		j = heightmap[i]
-	end
-end
-
-
 local function generate(p_minp, p_maxp, seed)
 	minp, maxp = p_minp, p_maxp
 	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	vm:get_data(data)
 	--p2data = vm:get_param2_data()
-	local heightmap = minetest.get_mapgen_object("heightmap")
-	local biomemap = minetest.get_mapgen_object("biomemap")
+	heightmap = minetest.get_mapgen_object("heightmap")
+	biomemap = minetest.get_mapgen_object("biomemap")
 	area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
 	csize = vector.add(vector.subtract(maxp, minp), 1)
 	noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
 
-	-- There's a bug in the heightmap from valleys_c. Check for it.
-	local bullshit_heightmap = detect_bull(heightmap, csize)
 	local write = false
-
-	-- Deal with memory issues. This, of course, is supposed to be automatic.
-	local mem = math.floor(collectgarbage("count")/1024)
-	if mem > 200 then
-		print("Fun Caves: Manually collecting garbage...")
-		collectgarbage("collect")
-	end
 
 	-- use the same seed (based on perlin noise).
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
@@ -159,23 +125,33 @@ local function generate(p_minp, p_maxp, seed)
 	local cave_3 = minetest.get_perlin_map(cave_noise_3, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 	local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
 
+	local ivm, ivm2, height, new_node
+
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
 		for x = minp.x, maxp.x do
 			index = index + 1
-
-			write = true
 			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-			local ivm = area:index(x, minp.y, z)
+			ivm = area:index(x, minp.y, z)
+
+			height = heightmap[index]
+			if height >= maxp.y - 1 and data[area:index(x, maxp.y, z)] ~= node('air') then
+				height = 31000
+				heightmap[index] = height
+			elseif height <= minp.y then
+				height = -31000
+				heightmap[index] = height
+			end
 
 			for y = minp.y, maxp.y do
-				if ((bullshit_heightmap and cave_3[index] < 1) or y < heightmap[index] - cave_3[index]) and cave_1[index3d] * cave_2[index3d] > 0.05 then
+				if data[ivm] ~= node('air') and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > 0.05 then
 					data[ivm] = node("air")
+					write = true
 
-					if y > 0 and cave_3[index] < 1 and heightmap[index] == y then
+					if y > 0 and cave_3[index] < 1 and y == height then
 						-- Clear the air above a cave mouth.
-						local ivm2 = ivm
+						ivm2 = ivm
 						for y2 = y + 1, maxp.y + 8 do
 							ivm2 = ivm2 + area.ystride
 							if data[ivm2] ~= node("default:water_source") then
@@ -194,24 +170,35 @@ local function generate(p_minp, p_maxp, seed)
 	-- Air needs to be placed prior to decorations.
 	local index = 0
 	local index3d = 0
+	local pn, biome
 	for z = minp.z, maxp.z do
 		for x = minp.x, maxp.x do
 			index = index + 1
-			local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-			local biome = biome_ids[biomemap[index]]
 			index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-			local ivm = area:index(x, minp.y, z)
-			write = true
+			ivm = area:index(x, minp.y, z)
+
+			height = heightmap[index]
 
 			for y = minp.y, maxp.y do
-				if y < 0 and (bullshit_heightmap or y <= heightmap[index] - 20) then
-					data[ivm] = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d]) or data[ivm]
-				elseif y < heightmap[index] and not bullshit_heightmap then
+				if y <= height - deco_depth and (height < 31000 or y < 0) then
+					new_node = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d])
+					if new_node then
+						data[ivm] = new_node
+						write = true
+					end
+				elseif y < height then
 					if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
 						data[ivm - area.ystride] = node("dirt")
+						write = true
 					end
 				else
-					data[ivm] = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn) or data[ivm]
+					pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+					biome = biome_ids[biomemap[index]]
+					new_node = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
+					if new_node then
+						data[ivm] = new_node
+						write = true
+					end
 				end
 
 				ivm = ivm + area.ystride
@@ -233,7 +220,13 @@ local function generate(p_minp, p_maxp, seed)
 		vm:write_to_map()
 	end
 
-	vm, area, noise_area = nil, nil, nil
+	vm, area, noise_area, heightmap, biomemap = nil, nil, nil, nil, nil
+
+	-- Deal with memory issues. This, of course, is supposed to be automatic.
+	if math.floor(collectgarbage("count")/1024) > 400 then
+		print("Fun Caves: Manually collecting garbage...")
+		collectgarbage("collect")
+	end
 end
 
 
