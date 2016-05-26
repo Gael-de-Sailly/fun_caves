@@ -88,6 +88,8 @@ end
 
 
 fun_caves.goblin_spawn_frequency = 150
+fun_caves.goblin_trap_freq = 500
+fun_caves.goblin_torch_freq = 10
 
 fun_caves.goblin_drops = { "default:pick_steel",  "default:sword_steel", "default:shovel_steel", "farming:bread", "bucket:bucket_water", "default:pick_stone", "default:sword_stone" }
 --{"group:stone"} = { "default:stone", "default:mossycobble", "default:sandstone", "default:desert_stone", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_diamond" }

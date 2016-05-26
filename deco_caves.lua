@@ -23,7 +23,7 @@ function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
 		stone_type = node("default:ice")
 		stone_depth = 2
 	elseif biome_val < -0.6 then
-		stone_type = node("fun_caves:thinice")
+		stone_type = node("fun_caves:thin_ice")
 		stone_depth = 2
 	elseif biome_val < -0.5 then
 		stone_type = node("fun_caves:stone_with_lichen")

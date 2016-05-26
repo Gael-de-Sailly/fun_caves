@@ -4,7 +4,8 @@
 -- He destroys everything diggable in his path. It's too much trouble
 --  to fudge around with particulars. Besides, I don't want them to
 --  mine for me.
-local diggable_nodes = {"group:stone", "group:sand", "group:soil", "group:plant"}
+--local diggable_nodes = {"group:stone", "group:sand", "group:soil", "group:plant", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_mese", "default:stone_with_diamond", "default:mese", "default:coalblock"}
+local diggable_nodes = {"group:cracky", "group:snappy", "group:crumbly"}
 
 -- This translates yaw into vectors.
 local cardinals = {{x=0,y=0,z=0.75}, {x=-0.75,y=0,z=0}, {x=0,y=0,z=-0.75}, {x=0.75,y=0,z=0}}
@@ -205,9 +206,9 @@ mobs:register_mob("fun_caves:goblin_digger", {
 	do_custom = function(self)
 		goblin_tunneling(self, "digger")
 
-		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
-		fun_caves.search_replace(self.object:getpos(), 10, {"default:stone", "default:desert_stone", "default:sandstone"}, "default:mossycobble")
-		fun_caves.search_replace(self.object:getpos(), 50, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_torch_freq, {"default:torch"}, "air")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_trap_freq, {"default:stone", "default:desert_stone", "default:sandstone"}, "default:mossycobble")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_trap_freq, {"default:mossycobble"}, "fun_caves:mossycobble_trap")
 
 		fun_caves.surface_damage(self)
 	end,

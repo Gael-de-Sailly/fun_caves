@@ -108,9 +108,9 @@ mobs:register_mob("fun_caves:goblin_coal", {
 	end,
 
 	do_custom = function(self)
-		fun_caves.search_replace(self.object:getpos(), 5, {"default:torch"}, "air")
-		fun_caves.search_replace(self.object:getpos(), 20, {"default:stone"}, "default:mossycobble")
-		fun_caves.search_replace(self.object:getpos(), 500, {"group:stone"}, "fun_caves:stone_with_coal_trap")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_torch_freq, {"default:torch"}, "air")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_trap_freq, {"default:stone"}, "default:mossycobble")
+		fun_caves.search_replace(self.object:getpos(), fun_caves.goblin_trap_freq, {"group:stone"}, "fun_caves:stone_with_coal_trap")
 
 		fun_caves.surface_damage(self)
 	end,
