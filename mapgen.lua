@@ -1,10 +1,11 @@
-local DEBUG = false
+local DEBUG = true
 
 local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 10, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_3 = {offset = 15, scale = 10, seed = 3721, spread = {x = 40, y = 40, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
+local fortress_noise = {offset = 0, scale = 1, seed = -4082, spread = {x = 200, y = 200, z = 200}, octaves = 2, persist = 1, lacunarity = 2}
 
 
 local node_cache = {}
@@ -103,6 +104,31 @@ end
 --	end
 --end
 
+fun_caves.is_fortress = function(pos)
+	local cs = csize
+	if not cs then
+		-- Fix this to get csize, somehow.
+		cs = {x=80, y=80, z=80}
+	end
+
+	local x = math.floor((pos.x + 33) / cs.x)
+	local y = math.floor((pos.y + 33) / cs.y)
+	local z = math.floor((pos.z + 33) / cs.z)
+
+	if y > -3 or (pos.y + 33) % cs.y > cs.y - 5 then
+		return false
+	end
+
+	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
+	n = (n * 10000) % 20
+
+	if n == 1 or DEBUG then
+		return true
+	end
+
+	return false
+end
+
 
 local function generate(p_minp, p_maxp, seed)
 	minp, maxp = p_minp, p_maxp
@@ -121,7 +147,7 @@ local function generate(p_minp, p_maxp, seed)
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
 	local fortress = maxp.y / 3100
-	if maxp.y < -250 and (DEBUG or math.random(20) == 1) then
+	if fun_caves.is_fortress(minp) then
 		fun_caves.fortress(node, data, area, minp, maxp, math.ceil(maxp.y / 3100))
 		write = true
 	else

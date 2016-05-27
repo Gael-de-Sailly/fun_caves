@@ -9,6 +9,9 @@ fun_caves.fortress = function(node, data, area, minp, maxp, level)
 	local n = 16
 	local walls = {}
 	local a, b, c, i, j, u, v, x, y, z, ivm, set, dox, doz
+	local floor = node('fun_caves:dungeon_floor_1')
+	local outer_wall = node('fun_caves:dungeon_wall_2')
+	local inner_wall = node('fun_caves:dungeon_wall_1')
 
 	for y2 = 0, n-1 do
 	--for y2 = 0, 0 do
@@ -27,12 +30,12 @@ fun_caves.fortress = function(node, data, area, minp, maxp, level)
 						if math.floor((z - minp.z) / 5) == doz and math.floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
 							data[ivm] = node("air")
 						else
-							data[ivm] = node('default:steelblock')
+							data[ivm] = floor
 						end
 					elseif x == minp.x or z == minp.z or x == maxp.x or z == maxp.z then
-						data[ivm] = node('default:steelblock')
+						data[ivm] = outer_wall
 					elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
-						data[ivm] = node("default:sandstone")
+						data[ivm] = inner_wall
 					else
 						data[ivm] = node("air")
 					end

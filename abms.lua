@@ -12,6 +12,24 @@ minetest.register_globalstep(function(dtime)
 		return
 	end
 
+	local pos
+	for k, v in pairs(minetest.luaentities) do
+		if not v.fortress_check then
+			pos = v.object:getpos()
+			if fun_caves.is_fortress(pos) and v.hp_max and v.object and v.health and v.damage then
+				local factor = 1.5 + (pos.y / -3100)
+				v.hp_max = math.floor(v.hp_max * factor)
+				v.damage = math.floor(v.damage * factor)
+				print("Promoting "..v.name..": "..v.hp_max.." at "..pos.x..","..pos.y..","..pos.z)
+				v.object:set_hp(v.hp_max)
+				v.health = v.hp_max
+				v.fortress_check = true
+				check_for_death(v)
+				--print(dump(v.damage))
+			end
+		end
+	end
+
 	for id, player in pairs(minetest.get_connected_players()) do
 		minp = vector.subtract(player:getpos(), 0.5)
 		maxp = vector.add(player:getpos(), 0.5)
