@@ -1,3 +1,9 @@
+-- invisible maze
+-- hungry maze
+-- chests (w traps)
+-- step traps (math based)
+-- hidden doors/downs
+-- hot/ice floors
 
 fun_caves.fortress = function(node, data, area, minp, maxp, level)
 	local n = 16

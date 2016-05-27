@@ -1,3 +1,5 @@
+dofile(fun_caves.path .. "/deco_cave_nodes.lua")
+
 local min_surface = -80
 
 function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)

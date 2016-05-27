@@ -121,7 +121,7 @@ local function generate(p_minp, p_maxp, seed)
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
 	local fortress = maxp.y / 3100
-	if maxp.y < -250 and (DEBUG or math.random(200) == 1) then
+	if maxp.y < -250 and (DEBUG or math.random(20) == 1) then
 		fun_caves.fortress(node, data, area, minp, maxp, math.ceil(maxp.y / 3100))
 		write = true
 	else

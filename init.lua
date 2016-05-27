@@ -1,8 +1,8 @@
 fun_caves = {}
 fun_caves.version = "1.0"
 fun_caves.time_factor = 10
-
-local path = minetest.get_modpath(minetest.get_current_modname())
+fun_caves.light_max = 8
+fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
 
 
 minetest.register_on_mapgen_init(function(mgparams)
@@ -49,10 +49,11 @@ function fun_caves.clone_node(name)
 end
 
 
-dofile(path .. "/unionfind.lua")
-dofile(path .. "/nodes.lua")
-dofile(path .. "/deco.lua")
-dofile(path .. "/fungal_tree.lua")
-dofile(path .. "/fortress.lua")
-dofile(path .. "/mapgen.lua")
-dofile(path .. "/mobs.lua")
+dofile(fun_caves.path .. "/unionfind.lua")
+dofile(fun_caves.path .. "/nodes.lua")
+dofile(fun_caves.path .. "/deco.lua")
+dofile(fun_caves.path .. "/fungal_tree.lua")
+dofile(fun_caves.path .. "/fortress.lua")
+dofile(fun_caves.path .. "/mapgen.lua")
+dofile(fun_caves.path .. "/mobs.lua")
+dofile(fun_caves.path .. "/abms.lua")
