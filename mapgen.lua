@@ -1,5 +1,8 @@
 local DEBUG = false
 
+local floor = math.floor
+local ceil = math.ceil
+
 local cave_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 40, y = 10, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y = 20, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local cave_noise_3 = {offset = 15, scale = 10, seed = 3721, spread = {x = 40, y = 40, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
@@ -46,8 +49,8 @@ end
 --	end
 --
 --	if center then
---		pos.x = pos.x - math.floor(schem.size.x / 2)
---		pos.z = pos.z - math.floor(schem.size.z / 2)
+--		pos.x = pos.x - floor(schem.size.x / 2)
+--		pos.z = pos.z - floor(schem.size.z / 2)
 --	end
 --
 --	for z1 = 0, schem.size.z - 1 do
@@ -103,25 +106,21 @@ end
 --	end
 --end
 
-fun_caves.is_fortress = function(pos, csize)
-	local cs = csize
-	if not cs then
-		-- Fix this to get csize, somehow.
-		cs = {x=80, y=80, z=80}
-	end
+fun_caves.is_fortress = function(pos, cs)
+	-- Fix this to get csize, somehow.
+	local cs = cs or {x=80, y=80, z=80}
 
-	local x = math.floor((pos.x + 33) / cs.x)
-	local y = math.floor((pos.y + 33) / cs.y)
-	local z = math.floor((pos.z + 33) / cs.z)
+	local y = floor((pos.y + 33) / cs.y)
 
 	if y > -3 or (pos.y + 33) % cs.y > cs.y - 5 then
 		return false
 	end
 
-	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
-	n = (n * 10000) % 20
+	local x = floor((pos.x + 33) / cs.x)
+	local z = floor((pos.z + 33) / cs.z)
 
-	if n == 1 or DEBUG then
+	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
+	if floor((n * 10000) % 20) == 1 or DEBUG then
 		return true
 	end
 
@@ -147,7 +146,7 @@ local function generate(p_minp, p_maxp, seed)
 
 	local fortress = maxp.y / 3100
 	if fun_caves.is_fortress(minp, csize) then
-		fun_caves.fortress(node, data, area, minp, maxp, math.ceil(maxp.y / 3100))
+		fun_caves.fortress(node, data, area, minp, maxp, ceil(maxp.y / 3100))
 		write = true
 	else
 		local cave_1 = minetest.get_perlin_map(cave_noise_1, csize):get3dMap_flat(minp)
@@ -250,10 +249,12 @@ local function generate(p_minp, p_maxp, seed)
 	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
-	if math.floor(collectgarbage("count")/1024) > 400 then
-		print("Fun Caves: Manually collecting garbage...")
-		collectgarbage("collect")
-	end
+	minetest.after(0, function()
+		if floor(collectgarbage("count")/1024) > 400 then
+			print("Fun Caves: Manually collecting garbage...")
+			collectgarbage("collect")
+		end
+	end)
 end
 
 
