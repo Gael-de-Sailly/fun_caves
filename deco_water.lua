@@ -23,7 +23,7 @@ local function surround(node, data, area, ivm)
 		end
 	end
 	for z1 = -area.zstride,area.zstride,2*area.zstride do
-		n = data[ivm+z1] 
+		local n = data[ivm+z1] 
 		if n == node("default:river_water_source") or n == node("default:water_source") or n == node("air") then
 			return false
 		end
