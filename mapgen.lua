@@ -250,7 +250,7 @@ local function generate(p_minp, p_maxp, seed)
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	minetest.after(0, function()
-		if floor(collectgarbage("count")/1024) > 400 then
+		if math.floor(collectgarbage("count")/1024) > 400 then
 			print("Fun Caves: Manually collecting garbage...")
 			collectgarbage("collect")
 		end
