@@ -103,23 +103,21 @@ end
 --	end
 --end
 
-fun_caves.is_fortress = function(pos, csize)
-	local cs = csize
-	if not cs then
-		-- Fix this to get csize, somehow.
-		cs = {x=80, y=80, z=80}
-	end
+fun_caves.is_fortress = function(pos, cs)
+	-- Fix this to get csize, somehow.
+	local cs = cs or {x=80, y=80, z=80}
 
-	local x = math.floor((pos.x + 33) / cs.x)
 	local y = math.floor((pos.y + 33) / cs.y)
-	local z = math.floor((pos.z + 33) / cs.z)
 
 	if y > -3 or (pos.y + 33) % cs.y > cs.y - 5 then
 		return false
 	end
 
+	local x = math.floor((pos.x + 33) / cs.x)
+	local z = math.floor((pos.z + 33) / cs.z)
+
 	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
-	n = (n * 10000) % 20
+	n = math.floor((n * 10000) % 20)
 
 	if n == 1 or DEBUG then
 		return true
@@ -250,10 +248,12 @@ local function generate(p_minp, p_maxp, seed)
 	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
-	if math.floor(collectgarbage("count")/1024) > 400 then
-		print("Fun Caves: Manually collecting garbage...")
-		collectgarbage("collect")
-	end
+	minetest.after(0, function()
+		if math.floor(collectgarbage("count")/1024) > 400 then
+			print("Fun Caves: Manually collecting garbage...")
+			collectgarbage("collect")
+		end
+	end)
 end
 
 
