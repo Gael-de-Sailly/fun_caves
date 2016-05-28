@@ -125,6 +125,6 @@ mobs:register_mob("fun_caves:goblin_king", {
 	end,
 })
 mobs:register_egg("fun_caves:goblin_king", "Goblin King Egg", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_king", {"default:stone_with_mese"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 1, 101)
-mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_king", {"default:stone_with_mese"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 1, -51)
+mobs:register_spawn("fun_caves:goblin_king", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 3 * fun_caves.goblin_spawn_frequency, 3, -51)
 

@@ -49,6 +49,7 @@ function fun_caves.clone_node(name)
 end
 
 
+dofile(fun_caves.path .. "/abms.lua")
 dofile(fun_caves.path .. "/unionfind.lua")
 dofile(fun_caves.path .. "/nodes.lua")
 dofile(fun_caves.path .. "/deco.lua")
@@ -56,4 +57,3 @@ dofile(fun_caves.path .. "/fungal_tree.lua")
 dofile(fun_caves.path .. "/fortress.lua")
 dofile(fun_caves.path .. "/mapgen.lua")
 dofile(fun_caves.path .. "/mobs.lua")
-dofile(fun_caves.path .. "/abms.lua")

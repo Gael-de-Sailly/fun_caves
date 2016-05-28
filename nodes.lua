@@ -1,3 +1,9 @@
+-- dirt, cave
+local newnode = fun_caves.clone_node("default:dirt")
+newnode.drop = "default:dirt"
+newnode.groups.soil = 0
+minetest.register_node("fun_caves:dirt", newnode)
+
 -- dungeon floor, basic
 local newnode = fun_caves.clone_node("default:stone")
 newnode.description = "Dungeon Stone"

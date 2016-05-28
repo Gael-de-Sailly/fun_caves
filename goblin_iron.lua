@@ -122,8 +122,8 @@ mobs:register_mob("fun_caves:goblin_iron", {
 	end,
 })
 mobs:register_egg("fun_caves:goblin_iron", "Goblin Egg (iron)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_iron", {"default:stone_with_iron"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 101)
-mobs:register_spawn("fun_caves:goblin_iron", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 2 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_iron", {"default:stone_with_iron"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -51)
+mobs:register_spawn("fun_caves:goblin_iron", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 2 * fun_caves.goblin_spawn_frequency, 3, -51)
 
 minetest.register_node("fun_caves:stone_with_iron_trap", {
 	description = "Iron Trap",

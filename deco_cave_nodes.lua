@@ -86,7 +86,7 @@ minetest.register_node("fun_caves:glowing_fungus", {
 	paramtype = "light",
 	tiles = {"vmg_glowing_fungus.png"},
 	inventory_image = "vmg_glowing_fungus.png",
-	groups = {dig_immediate = 3, attached_node = 1},
+	groups = {dig_immediate = 3},
 })
 
 -- moon glass (glows)
@@ -101,7 +101,8 @@ minetest.register_node("fun_caves:moon_juice", {
 	paramtype = "light",
 	tiles = {"vmg_moon_juice.png"},
 	inventory_image = "vmg_moon_juice.png",
-	groups = {dig_immediate = 3, attached_node = 1},
+	--groups = {dig_immediate = 3, attached_node = 1},
+	groups = {dig_immediate = 3},
 	sounds = default.node_sound_glass_defaults(),
 })
 
@@ -121,7 +122,7 @@ minetest.register_node("fun_caves:giant_mushroom_cap", {
 			{-0.4, -0.5, 0.4, 0.4, -0.25, 0.75},
 		} },
 	light_source = fun_caves.light_max,
-	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
+	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
 })
 
 -- mushroom cap, huge
@@ -139,7 +140,7 @@ minetest.register_node("fun_caves:huge_mushroom_cap", {
 			{-0.33, -0.33, -0.33, 0.33, -0.17, 0.33}, 
 		} },
 	light_source = fun_caves.light_max,
-	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1, leafdecay=1},
+	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
 })
 
 -- mushroom stem, giant or huge
@@ -147,7 +148,7 @@ minetest.register_node("fun_caves:giant_mushroom_stem", {
 	description = "Giant Mushroom Stem",
 	tiles = {"vmg_mushroom_giant_stem.png", "vmg_mushroom_giant_stem.png", "vmg_mushroom_giant_stem.png"},
 	is_ground_content = false,
-	groups = {tree=1,choppy=2,oddly_breakable_by_hand=1,flammable=2, plant=1},
+	groups = {choppy=2, oddly_breakable_by_hand=1, flammable=2,  plant=1}, 
 	sounds = default.node_sound_wood_defaults(),
 	paramtype = "light",
 	drawtype = "nodebox",
@@ -266,7 +267,7 @@ for i in ipairs(spike_size) do
 		inventory_image = "fun_caves_hot_spike.png",
 		wield_image = "fun_caves_hot_spike.png",
 		is_ground_content = true,
-		groups = {cracky=3, oddly_breakable_by_hand=1, hot=3},
+		groups = {cracky=3, oddly_breakable_by_hand=1, surface_hot=3},
 		damage_per_second = 1,
 		sounds = default.node_sound_stone_defaults(),
 		paramtype = "light",
@@ -362,7 +363,8 @@ minetest.register_node("fun_caves:mushroom_steak", {
 	tiles = {"vmg_mushroom_steak.png"},
 	inventory_image = "vmg_mushroom_steak.png",
 	on_use = minetest.item_eat(4),
-	groups = {dig_immediate = 3, attached_node = 1},
+	--groups = {dig_immediate = 3, attached_node = 1},
+	groups = {dig_immediate = 3},
 })
 
 minetest.register_craft({

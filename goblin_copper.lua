@@ -120,8 +120,8 @@ mobs:register_mob("fun_caves:goblin_copper", {
 	end,
 })
 mobs:register_egg("fun_caves:goblin_copper", "Goblin Egg (copper)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_copper", {"default:stone_with_copper", "group:fortress"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 101)
-mobs:register_spawn("fun_caves:goblin_copper", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_copper", {"default:stone_with_copper", "group:fortress"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -51)
+mobs:register_spawn("fun_caves:goblin_copper", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -51)
 
 minetest.register_node("fun_caves:stone_with_copper_trap", {
 	description = "Copper Trap",

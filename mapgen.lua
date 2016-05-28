@@ -219,7 +219,7 @@ local function generate(p_minp, p_maxp, seed)
 						end
 					elseif y < height then
 						if data[ivm] == node("air") and (data[ivm - area.ystride] == node('default:stone') or data[ivm - area.ystride] == node('default:sandstone')) then
-							data[ivm - area.ystride] = node("dirt")
+							data[ivm - area.ystride] = node("fun_caves:dirt")
 							write = true
 						end
 					else

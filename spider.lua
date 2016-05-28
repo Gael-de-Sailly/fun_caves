@@ -56,6 +56,6 @@ mobs:register_mob("fun_caves:spider", {
 	end,
 })
 
-mobs:register_spawn("fun_caves:spider", {"fun_caves:stone_with_moss", "fun_caves:stone_with_lichen", "fun_caves:stone_with_algae"}, 14, 0, 5000, 2, 31000)
+mobs:register_spawn("fun_caves:spider", {"fun_caves:stone_with_moss", "fun_caves:stone_with_lichen", "fun_caves:stone_with_algae"}, 14, 0, 5000, 2, -51)
 
 mobs:register_egg("fun_caves:spider", "Deep Spider", "mobs_cobweb.png", 1)

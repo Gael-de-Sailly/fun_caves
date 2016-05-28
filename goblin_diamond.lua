@@ -123,8 +123,8 @@ mobs:register_mob("fun_caves:goblin_diamond", {
 
 })
 mobs:register_egg("fun_caves:goblin_diamond", "Goblin Egg (diamond)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_diamond", {"default:stone_with_diamond" }, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 2, 101)
-mobs:register_spawn("fun_caves:goblin_diamond", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 2 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_diamond", {"default:stone_with_diamond" }, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 2, -51)
+mobs:register_spawn("fun_caves:goblin_diamond", {"default:mossycobble", "fun_caves:hot_cobble"}, 100, 0, 2 * fun_caves.goblin_spawn_frequency, 3, -51)
 
 minetest.register_node("fun_caves:stone_with_diamond_trap", {
 	description = "Diamond Trap",

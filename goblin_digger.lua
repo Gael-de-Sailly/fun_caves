@@ -219,6 +219,6 @@ mobs:register_mob("fun_caves:goblin_digger", {
 })
 
 mobs:register_egg("fun_caves:goblin_digger", "Goblin Egg (digger)", "default_mossycobble.png", 1)
-mobs:register_spawn("fun_caves:goblin_digger", {"group:stone"}, 100, 0, 20 * fun_caves.goblin_spawn_frequency, 3, 101)
-mobs:register_spawn("fun_caves:goblin_digger", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, 101)
+mobs:register_spawn("fun_caves:goblin_digger", {"group:stone"}, 100, 0, 20 * fun_caves.goblin_spawn_frequency, 3, -51)
+mobs:register_spawn("fun_caves:goblin_digger", {"default:mossycobble"}, 100, 0, 1 * fun_caves.goblin_spawn_frequency, 3, -51)
 
