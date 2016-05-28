@@ -21,19 +21,17 @@ local find_nodes_in_area = minetest.find_nodes_in_area
 local get_item_group = minetest.get_item_group
 
 minetest.register_globalstep(function(dtime)
-	local minp, maxp, counts
 	local time = get_us_time()
 
 	if last_dps_check and time - last_dps_check < dps_delay then
 		return
 	end
 
-	local pos, factor, mob
 	for _, mob in pairs(minetest.luaentities) do
 		if not mob.initial_promotion then
-			pos = mob.object:getpos()
+			local pos = mob.object:getpos()
 			if mob.hp_max and mob.object and mob.health and mob.damage then
-				factor = 1 + (max(abs(pos.x), abs(pos.y), abs(pos.z)) / 6200)
+				local factor = 1 + (max(abs(pos.x), abs(pos.y), abs(pos.z)) / 6200)
 				if fun_caves.is_fortress(pos) then
 					factor = factor * 1.5
 				end
@@ -49,13 +47,12 @@ minetest.register_globalstep(function(dtime)
 	end
 
 	local players = get_connected_players()
-	local player
 	for i = 1, #players do
-		player = players[i]
-		minp = vector.subtract(player:getpos(), 0.5)
-		maxp = vector.add(player:getpos(), 0.5)
+		local player = players[i]
+		local minp = vector.subtract(player:getpos(), 0.5)
+		local maxp = vector.add(player:getpos(), 0.5)
 
-		counts =  find_nodes_in_area(minp, maxp, {"group:surface_hot"})
+		local counts =  find_nodes_in_area(minp, maxp, {"group:surface_hot"})
 		if #counts > 1 then
 			player:set_hp(player:get_hp() - 1)
 		end

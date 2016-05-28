@@ -13,13 +13,11 @@ end
 plant_noise = {offset = 0.0, scale = 1.0, spread = {x = 200, y = 200, z = 200}, seed = 33, octaves = 3, persist = 0.7, lacunarity = 2.0}
 
 local function surround(node, data, area, ivm)
-	local n
-
 	-- Check to make sure that a plant root is fully surrounded.
 	-- This is due to the kludgy way you have to make water plants
 	--  in minetest, to avoid bubbles.
 	for x1 = -1,1,2 do
-		n = data[ivm+x1] 
+		local n = data[ivm+x1] 
 		if n == node("default:river_water_source") or n == node("default:water_source") or n == node("air") then
 			return false
 		end
@@ -68,7 +66,6 @@ function fun_caves.decorate_water(node, data, area, minp, maxp, pos, ivm, biome_
 			return
 		end
 
-		local posm, count
 		for _, desc in pairs(fun_caves.water_plants) do
 			if desc.content_id then
 				if not node_match_cache[desc.content_id] then
@@ -80,7 +77,7 @@ function fun_caves.decorate_water(node, data, area, minp, maxp, pos, ivm, biome_
 					-- against a given node (or nodes). However, it's slow.
 					-- To speed it up, we cache the results for each plant
 					-- on each node, and avoid calling find_nodes every time.
-					posm, count = minetest.find_nodes_in_area(pos, pos, desc.place_on)
+					local posm, count = minetest.find_nodes_in_area(pos, pos, desc.place_on)
 					if #posm > 0 then
 						node_match_cache[desc.content_id][data[ivm]] = "good" 
 					else

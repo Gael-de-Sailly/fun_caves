@@ -29,7 +29,6 @@ local deco_depth = 30
 
 local data = {}
 --local p2data = {}  -- vm rotation data buffer
-local vm, emin, emax, area, noise_area, csize, minp, maxp, heightmap, biomemap
 
 -- Create a table of biome ids, so I can use the biomemap.
 local biome_ids = {}
@@ -104,7 +103,7 @@ end
 --	end
 --end
 
-fun_caves.is_fortress = function(pos)
+fun_caves.is_fortress = function(pos, csize)
 	local cs = csize
 	if not cs then
 		-- Fix this to get csize, somehow.
@@ -131,15 +130,15 @@ end
 
 
 local function generate(p_minp, p_maxp, seed)
-	minp, maxp = p_minp, p_maxp
-	vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local minp, maxp = p_minp, p_maxp
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	vm:get_data(data)
 	--p2data = vm:get_param2_data()
-	heightmap = minetest.get_mapgen_object("heightmap")
-	biomemap = minetest.get_mapgen_object("biomemap")
-	area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
-	csize = vector.add(vector.subtract(maxp, minp), 1)
-	noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
+	local heightmap = minetest.get_mapgen_object("heightmap")
+	local biomemap = minetest.get_mapgen_object("biomemap")
+	local area = VoxelArea:new({MinEdge = emin, MaxEdge = emax})
+	local csize = vector.add(vector.subtract(maxp, minp), 1)
+	local noise_area = VoxelArea:new({MinEdge={x=0,y=0,z=0}, MaxEdge=vector.subtract(csize, 1)})
 
 	local write = false
 
@@ -147,7 +146,7 @@ local function generate(p_minp, p_maxp, seed)
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
 	local fortress = maxp.y / 3100
-	if fun_caves.is_fortress(minp) then
+	if fun_caves.is_fortress(minp, csize) then
 		fun_caves.fortress(node, data, area, minp, maxp, math.ceil(maxp.y / 3100))
 		write = true
 	else
@@ -156,7 +155,6 @@ local function generate(p_minp, p_maxp, seed)
 		local cave_3 = minetest.get_perlin_map(cave_noise_3, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 		local biome_n = minetest.get_perlin_map(biome_noise, csize):get3dMap_flat(minp)
 
-		local ivm, ivm2, height, new_node
 
 		local index = 0
 		local index3d = 0
@@ -164,9 +162,9 @@ local function generate(p_minp, p_maxp, seed)
 			for x = minp.x, maxp.x do
 				index = index + 1
 				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-				ivm = area:index(x, minp.y, z)
+				local ivm = area:index(x, minp.y, z)
 
-				height = heightmap[index]
+				local height = heightmap[index]
 				if height >= maxp.y - 1 and data[area:index(x, maxp.y, z)] ~= node('air') then
 					height = 31000
 					heightmap[index] = height
@@ -182,7 +180,7 @@ local function generate(p_minp, p_maxp, seed)
 
 						if y > 0 and cave_3[index] < 1 and y == height then
 							-- Clear the air above a cave mouth.
-							ivm2 = ivm
+							local ivm2 = ivm
 							for y2 = y + 1, maxp.y + 8 do
 								ivm2 = ivm2 + area.ystride
 								if data[ivm2] ~= node("default:water_source") then
@@ -201,18 +199,17 @@ local function generate(p_minp, p_maxp, seed)
 		-- Air needs to be placed prior to decorations.
 		local index = 0
 		local index3d = 0
-		local pn, biome
 		for z = minp.z, maxp.z do
 			for x = minp.x, maxp.x do
 				index = index + 1
 				index3d = noise_area:index(x - minp.x, 0, z - minp.z)
-				ivm = area:index(x, minp.y, z)
+				local ivm = area:index(x, minp.y, z)
 
-				height = heightmap[index]
+				local height = heightmap[index]
 
 				for y = minp.y, maxp.y do
 					if y <= height - deco_depth and (height < 31000 or y < 0) then
-						new_node = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d])
+						local new_node = fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_n[index3d])
 						if new_node then
 							data[ivm] = new_node
 							write = true
@@ -223,9 +220,9 @@ local function generate(p_minp, p_maxp, seed)
 							write = true
 						end
 					else
-						pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
-						biome = biome_ids[biomemap[index]]
-						new_node = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
+						local pn = minetest.get_perlin(plant_noise):get2d({x=x, y=z})
+						local biome = biome_ids[biomemap[index]]
+						local new_node = fun_caves.decorate_water(node, data, area, minp, maxp, {x=x,y=y,z=z}, ivm, biome, pn)
 						if new_node then
 							data[ivm] = new_node
 							write = true
@@ -251,8 +248,6 @@ local function generate(p_minp, p_maxp, seed)
 		vm:update_liquids()
 		vm:write_to_map()
 	end
-
-	vm, area, noise_area, heightmap, biomemap = nil, nil, nil, nil, nil
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
 	if math.floor(collectgarbage("count")/1024) > 400 then

@@ -8,7 +8,6 @@
 fun_caves.fortress = function(node, data, area, minp, maxp, level)
 	local n = 16
 	local walls = {}
-	local a, b, c, i, j, u, v, x, y, z, ivm, set, dox, doz
 	local floor = node('fun_caves:dungeon_floor_1')
 	local outer_wall = node('fun_caves:dungeon_wall_2')
 	local inner_wall = node('fun_caves:dungeon_wall_1')
@@ -21,10 +20,10 @@ fun_caves.fortress = function(node, data, area, minp, maxp, level)
 		end
 		table.shuffle(walls)
 
-		dox, doz = math.random(0, n-1), math.random(0, n-1)
+		local dox, doz = math.random(0, n-1), math.random(0, n-1)
 		for z = minp.z, maxp.z do
 			for y = minp.y + y2 * 5, minp.y + y2 * 5 + 4 do
-				ivm = area:index(minp.x, y, z)
+				local ivm = area:index(minp.x, y, z)
 				for x = minp.x, maxp.x do
 					if (y - minp.y) % 5 == 0 then
 						if math.floor((z - minp.z) / 5) == doz and math.floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
@@ -44,21 +43,21 @@ fun_caves.fortress = function(node, data, area, minp, maxp, level)
 			end
 		end
 
-		set = unionfind(n * n)
+		local set = unionfind(n * n)
 
 		for m = 0, #walls do
-			c = walls[m]
-			a = math.floor(c / 2)
-			i = a % n
-			j = math.floor(a / n)
-			u = c % 2 == 0 and 1 or 0
-			v = c % 2 == 1 and 1 or 0
-			b = a + u + n * v
+			local c = walls[m]
+			local a = math.floor(c / 2)
+			local i = a % n
+			local j = math.floor(a / n)
+			local u = c % 2 == 0 and 1 or 0
+			local v = c % 2 == 1 and 1 or 0
+			local b = a + u + n * v
 			if i < n - u and j < n - v and set:find(a) ~= set:find(b) then
 				set:union(a, b)
-				x = (i + u) * 5 + minp.x
-				y = minp.y + y2 * 5
-				z = (j + v) * 5 + minp.z
+				local x = (i + u) * 5 + minp.x
+				local y = minp.y + y2 * 5
+				local z = (j + v) * 5 + minp.z
 				--if y > minp.y and math.random(20) == 1 then
 				--	for z1 = z + 1, z + 4 do
 				--		ivm = area:index(x+1, y, z1)
@@ -71,7 +70,7 @@ fun_caves.fortress = function(node, data, area, minp, maxp, level)
 
 				for z1 = z + (1-v), z + (1-v) * 4 do
 					for y1 = y + 1, y + 4 do
-						ivm = area:index(x + (1-u), y1, z1)
+						local ivm = area:index(x + (1-u), y1, z1)
 						for x1 = x + (1-u), x + (1-u) * 4 do
 							if x1 < maxp.x and z1 < maxp.z and x1 > minp.x and z1 > minp.z then
 								data[ivm] = node("air")
