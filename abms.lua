@@ -19,6 +19,7 @@ local get_node_or_nil = minetest.get_node_or_nil
 local get_connected_players = minetest.get_connected_players
 local find_nodes_in_area = minetest.find_nodes_in_area
 local get_item_group = minetest.get_item_group
+local find_nodes_in_area_under_air = minetest.find_nodes_in_area_under_air
 
 minetest.register_globalstep(function(dtime)
 	local time = get_us_time()
