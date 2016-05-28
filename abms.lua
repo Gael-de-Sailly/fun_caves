@@ -12,25 +12,27 @@ minetest.register_globalstep(function(dtime)
 		return
 	end
 
-	local pos
-	for k, v in pairs(minetest.luaentities) do
-		if not v.fortress_check then
-			pos = v.object:getpos()
-			if fun_caves.is_fortress(pos) and v.hp_max and v.object and v.health and v.damage then
-				local factor = 1.5 + (pos.y / -3100)
-				v.hp_max = math.floor(v.hp_max * factor)
-				v.damage = math.floor(v.damage * factor)
-				print("Promoting "..v.name..": "..v.hp_max.." at "..pos.x..","..pos.y..","..pos.z)
-				v.object:set_hp(v.hp_max)
-				v.health = v.hp_max
-				v.fortress_check = true
-				check_for_death(v)
-				--print(dump(v.damage))
+	local pos, factor
+	for _, mob in pairs(minetest.luaentities) do
+		if not mob.initial_promotion then
+			pos = mob.object:getpos()
+			if mob.hp_max and mob.object and mob.health and mob.damage then
+				factor = 1 + (math.max(math.abs(pos.x), math.abs(pos.y), math.abs(pos.z)) / 6200)
+				if fun_caves.is_fortress(pos) then
+					factor = factor * 1.5
+				end
+				mob.hp_max = math.floor(mob.hp_max * factor)
+				mob.damage = math.floor(mob.damage * factor)
+				print("Promoting "..mob.name..": "..mob.hp_max.." at "..pos.x..","..pos.y..","..pos.z)
+				mob.object:set_hp(mob.hp_max)
+				mob.health = mob.hp_max
+				mob.initial_promotion = true
+				check_for_death(mob)
 			end
 		end
 	end
 
-	for id, player in pairs(minetest.get_connected_players()) do
+	for _, player in pairs(minetest.get_connected_players()) do
 		minp = vector.subtract(player:getpos(), 0.5)
 		maxp = vector.add(player:getpos(), 0.5)
 
@@ -239,7 +241,7 @@ minetest.register_abm({
 		end
 
 		--print("node_under ("..random.x..","..(random.y-1)..","..random.z.."): "..node_under.name)
-		if node_under.name == "fun_caves:hot_cobble" or node_under.name == "default:coalblock" then
+		if node_under.name == "fun_caves:hot_cobble" or node_under.name == "fun_caves:black_sand" then
 			--print("setting ("..random.x..","..random.y..","..random.z.."): "..node_under.name)
 			minetest.set_node(random, {name = hot_spikes[1]})
 		end
