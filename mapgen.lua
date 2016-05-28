@@ -8,7 +8,7 @@ local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y =
 local cave_noise_3 = {offset = 15, scale = 10, seed = 3721, spread = {x = 40, y = 40, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y = 80, z = 80}, octaves = 2, persist = 0.4, lacunarity = 2}
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
-local fortress_noise = {offset = 0, scale = 1, seed = -4082, spread = {x = 200, y = 200, z = 200}, octaves = 2, persist = 1, lacunarity = 2}
+local fortress_noise = {offset = 0, scale = 1, seed = -4082, spread = {x = 7, y = 7, z = 7}, octaves = 4, persist = 1, lacunarity = 2}
 
 
 local node_cache = {}
@@ -106,7 +106,7 @@ end
 --	end
 --end
 
-fun_caves.is_fortress = function(pos, cs)
+fun_caves.is_fortress = function(pos, cs, debug)
 	-- Fix this to get csize, somehow.
 	local cs = cs or {x=80, y=80, z=80}
 
@@ -120,7 +120,10 @@ fun_caves.is_fortress = function(pos, cs)
 	local z = floor((pos.z + 33) / cs.z)
 
 	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
-	if floor((n * 10000) % 20) == 1 or DEBUG then
+	if debug then
+		print(x, y, z, n, floor((n * 10000) % 19))
+	end
+	if floor((n * 10000) % 19) == 1 or DEBUG then
 		return true
 	end
 
