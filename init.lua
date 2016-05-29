@@ -54,6 +54,8 @@ dofile(fun_caves.path .. "/unionfind.lua")
 dofile(fun_caves.path .. "/nodes.lua")
 dofile(fun_caves.path .. "/deco.lua")
 dofile(fun_caves.path .. "/fungal_tree.lua")
-dofile(fun_caves.path .. "/fortress.lua")
 dofile(fun_caves.path .. "/mapgen.lua")
-dofile(fun_caves.path .. "/mobs.lua")
+
+if mobs and mobs.mod == "redo" then
+	dofile(fun_caves.path .. "/mobs.lua")
+end

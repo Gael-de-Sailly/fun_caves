@@ -96,9 +96,9 @@ end
 
 if minetest.registered_entities["mobs_creeper:creeper"] then
 	mobs:spawn_specific("mobs_creeper:creeper",
-		{"fun_caves:stone_with_moss"},
-		{"air"},
-		-1, 20, 30, 20000, 1, -31000, 31000
+	{"fun_caves:stone_with_moss"},
+	{"air"},
+	-1, 20, 30, 20000, 1, -31000, 31000
 	)
 end
 

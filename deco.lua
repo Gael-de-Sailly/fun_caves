@@ -113,10 +113,9 @@ minetest.register_decoration({
 })
 
 
-dofile(fun_caves.path.."/deco_caves.lua")
+dofile(fun_caves.path .. "/deco_caves.lua")
 --dofile(fun_caves.path.."/deco_dirt.lua")
 dofile(fun_caves.path.."/deco_plants.lua")
 dofile(fun_caves.path.."/deco_rocks.lua")
 --dofile(fun_caves.path.."/deco_ferns.lua")
 --dofile(fun_caves.path.."/deco_ferns_tree.lua")
-dofile(fun_caves.path.."/deco_water.lua")

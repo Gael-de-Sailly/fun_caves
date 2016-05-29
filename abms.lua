@@ -21,6 +21,7 @@ local find_nodes_in_area = minetest.find_nodes_in_area
 local get_item_group = minetest.get_item_group
 local find_nodes_in_area_under_air = minetest.find_nodes_in_area_under_air
 
+
 minetest.register_globalstep(function(dtime)
 	local time = get_us_time()
 
@@ -76,29 +77,6 @@ minetest.register_globalstep(function(dtime)
 	dps_count = dps_count - 1
 end)
 
-
--- Exploding fungal fruit
-minetest.register_abm({
-	nodenames = {"fun_caves:fungal_tree_fruit"},
-	interval = 20 * fun_caves.time_factor,
-	chance = 14,
-	catch_up = false,
-	action = function(pos, node)
-		fun_caves.soft_boom(pos)
-	end
-})
-
--- Exploding fungal fruit -- in a fire
-minetest.register_abm({
-	nodenames = {"fun_caves:fungal_tree_fruit"},
-	neighbors = {"fire:basic_flame"},
-	interval = 10 * fun_caves.time_factor,
-	chance = 5,
-	catch_up = false,
-	action = function(pos, node)
-		fun_caves.soft_boom(pos)
-	end
-})
 
 -- mushroom growth -- small into huge
 minetest.register_abm({
@@ -266,6 +244,102 @@ minetest.register_abm({
 		if node_under.name == "fun_caves:hot_cobble" or node_under.name == "fun_caves:black_sand" then
 			--print("setting ("..random.x..","..random.y..","..random.z.."): "..node_under.name)
 			set_node(random, {name = hot_spikes[1]})
+		end
+	end
+})
+
+
+local fungal_tree_leaves = {}
+for i = 1, 4 do
+	fungal_tree_leaves[#fungal_tree_leaves+1] = "fun_caves:fungal_tree_leaves_"..i
+end
+
+local leaves = {}
+for _, leaf in pairs(fungal_tree_leaves) do
+	leaves[leaf] = true
+end
+
+-- Exploding fungal fruit
+minetest.register_abm({
+	nodenames = {"fun_caves:fungal_tree_fruit"},
+	interval = 20 * fun_caves.time_factor,
+	chance = 14,
+	catch_up = false,
+	action = function(pos, node)
+		fun_caves.soft_boom(pos)
+	end
+})
+
+-- Exploding fungal fruit -- in a fire
+minetest.register_abm({
+	nodenames = {"fun_caves:fungal_tree_fruit"},
+	neighbors = {"fire:basic_flame"},
+	interval = 10 * fun_caves.time_factor,
+	chance = 5,
+	catch_up = false,
+	action = function(pos, node)
+		fun_caves.soft_boom(pos)
+	end
+})
+
+-- fungal spread
+minetest.register_abm({
+	nodenames = fungal_tree_leaves,
+	neighbors = {"air", "group:liquid"},
+	interval = 2 * fun_caves.time_factor,
+	chance = 10,
+	catch_up = false,
+	action = function(pos, node)
+		if get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
+			remove_node(pos)
+			return
+		end
+
+		local grow_pos = {x=pos.x, y=pos.y-1, z=pos.z}
+		local grow_node = get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" then
+			set_node(grow_pos, {name = node.name})
+			return
+		end
+
+		grow_pos = {x=rand(-1,1)+pos.x, y=rand(-1,1)+pos.y, z=rand(-1,1)+pos.z}
+		grow_node = get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" and get_node_light(grow_pos, nil) <= fun_caves.light_max then
+			set_node(grow_pos, {name = node.name})
+			return
+		elseif grow_node and leaves[grow_node.name] and grow_node.name ~= node.name then
+			set_node(grow_pos, {name = 'air'})
+			return
+		end
+
+		if rand(40) == 1 then
+			set_node(pos, {name = "fun_caves:fungal_tree_fruit"})
+			return
+		end
+
+		if rand(100) == 1 then
+			set_node(pos, {name = fungal_tree_leaves[rand(#fungal_tree_leaves)]})
+			return
+		end
+	end
+})
+
+-- new fungi
+minetest.register_abm({
+	nodenames = {"default:dirt"},
+	neighbors = {"air"},
+	interval = 20 * fun_caves.time_factor,
+	chance = 25,
+	action = function(pos, node)
+		if pos.y > 0 then
+			return
+		end
+
+		local grow_pos = {x=pos.x, y=pos.y+1, z=pos.z}
+		local grow_node = get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" and (get_node_light(grow_pos, nil) or 99) <= fun_caves.light_max then
+			set_node(grow_pos, {name = fungal_tree_leaves[rand(#fungal_tree_leaves)]})
+			return
 		end
 	end
 })

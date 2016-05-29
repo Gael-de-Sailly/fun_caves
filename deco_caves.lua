@@ -1,177 +1,430 @@
-dofile(fun_caves.path .. "/deco_cave_nodes.lua")
+-- black (oily) sand
+local newnode = fun_caves.clone_node("default:sand")
+newnode.description = "Black Sand"
+newnode.tiles = {"fun_caves_black_sand.png"}
+newnode.groups['falling_node'] = 0
+minetest.register_node("fun_caves:black_sand", newnode)
 
-local min_surface = -80
+-- cobble, hot - cobble with lava instead of mortar XD
+minetest.register_node("fun_caves:hot_cobble", {
+	description = "Hot Cobble",
+	tiles = {"caverealms_hot_cobble.png"},
+	is_ground_content = true,
+	groups = {crumbly=2, surface_hot=3},
+	--light_source = 2,
+	damage_per_second = 1,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
 
-function fun_caves.decorate_cave(node, data, area, minp, y, ivm, biome_val_in)
-	if not (data[ivm] == node("air") or data[ivm] == node("default:stone")) then
-		return
-	end
+-- dirt, glowing
+newnode = fun_caves.clone_node("default:dirt")
+newnode.description = "Glowing Dirt"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
-	local ivm_below = ivm - area.ystride
-	local ivm_above = ivm + area.ystride
-	local biome_val = biome_val_in
+-- Dirt can become soil.
+newnode = fun_caves.clone_node("farming:soil")
+newnode.description = "Glowing Soil"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
-	-------------------
-	local stone_type = node("default:stone")
-	local stone_depth = 1
+-- Dirt to soil to wet soil...
+newnode = fun_caves.clone_node("farming:soil_wet")
+newnode.description = "Wet Glowing Soil"
+newnode.light_source = default.LIGHT_MAX
+newnode.soil = {
+	base = "fun_caves:glowing_dirt",
+	dry = "fun_caves:glowing_soil",
+	wet = "fun_caves:glowing_soil_wet"
+}
+minetest.register_node("fun_caves:glowing_dirt", newnode)
 
-	if y > -200 then
-		biome_val = biome_val / math.max(1, math.log(200 + y))
-	end
-	-------------------
-	--biome_val = 0.55
-	-------------------
-	if biome_val < -0.65 then
-		stone_type = node("default:ice")
-		stone_depth = 2
-	elseif biome_val < -0.6 then
-		stone_type = node("fun_caves:thin_ice")
-		stone_depth = 2
-	elseif biome_val < -0.5 then
-		stone_type = node("fun_caves:stone_with_lichen")
-	elseif biome_val < -0.3 then
-		stone_type = node("fun_caves:stone_with_moss")
-	elseif biome_val < -0.0 then
-		stone_type = node("fun_caves:stone_with_lichen")
-	elseif biome_val < 0.2 then
-		stone_type = node("fun_caves:stone_with_algae")
-	elseif biome_val < 0.35 then
-		stone_type = node("fun_caves:stone_with_salt")
-		stone_depth = 2
-	elseif biome_val < 0.5 then
-		stone_type = node("default:sand")
-		stone_depth = 2
-	elseif biome_val < 0.6 then
-		stone_type = node("fun_caves:black_sand")
-		stone_depth = 2
-	else
-		stone_type = node("fun_caves:hot_cobble")
-	end
-	--	"glow"
+-- flame, constant -- does not expire
+minetest.register_node("fun_caves:constant_flame", {
+	description = "Fire",
+	drawtype = "plantlike",
+	tiles = {{
+		name="fire_basic_flame_animated.png",
+		animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1},
+	}},
+	inventory_image = "fire_basic_flame.png",
+	light_source = 14,
+	groups = {igniter=2,dig_immediate=3,hot=3, not_in_creative_inventory=1},
+	drop = '',
+	walkable = false,
+	buildable_to = true,
+	damage_per_second = 4,
+})
 
-	local node_below
-	if y > minp.y then
-		node_below = data[ivm - area.ystride]
-	end
-	local node_above = data[ivm + area.ystride]
+-- Glowing fungal stone provides an eerie light.
+minetest.register_node("fun_caves:glowing_fungal_stone", {
+	description = "Glowing Fungal Stone",
+	tiles = {"default_stone.png^vmg_glowing_fungal.png",},
+	is_ground_content = true,
+	light_source = fun_caves.light_max - 4,
+	groups = {cracky=3, stone=1},
+	drop = {items={ {items={"default:cobble"},}, {items={"fun_caves:glowing_fungus",},},},},
+	sounds = default.node_sound_stone_defaults(),
+})
 
-	if data[ivm] == node("default:stone") then
-		local air_above = false
-		for i = 1, stone_depth do
-			if data[ivm + area.ystride * i] == node("air") then
-				air_above = true
-			end
-		end
+-- Glowing fungus grows underground.
+minetest.register_node("fun_caves:glowing_fungus", {
+	description = "Glowing Fungus",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"vmg_glowing_fungus.png"},
+	inventory_image = "vmg_glowing_fungus.png",
+	groups = {dig_immediate = 3},
+})
 
-		if node_above == node("air") and (stone_type == node("fun_caves:stone_with_algae") or stone_type == node("fun_caves:stone_with_lichen")) and math.random(10) == 1 then
-			return node("dirt")
-		end
+-- moon glass (glows)
+local newnode = fun_caves.clone_node("default:glass")
+newnode.light_source = default.LIGHT_MAX
+minetest.register_node("fun_caves:moon_glass", newnode)
 
-		if air_above then
-			if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
-				return node("fun_caves:radioactive_ore")
-			elseif stone_type == node("fun_caves:black_sand") and math.random(100) == 1 then
-				return node("default:coalblock")
-			elseif node_above == node("air") and stone_type == node("fun_caves:stone_with_moss") and math.random(50) == 1 then
-				return node("fun_caves:glowing_fungal_stone")
-			else
-				return stone_type
-			end
-		end
+-- Moon juice is extracted from glowing fungus, to make glowing materials.
+minetest.register_node("fun_caves:moon_juice", {
+	description = "Moon Juice",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"vmg_moon_juice.png"},
+	inventory_image = "vmg_moon_juice.png",
+	--groups = {dig_immediate = 3, attached_node = 1},
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_glass_defaults(),
+})
 
-		local air_below = false
-		for i = 1, stone_depth do
-			if data[ivm - area.ystride * i] == node("air") then
-				air_below = true
-			end
-		end
+-- mushroom cap, giant
+minetest.register_node("fun_caves:giant_mushroom_cap", {
+	description = "Giant Mushroom Cap",
+	tiles = {"vmg_mushroom_giant_cap.png", "vmg_mushroom_giant_under.png", "vmg_mushroom_giant_cap.png"},
+	is_ground_content = false,
+	paramtype = "light",
+	drawtype = "nodebox",
+	node_box = { type = "fixed", 
+		fixed = {
+			{-0.4, -0.5, -0.4, 0.4, 0.0, 0.4},
+			{-0.75, -0.5, -0.4, -0.4, -0.25, 0.4},
+			{0.4, -0.5, -0.4, 0.75, -0.25, 0.4},
+			{-0.4, -0.5, -0.75, 0.4, -0.25, -0.4},
+			{-0.4, -0.5, 0.4, 0.4, -0.25, 0.75},
+		} },
+	light_source = fun_caves.light_max,
+	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
+})
 
-		if data[ivm] == node("default:stone") and air_below then
-			if stone_type == node("fun_caves:stone_with_salt") and math.random(500) == 1 then
-				return node("fun_caves:radioactive_ore")
-			elseif stone_type == node("fun_caves:black_sand") and math.random(100) == 1 then
-				return node("default:coalblock")
-			elseif node_below == node("air") and (stone_type == node("fun_caves:stone_with_lichen") or stone_type == node("fun_caves:stone_with_moss")) and math.random(50) == 1 then
-				return node("fun_caves:glowing_fungal_stone")
-			else
-				return stone_type
-			end
-		end
-	end
+-- mushroom cap, huge
+minetest.register_node("fun_caves:huge_mushroom_cap", {
+	description = "Huge Mushroom Cap",
+	tiles = {"vmg_mushroom_giant_cap.png", "vmg_mushroom_giant_under.png", "vmg_mushroom_giant_cap.png"},
+	is_ground_content = false,
+	paramtype = "light",
+	drawtype = "nodebox",
+	node_box = { type = "fixed", 
+		fixed = {
+			{-0.5, -0.5, -0.33, 0.5, -0.33, 0.33}, 
+			{-0.33, -0.5, 0.33, 0.33, -0.33, 0.5}, 
+			{-0.33, -0.5, -0.33, 0.33, -0.33, -0.5}, 
+			{-0.33, -0.33, -0.33, 0.33, -0.17, 0.33}, 
+		} },
+	light_source = fun_caves.light_max,
+	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
+})
 
-	if data[ivm] == node("air") then
-		local sr = math.random(1000)
+-- mushroom stem, giant or huge
+minetest.register_node("fun_caves:giant_mushroom_stem", {
+	description = "Giant Mushroom Stem",
+	tiles = {"vmg_mushroom_giant_stem.png", "vmg_mushroom_giant_stem.png", "vmg_mushroom_giant_stem.png"},
+	is_ground_content = false,
+	groups = {choppy=2, oddly_breakable_by_hand=1, flammable=2,  plant=1}, 
+	sounds = default.node_sound_wood_defaults(),
+	paramtype = "light",
+	drawtype = "nodebox",
+	node_box = { type = "fixed", fixed = { {-0.25, -0.5, -0.25, 0.25, 0.5, 0.25}, }},
+})
 
-		-- hanging down
-		if node_above == node("default:stone") and sr < 80 then
-			if stone_type == node("default:ice") then
-				return node("fun_caves:icicle_down")
-			elseif stone_type == node("fun_caves:stone_with_algae") then
-				return node("fun_caves:stalactite_slimy")
-			elseif stone_type == node("fun_caves:stone_with_moss") then
-				return node("fun_caves:stalactite_mossy")
-			elseif stone_type == node("fun_caves:stone_with_lichen") then
-				return node("fun_caves:stalactite")
-			elseif stone_type == node("default:stone") then
-				return node("fun_caves:stalactite")
-			end
-		end
+-- obsidian, glowing
+minetest.register_node("fun_caves:glow_obsidian", {
+	description = "Glowing Obsidian",
+	tiles = {"caverealms_glow_obsidian.png"},
+	is_ground_content = true,
+	groups = {stone=2, crumbly=1},
+	--light_source = 7,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
 
-		-- fluids
-		if y > minp.y and (node_below == node("default:stone") or node_below == node("fun_caves:hot_cobble")) and sr < 3 then
-			return node("default:lava_source")
-		elseif node_below == node("fun_caves:stone_with_moss") and sr < 3 then
-			return node("default:water_source")
+-- obsidian, glowing, 2 - has traces of lava
+minetest.register_node("fun_caves:glow_obsidian_2", {
+	description = "Hot Glow Obsidian",
+	tiles = {"caverealms_glow_obsidian2.png"},
+	is_ground_content = true,
+	groups = {stone=2, crumbly=1, surface_hot=3, igniter=1},
+	damage_per_second = 1,
+	--light_source = 9,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
 
-		-- standing up
-		elseif node_below == node("default:ice") and sr < 80 then
-			return node("fun_caves:icicle_up")
-		elseif node_below == node("fun_caves:stone_with_algae") and sr < 80 then
-			return node("fun_caves:stalagmite_slimy")
-		elseif node_below == node("fun_caves:stone_with_moss") and sr < 80 then
-			return node("fun_caves:stalagmite_mossy")
-		elseif node_below == node("fun_caves:stone_with_lichen") and sr < 80 then
-			return node("fun_caves:stalagmite")
-		elseif node_below == node("default:stone") and sr < 80 then
-			return node("fun_caves:stalagmite")
-		elseif node_below == node("fun_caves:hot_cobble") and sr < 80 then
-			if sr <= 20 then
-				return node("fun_caves:hot_spike")
-			else
-				return node("fun_caves:hot_spike_"..math.ceil(sr / 20))
-			end
-		elseif node_below == node("fun_caves:black_sand") and sr < 20 then
-			return node("fun_caves:constant_flame")
+-- salt
+minetest.register_node("fun_caves:stone_with_salt", {
+	description = "Cave Stone with Salt",
+	tiles = {"caverealms_salty2.png"},
+	paramtype = "light",
+	use_texture_alpha = true,
+	drawtype = "glasslike",
+	sunlight_propagates = false,
+	is_ground_content = true,
+	groups = {stone=1, crumbly=3},
+	sounds = default.node_sound_glass_defaults(),
+})
+newnode = fun_caves.clone_node("fun_caves:stone_with_salt")
 
-		-- vegetation
-		elseif node_below == node("default:dirt") and (stone_type == node("fun_caves:stone_with_lichen") or stone_type == node("fun_caves:stone_with_algae")) and biome_val >= -0.5 then
-			if sr < 110 then
-				return node("flowers:mushroom_red")
-			elseif sr < 220 then
-				return node("flowers:mushroom_brown")
-			elseif node_above == node("air") and sr < 330 then
-				return node("fun_caves:giant_mushroom_stem")
-			elseif sr < 360 then
-				local air_count = 0
-				local j
-				for i = 1, 12 do
-					j = ivm + area.ystride * i
-					if j <= #data and data[j] == node("air") then
-						air_count = air_count + 1
-					end
-				end
-				if air_count > 5 then
-					fun_caves.make_fungal_tree(data, area, ivm, math.random(2,math.min(air_count, 12)))
-				end
-			end
-		elseif node_below == node("fun_caves:giant_mushroom_stem") and data[ivm - area.ystride * 2] == node("fun_caves:giant_mushroom_stem") then
-			return node("fun_caves:giant_mushroom_cap")
-		elseif node_below == node("fun_caves:giant_mushroom_stem") then
-			if node_above == node("air") and math.random(3) == 1 then
-				return node("fun_caves:giant_mushroom_stem")
-			else
-				return node("fun_caves:huge_mushroom_cap")
-			end
-		end
-	end
+-- salt, radioactive ore
+newnode.description = "Salt With Radioactive Ore"
+newnode.tiles = {"caverealms_salty2.png^[colorize:#004000:250"}
+newnode.light_source = 4
+minetest.register_node("fun_caves:radioactive_ore", newnode)
+
+-- What's a cave without speleothems?
+local spel = {
+	{type1="stalactite", type2="stalagmite", tile="default_stone.png"},
+	{type1="stalactite_slimy", type2="stalagmite_slimy", tile="default_stone.png^fun_caves_algae.png"},
+	{type1="stalactite_mossy", type2="stalagmite_mossy", tile="default_stone.png^fun_caves_moss.png"},
+	{type1="icicle_down", type2="icicle_up", desc="Icicle", tile="caverealms_thin_ice.png", drop="default:ice"},
+}
+
+for _, desc in pairs(spel) do
+	minetest.register_node("fun_caves:"..desc.type1, {
+		description = (desc.desc or "Stalactite"),
+		tiles = {desc.tile},
+		is_ground_content = true,
+		walkable = false,
+		paramtype = "light",
+		drop = (desc.drop or "fun_caves:stalactite"),
+		drawtype = "nodebox",
+		node_box = { type = "fixed", 
+			fixed = {
+				{-0.07, 0.0, -0.07, 0.07, 0.5, 0.07}, 
+				{-0.04, -0.25, -0.04, 0.04, 0.0, 0.04}, 
+				{-0.02, -0.5, -0.02, 0.02, 0.25, 0.02}, 
+			} },
+		groups = {rock=1, cracky=3},
+		sounds = default.node_sound_stone_defaults(),
+	})
+
+	minetest.register_node("fun_caves:"..desc.type2, {
+		description = (desc.desc or "Stalagmite"),
+		tiles = {desc.tile},
+		is_ground_content = true,
+		walkable = false,
+		paramtype = "light",
+		drop = "fun_caves:stalagmite",
+		drawtype = "nodebox",
+		node_box = { type = "fixed", 
+			fixed = {
+				{-0.07, -0.5, -0.07, 0.07, 0.0, 0.07}, 
+				{-0.04, 0.0, -0.04, 0.04, 0.25, 0.04}, 
+				{-0.02, 0.25, -0.02, 0.02, 0.5, 0.02}, 
+			} },
+		groups = {rock=1, cracky=3},
+		sounds = default.node_sound_stone_defaults(),
+	})
 end
+
+-- spikes, hot -- silicon-based life
+local spike_size = { 1.0, 1.2, 1.4, 1.6, 1.7 }
+fun_caves.hot_spikes = {}
+
+for i in ipairs(spike_size) do
+	if i == 1 then
+		nodename = "fun_caves:hot_spike"
+	else
+		nodename = "fun_caves:hot_spike_"..i
+	end
+
+	fun_caves.hot_spikes[#fun_caves.hot_spikes+1] = nodename
+
+	vs = spike_size[i]
+
+	minetest.register_node(nodename, {
+		description = "Stone Spike",
+		tiles = {"fun_caves_hot_spike.png"},
+		inventory_image = "fun_caves_hot_spike.png",
+		wield_image = "fun_caves_hot_spike.png",
+		is_ground_content = true,
+		groups = {cracky=3, oddly_breakable_by_hand=1, surface_hot=3},
+		damage_per_second = 1,
+		sounds = default.node_sound_stone_defaults(),
+		paramtype = "light",
+		drawtype = "plantlike",
+		walkable = false,
+		light_source = i * 2,
+		buildable_to = true,
+		visual_scale = vs,
+		selection_box = {
+			type = "fixed",
+			fixed = {-0.5*vs, -0.5*vs, -0.5*vs, 0.5*vs, -5/16*vs, 0.5*vs},
+		}
+	})
+end
+
+-- stone with algae
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Algae"
+newnode.tiles = {"default_stone.png^fun_caves_algae.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
+})
+minetest.register_node("fun_caves:stone_with_algae", newnode)
+
+-- stone with lichen
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Lichen"
+newnode.tiles = {"default_stone.png^fun_caves_lichen.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
+})
+minetest.register_node("fun_caves:stone_with_lichen", newnode)
+
+-- stone with moss
+newnode = fun_caves.clone_node("default:stone")
+newnode.description = "Cave Stone With Moss"
+newnode.tiles = {"default_stone.png^fun_caves_moss.png"}
+newnode.groups = {stone=1, crumbly=3}
+newnode.sounds = default.node_sound_dirt_defaults({
+	footstep = {name="default_grass_footstep", gain=0.25},
+})
+minetest.register_node("fun_caves:stone_with_moss", newnode)
+
+
+------------------------------------
+-- recipes
+------------------------------------
+
+-- Mushroom stems can be used as wood and leather,
+-- ala Journey to the Center of the Earth.
+minetest.register_craft({
+	output = "default:wood",
+	recipe = {
+		{"fun_caves:giant_mushroom_stem"}
+	}
+})
+
+minetest.register_craft({
+	output = "mobs:leather",
+	recipe = {
+		{"fun_caves:giant_mushroom_cap"}
+	}
+})
+
+minetest.register_craft({
+	output = "dye:red",
+	recipe = {
+		{"flowers:mushroom_red"}
+	}
+})
+
+--minetest.register_craft({
+--	output = "dye:yellow",
+--	recipe = {
+--		{"flowers:mushroom_brown"}
+--	}
+--})
+
+minetest.register_craft({
+	output = 'default:paper 6',
+	recipe = {
+		{'fun_caves:giant_mushroom_stem', 'fun_caves:giant_mushroom_stem', 'fun_caves:giant_mushroom_stem'},
+	}
+})
+
+-- Caps can be cooked and eaten.
+minetest.register_node("fun_caves:mushroom_steak", {
+	description = "Mushroom Steak",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"vmg_mushroom_steak.png"},
+	inventory_image = "vmg_mushroom_steak.png",
+	on_use = minetest.item_eat(4),
+	--groups = {dig_immediate = 3, attached_node = 1},
+	groups = {dig_immediate = 3},
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "fun_caves:mushroom_steak",
+	recipe = "fun_caves:huge_mushroom_cap",
+	cooktime = 2,
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "fun_caves:mushroom_steak 2",
+	recipe = "fun_caves:giant_mushroom_cap",
+	cooktime = 2,
+})
+
+-- moon juice from fungus
+minetest.register_craft({
+	output = "fun_caves:moon_juice",
+	recipe = {
+		{"fun_caves:glowing_fungus", "fun_caves:glowing_fungus", "fun_caves:glowing_fungus"},
+		{"fun_caves:glowing_fungus", "fun_caves:glowing_fungus", "fun_caves:glowing_fungus"},
+		{"fun_caves:glowing_fungus", "vessels:glass_bottle", "fun_caves:glowing_fungus"},
+	},
+})
+
+minetest.register_craft({
+	output = "fun_caves:moon_glass",
+	type = "shapeless",
+	recipe = {
+		"fun_caves:moon_juice",
+		"fun_caves:moon_juice",
+		"default:glass",
+	},
+})
+
+minetest.register_craft({
+	output = "fun_caves:glowing_dirt",
+	type = "shapeless",
+	recipe = {
+		"fun_caves:moon_juice",
+		"default:dirt",
+	},
+})
+
+-- Speleothems can be made into cobblestone, to get them out of inventory.
+minetest.register_craft({
+	output = "default:cobble",
+	recipe = {
+		{"", "", ""},
+		{"fun_caves:stalactite", "fun_caves:stalactite", ""},
+		{"fun_caves:stalactite", "fun_caves:stalactite", ""},
+	},
+})
+
+minetest.register_craft({
+	output = "default:cobble",
+	recipe = {
+		{"", "", ""},
+		{"fun_caves:stalagmite", "fun_caves:stalagmite", ""},
+		{"fun_caves:stalagmite", "fun_caves:stalagmite", ""},
+	},
+})
