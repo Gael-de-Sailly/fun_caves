@@ -208,20 +208,15 @@ minetest.register_abm({
 minetest.register_abm({
 	nodenames = fun_caves.hot_spikes,
 	interval = 30 * fun_caves.time_factor,
-	chance = 10,
+	chance = 30,
 	action = function(pos, node)
-		local spike_num
-		for i = 1, #hot_spikes do
-			if hot_spikes[i] == node.name then
-				spike_num = i
-			end
-		end
+		local spike_num = fun_caves.hot_spike[node.name]
 		if not spike_num then
 			return
 		end
 
-		if spike_num < #hot_spikes then
-			set_node(pos, {name=hot_spikes[spike_num+1]})
+		if spike_num < #fun_caves.hot_spikes then
+			set_node(pos, {name=fun_caves.hot_spikes[spike_num+1]})
 			return
 		end
 

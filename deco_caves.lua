@@ -283,6 +283,11 @@ for i in ipairs(spike_size) do
 	})
 end
 
+fun_caves.hot_spike = {}
+for i = 1, #fun_caves.hot_spikes do
+	fun_caves.hot_spike[fun_caves.hot_spikes[i]] = i
+end
+
 -- stone with algae
 newnode = fun_caves.clone_node("default:stone")
 newnode.description = "Cave Stone With Algae"

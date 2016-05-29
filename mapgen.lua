@@ -465,10 +465,8 @@ local function generate(p_minp, p_maxp, seed)
 							end
 
 							if data[ivm] == node["air"] then
-								local sr = rand(1000)
-
 								-- hanging down
-								if node_above == node["default:stone"] and sr < 80 then
+								if node_above == node["default:stone"] and rand(12) == 1 then
 									if stone_type == node["default:ice"] then
 										data[ivm] = node["fun_caves:icicle_down"]
 										write = true
@@ -493,66 +491,58 @@ local function generate(p_minp, p_maxp, seed)
 								end
 
 								-- fluids
-								if y > minp.y and (node_below == node["default:stone"] or node_below == node["fun_caves:hot_cobble"]) and sr < 3 then
+								if y > minp.y and (node_below == node["default:stone"] or node_below == node["fun_caves:hot_cobble"]) and rand(300) == 1 then
 									data[ivm] = node["default:lava_source"]
 									write = true
 									break
-								elseif node_below == node["fun_caves:stone_with_moss"] and sr < 3 then
+								elseif node_below == node["fun_caves:stone_with_moss"] and rand(300) == 1 then
 									data[ivm] = node["default:water_source"]
 									write = true
 									break
 
 									-- standing up
-								elseif node_below == node["default:ice"] and sr < 80 then
+								elseif node_below == node["default:ice"] and rand(12) == 1 then
 									data[ivm] = node["fun_caves:icicle_up"]
 									write = true
 									break
-								elseif node_below == node["fun_caves:stone_with_algae"] and sr < 80 then
+								elseif node_below == node["fun_caves:stone_with_algae"] and rand(12) == 1 then
 									data[ivm] = node["fun_caves:stalagmite_slimy"]
 									write = true
 									break
-								elseif node_below == node["fun_caves:stone_with_moss"] and sr < 80 then
+								elseif node_below == node["fun_caves:stone_with_moss"] and rand(12) == 1 then
 									data[ivm] = node["fun_caves:stalagmite_mossy"]
 									write = true
 									break
-								elseif node_below == node["fun_caves:stone_with_lichen"] and sr < 80 then
+								elseif node_below == node["fun_caves:stone_with_lichen"] and rand(12) == 1 then
 									data[ivm] = node["fun_caves:stalagmite"]
 									write = true
 									break
-								elseif node_below == node["default:stone"] and sr < 80 then
+								elseif node_below == node["default:stone"] and rand(12) == 1 then
 									data[ivm] = node["fun_caves:stalagmite"]
 									write = true
 									break
-								elseif node_below == node["fun_caves:hot_cobble"] and sr < 80 then
-									if sr <= 20 then
-										data[ivm] = node["fun_caves:hot_spike"]
-										write = true
-										break
-									else
-										data[ivm] = node["fun_caves:hot_spike_"..ceil(sr / 20)]
-										write = true
-										break
-									end
-								elseif node_below == node["fun_caves:black_sand"] and sr < 20 then
+								elseif node_below == node["fun_caves:hot_cobble"] and rand(50) == 1 then
+									data[ivm] = node[fun_caves.hot_spikes[rand(#fun_caves.hot_spikes)]]
+								elseif node_below == node["fun_caves:black_sand"] and rand(50) == 1 then
 									data[ivm] = node["fun_caves:constant_flame"]
 									write = true
 									break
 
 									-- vegetation
 								elseif node_below == node["default:dirt"] and (stone_type == node["fun_caves:stone_with_lichen"] or stone_type == node["fun_caves:stone_with_algae"]) and biome_val >= -0.5 then
-									if sr < 110 then
+									if rand(10) == 1 then
 										data[ivm] = node["flowers:mushroom_red"]
 										write = true
 										break
-									elseif sr < 220 then
+									elseif rand(10) == 1 then
 										data[ivm] = node["flowers:mushroom_brown"]
 										write = true
 										break
-									elseif node_above == node["air"] and sr < 330 then
+									elseif node_above == node["air"] and rand(10) == 1 then
 										data[ivm] = node["fun_caves:giant_mushroom_stem"]
 										write = true
 										break
-									elseif sr < 360 then
+									elseif rand(30) == 1 then
 										local air_count = 0
 										local j
 										for i = 1, 12 do
@@ -612,16 +602,15 @@ local function generate(p_minp, p_maxp, seed)
 								write = true
 								break
 							elseif y < water_level and node_below == node["default:sand"] and node_above == node["default:water_source"] and data[ivm] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) < 3 then
-								local sr = rand(65)
-								if sr < 4 then
+								if rand(15) == 1 then
 									data[ivm] = node["fun_caves:brain_coral"]
 									write = true
 									break
-								elseif sr < 6 then
+								elseif rand(15) == 1 then
 									data[ivm] = node["fun_caves:dragon_eye"]
 									write = true
 									break
-								elseif sr < 65 then
+								else
 									data[ivm] = node["fun_caves:pillar_coral"]
 									write = true
 									break
