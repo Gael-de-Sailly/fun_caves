@@ -61,7 +61,7 @@ for name, desc in pairs(minetest.registered_biomes) do
 end
 
 --local function place_schematic(pos, schem, center)
---	local rot = math.random(4) - 1
+--	local rot = rand(4) - 1
 --	local yslice = {}
 --	if schem.yslice_prob then
 --		for _, ys in pairs(schem.yslice_prob) do
@@ -94,9 +94,9 @@ end
 --				for y = 0, schem.size.y - 1 do
 --					local dy = pos.y - minp.y + y
 --					if math.min(dx, csize.x - dx) + math.min(dy, csize.y - dy) + math.min(dz, csize.z - dz) > bevel then
---						if yslice[y] or 255 >= math.random(255) then
+--						if yslice[y] or 255 >= rand(255) then
 --							local prob = schem.data[isch].prob or schem.data[isch].param1 or 255
---							if prob >= math.random(255) and schem.data[isch].name ~= "air" then
+--							if prob >= rand(255) and schem.data[isch].name ~= "air" then
 --								data[ivm] = node[schem.data[isch].name]
 --							end
 --							local param2 = schem.data[isch].param2 or 0
@@ -117,7 +117,7 @@ end
 --		if not deco.biomes or deco.biomes[biome] then
 --			local range = 1000
 --			if deco.deco_type == "simple" then
---				if deco.fill_ratio and math.random(range) - 1 < deco.fill_ratio * 1000 then
+--				if deco.fill_ratio and rand(range) - 1 < deco.fill_ratio * 1000 then
 --					return deco.decoration
 --				end
 --			else
@@ -209,7 +209,7 @@ local function generate(p_minp, p_maxp, seed)
 			--local level = ceil(maxp.y / 3100)
 			local n = 16
 			local walls = {}
-			local floor = node['fun_caves:dungeon_floor_1']
+			local inner_floor = node['fun_caves:dungeon_floor_1']
 			local outer_wall = node['fun_caves:dungeon_wall_2']
 			local inner_wall = node['fun_caves:dungeon_wall_1']
 
@@ -221,21 +221,21 @@ local function generate(p_minp, p_maxp, seed)
 				end
 				table.shuffle(walls)
 
-				local dox, doz = math.random(0, n-1), math.random(0, n-1)
+				local dox, doz = rand(0, n-1), rand(0, n-1)
 				for z = minp.z, maxp.z do
 					for y = minp.y + y2 * 5, minp.y + y2 * 5 + 4 do
 						local ivm = area:index(minp.x, y, z)
 						for x = minp.x, maxp.x do
-							if (y - minp.y) % 5 == 0 then
-								if math.floor((z - minp.z) / 5) == doz and math.floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
+							if x == minp.x or z == minp.z or x == maxp.x or z == maxp.z then
+								data[ivm] = outer_wall
+							elseif (y - minp.y) % 5 == 0 then
+								if floor((z - minp.z) / 5) == doz and floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
 									data[ivm] = node["air"]
 								else
-									data[ivm] = floor
+									data[ivm] = inner_floor
 								end
-							elseif x == minp.x or z == minp.z or x == maxp.x or z == maxp.z then
-								data[ivm] = outer_wall
 							elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
-								data[ivm] = inner_wall
+								data[ivm] = DEBUG and node["default:glass"] or inner_wall
 							else
 								data[ivm] = node["air"]
 							end
@@ -248,9 +248,9 @@ local function generate(p_minp, p_maxp, seed)
 
 				for m = 0, #walls do
 					local c = walls[m]
-					local a = math.floor(c / 2)
+					local a = floor(c / 2)
 					local i = a % n
-					local j = math.floor(a / n)
+					local j = floor(a / n)
 					local u = c % 2 == 0 and 1 or 0
 					local v = c % 2 == 1 and 1 or 0
 					local b = a + u + n * v
@@ -259,7 +259,7 @@ local function generate(p_minp, p_maxp, seed)
 						local x = (i + u) * 5 + minp.x
 						local y = minp.y + y2 * 5
 						local z = (j + v) * 5 + minp.z
-						--if y > minp.y and math.random(20) == 1 then
+						--if y > minp.y and rand(20) == 1 then
 						--	for z1 = z + 1, z + 4 do
 						--		ivm = area:index(x+1, y, z1)
 						--		for x1 = x + 1, x + 4 do
