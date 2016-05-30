@@ -584,7 +584,10 @@ local function generate(p_minp, p_maxp, seed)
 						end
 					else
 						local pn = plant_n[index]
-						local biome = biome_ids[biomemap[index]]
+						local biome
+						if biomemap then
+							biome = biome_ids[biomemap[index]]
+						end
 						-----------------------------------------------------------
 						-- water decoration non-loop -- only there to enable breaks
 						-- Remove this loop to eliminate water decorations.
