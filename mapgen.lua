@@ -1,5 +1,3 @@
-local DEBUG = false
-
 local deco_depth = -30  -- place cave stuff this far beneath the surface
 local light_depth = -13  -- depth above which to place corals/sea plants
 local water_level = 1
@@ -169,7 +167,7 @@ fun_caves.is_fortress = function(pos, cs, debug)
 	if debug then
 		print(x, y, z, n, floor((n * 10000) % 19))
 	end
-	if floor((n * 10000) % 19) == 1 or DEBUG then
+	if floor((n * 10000) % 19) == 1 or fun_caves.DEBUG then
 		return true
 	end
 
@@ -235,7 +233,7 @@ local function generate(p_minp, p_maxp, seed)
 									data[ivm] = inner_floor
 								end
 							elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
-								--data[ivm] = DEBUG and node["default:glass"] or inner_wall
+								--data[ivm] = fun_caves.DEBUG and node["default:glass"] or inner_wall
 								data[ivm] = inner_wall
 							else
 								data[ivm] = node["air"]
@@ -678,7 +676,7 @@ local function generate(p_minp, p_maxp, seed)
 	if write then
 		vm:set_data(data)
 		--vm:set_param2_data(p2data)
-		if DEBUG then
+		if fun_caves.DEBUG then
 			vm:set_lighting({day = 15, night = 15})
 		else
 			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z},maxp)

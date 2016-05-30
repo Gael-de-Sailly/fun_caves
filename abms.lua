@@ -34,6 +34,7 @@ minetest.register_globalstep(function(dtime)
 		return
 	end
 
+	-- Promote mobs based on spawn position
 	for _, mob in pairs(minetest.luaentities) do
 		if not mob.initial_promotion then
 			local pos = mob.object:getpos()
@@ -54,24 +55,13 @@ minetest.register_globalstep(function(dtime)
 		end
 	end
 
+	-- Spawn mobs in fortresses -- only when a player is near
 	local players = get_connected_players()
 	for i = 1, #players do
 		local player = players[i]
 		local pos = player:getpos()
 		local minp = vector.subtract(pos, 0.5)
 		local maxp = vector.add(pos, 0.5)
-
-		local counts =  find_nodes_in_area(minp, maxp, {"group:surface_hot"})
-		if #counts > 1 then
-			player:set_hp(player:get_hp() - 1)
-		end
-
-		if dps_count % cold_delay == 0 then
-			counts =  find_nodes_in_area(minp, maxp, {"group:surface_cold"})
-			if #counts > 1 then
-				player:set_hp(player:get_hp() - 1)
-			end
-		end
 
 		if dps_count % monster_delay == 0 then
 			local mob_count = 0
@@ -105,10 +95,29 @@ minetest.register_globalstep(function(dtime)
 			end
 		end
 
-		-- hunger
-		if dps_count % hunger_delay == 0 then
-			player:set_hp(player:get_hp() - 1)
-			dps_count = hunger_delay
+		if fun_caves.DEBUG and player:get_hp() < 20 then
+			print("HP: "..player:get_hp())
+			player:set_hp(20)
+			return
+		else
+			-- Environmental damage from surfaces/hunger
+			local counts =  find_nodes_in_area(minp, maxp, {"group:surface_hot"})
+			if #counts > 1 then
+				player:set_hp(player:get_hp() - 1)
+			end
+
+			if dps_count % cold_delay == 0 then
+				counts =  find_nodes_in_area(minp, maxp, {"group:surface_cold"})
+				if #counts > 1 then
+					player:set_hp(player:get_hp() - 1)
+				end
+			end
+
+			-- hunger
+			if dps_count % hunger_delay == 0 then
+				player:set_hp(player:get_hp() - 1)
+				dps_count = hunger_delay
+			end
 		end
 	end
 

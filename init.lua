@@ -3,6 +3,8 @@ fun_caves.version = "1.0"
 fun_caves.time_factor = 10
 fun_caves.light_max = 8
 fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
+fun_caves.DEBUG = true
+
 
 
 minetest.register_on_mapgen_init(function(mgparams)

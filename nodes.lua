@@ -1,3 +1,12 @@
+local old_is_protected = minetest.is_protected
+function minetest.is_protected(pos, name)
+	local node = minetest.get_node_or_nil(pos)
+	if node and minetest.get_item_group(node.name, "fortress") ~= 0 then
+		return true
+	end
+	return old_is_protected(pos, name)
+end
+
 -- dirt, cave
 local newnode = fun_caves.clone_node("default:dirt")
 newnode.drop = "default:dirt"
