@@ -107,7 +107,7 @@ minetest.register_node("fun_caves:moon_juice", {
 })
 
 -- mushroom cap, giant
-minetest.register_node("fun_caves:giant_mushroom_cap", {
+local cap = {
 	description = "Giant Mushroom Cap",
 	tiles = {"vmg_mushroom_giant_cap.png", "vmg_mushroom_giant_under.png", "vmg_mushroom_giant_cap.png"},
 	is_ground_content = false,
@@ -123,7 +123,22 @@ minetest.register_node("fun_caves:giant_mushroom_cap", {
 		} },
 	light_source = fun_caves.light_max,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
-})
+}
+if false then
+	cap.node_box.fixed = {
+		{-0.3, -0.25, -0.3, 0.3, 0.5, 0.3},
+		{-0.3, -0.25, -0.4, 0.3, 0.4, -0.3},
+		{-0.3, -0.25, 0.3, 0.3, 0.4, 0.4},
+		{-0.4, -0.25, -0.3, -0.3, 0.4, 0.3},
+		{0.3, -0.25, -0.3, 0.4, 0.4, 0.3},
+		{-0.4, -0.5, -0.4, 0.4, -0.25, 0.4},
+		{-0.5, -0.5, -0.4, -0.4, -0.25, 0.4},
+		{0.4, -0.5, -0.4, 0.5, -0.25, 0.4},
+		{-0.4, -0.5, -0.5, 0.4, -0.25, -0.4},
+		{-0.4, -0.5, 0.4, 0.4, -0.25, 0.5},
+	}
+end
+minetest.register_node("fun_caves:giant_mushroom_cap", cap)
 
 -- mushroom cap, huge
 minetest.register_node("fun_caves:huge_mushroom_cap", {

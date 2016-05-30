@@ -235,7 +235,8 @@ local function generate(p_minp, p_maxp, seed)
 									data[ivm] = inner_floor
 								end
 							elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
-								data[ivm] = DEBUG and node["default:glass"] or inner_wall
+								--data[ivm] = DEBUG and node["default:glass"] or inner_wall
+								data[ivm] = inner_wall
 							else
 								data[ivm] = node["air"]
 							end

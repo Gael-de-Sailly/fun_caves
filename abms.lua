@@ -4,12 +4,17 @@
 local dps_delay = 3000000
 local last_dps_check = 0
 local cold_delay = 5
+local monster_delay = 3
 local hunger_delay = 60
 local dps_count = hunger_delay
+-- maximum number of mobs near player in fortresses
+local fortress_mob_count = 5
+
 local get_us_time = minetest.get_us_time
 local floor = math.floor
 local abs = math.abs
 local max = math.max
+local min = math.min
 local rand = math.random
 local mushrooms = {"flowers:mushroom_brown", "flowers:mushroom_red"}
 local get_node_light = minetest.get_node_light
@@ -35,6 +40,7 @@ minetest.register_globalstep(function(dtime)
 			if mob.hp_max and mob.object and mob.health and mob.damage then
 				local factor = 1 + (max(abs(pos.x), abs(pos.y), abs(pos.z)) / 6200)
 				if fun_caves.is_fortress(pos) then
+					mob.started_in_fortress = true
 					factor = factor * 1.5
 				end
 				mob.hp_max = floor(mob.hp_max * factor)
@@ -51,8 +57,9 @@ minetest.register_globalstep(function(dtime)
 	local players = get_connected_players()
 	for i = 1, #players do
 		local player = players[i]
-		local minp = vector.subtract(player:getpos(), 0.5)
-		local maxp = vector.add(player:getpos(), 0.5)
+		local pos = player:getpos()
+		local minp = vector.subtract(pos, 0.5)
+		local maxp = vector.add(pos, 0.5)
 
 		local counts =  find_nodes_in_area(minp, maxp, {"group:surface_hot"})
 		if #counts > 1 then
@@ -63,6 +70,38 @@ minetest.register_globalstep(function(dtime)
 			counts =  find_nodes_in_area(minp, maxp, {"group:surface_cold"})
 			if #counts > 1 then
 				player:set_hp(player:get_hp() - 1)
+			end
+		end
+
+		if dps_count % monster_delay == 0 then
+			local mob_count = 0
+			for _, mob in pairs(minetest.luaentities) do
+				if mob.health and mob.started_in_fortress then
+					local dist = vector.subtract(pos, mob.object:getpos())
+					local dist2 = max(abs(dist.x), abs(dist.y * 5), abs(dist.z))
+					if dist2 < 30 then
+						--print(mob.name, dist.y)
+						mob_count = mob_count + 1
+					else
+						--print("* not", mob.name, dist2)
+						--print(dump(dist))
+					end
+				end
+			end
+
+			if mob_count < fortress_mob_count then
+				local pos1, count = find_nodes_in_area_under_air({x=pos.x-30, y=pos.y-2, z=pos.z-30}, {x=pos.x+30, y=pos.y+2, z=pos.z+30}, {"group:fortress"})
+				if #pos1 > 0 then
+					local pos2 = pos1[rand(#pos1)]
+					pos2.y = pos2.y + 2
+					local name = fun_caves.fortress_spawns[rand(#fun_caves.fortress_spawns)]
+					local mob = minetest.add_entity(pos2, name)
+					if mob then
+						print("Fun Caves: Spawned "..name.." at ("..pos2.x..","..pos2.y..","..pos2.z..")")
+					else
+						print("Fun Caves: failed to spawn "..name)
+					end
+				end
 			end
 		end
 

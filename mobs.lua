@@ -67,13 +67,12 @@ dofile(fun_caves.path .. "/danglers.lua")
 dofile(fun_caves.path .. "/spider.lua")
 dofile(fun_caves.path .. "/tarantula.lua")
 dofile(fun_caves.path .. "/spider_ice.lua")
---dofile(fun_caves.path .. "/dirt_monster.lua")
 dofile(fun_caves.path .. "/sand_monster.lua")
 dofile(fun_caves.path .. "/tar_monster.lua")
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
-	mobs:register_spawn("mobs_monster:dirt_monster", {"default:dirt"}, 7, 0, 7000, 1, -50, false)
+	mobs:register_spawn("mobs_monster:dirt_monster", {"default:dirt"}, 7, 0, 4000, 1, -50, false)
 end
 
 if minetest.registered_entities["mobs_slimes:green_big"] then
@@ -119,3 +118,29 @@ dofile(fun_caves.path.."/goblin_iron.lua")
 dofile(fun_caves.path.."/goblin_gold.lua")
 dofile(fun_caves.path.."/goblin_diamond.lua")
 dofile(fun_caves.path.."/goblin_king.lua")
+
+fun_caves.fortress_spawns = {}
+local t_mobs = {
+	"mobs_monster:dungeon_master",
+	"mobs_monster:lava_flan",
+	"mobs_monster:mese_monster",
+	"mobs_monster:oerkki",
+	"mobs_monster:stone_monster",
+	"fun_caves:spider",
+	"mobs_slimes:green_big",
+	"mobs_slimes:green_medium",
+	"mobs_slimes:green_small",
+	"fun_caves:goblin_cobble",
+	"fun_caves:goblin_copper",
+	"fun_caves:goblin_coal",
+	"fun_caves:goblin_ice",
+	"fun_caves:goblin_iron",
+	"fun_caves:goblin_gold",
+	"fun_caves:goblin_diamond",
+	"fun_caves:goblin_king",
+}
+for _, mob in pairs(t_mobs) do
+	if minetest.registered_entities[mob] then
+		fun_caves.fortress_spawns[#fun_caves.fortress_spawns+1] = mob
+	end
+end
