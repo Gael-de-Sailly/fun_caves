@@ -2,7 +2,7 @@
 -- elephant from dmobs by D00Med (LGPL v2.1, textures CC-BY-SA v3.0)
 
 mobs:register_mob("fun_caves:elephant", {
-	type = "animal",
+	type = "monster",
 	passive = false,
 	reach = 3,
 	damage = 4,
@@ -19,8 +19,8 @@ mobs:register_mob("fun_caves:elephant", {
 	blood_texture = "mobs_blood.png",
 	visual_size = {x=2.5, y=2.5},
 	makes_footstep_sound = true,
-	walk_velocity = 0.5,
-	run_velocity = 1,
+	walk_velocity = 1.1,
+	run_velocity = 1.2,
 	jump = false,
 	water_damage = 2,
 	lava_damage = 2,
@@ -29,7 +29,7 @@ mobs:register_mob("fun_caves:elephant", {
 	replace_what = {"default:dry_grass_3", "default:dry_grass_4", "default:dry_grass_5", "farming:straw", "fun_caves:dry_fiber"},
 	replace_with = "air",
 	follow = {"farming:wheat"},
-	view_range = 14,
+	view_range = 9,
 	drops = {
 		{name = "mobs:meat_raw", chance = 1, min = 1, max = 1},
 	},
