@@ -1,7 +1,10 @@
+local get_node_or_nil = minetest.get_node_or_nil
+local get_item_group = minetest.get_item_group
+
 local old_is_protected = minetest.is_protected
 function minetest.is_protected(pos, name)
-	local node = minetest.get_node_or_nil(pos)
-	if node and minetest.get_item_group(node.name, "fortress") ~= 0 then
+	local node = get_node_or_nil(pos)
+	if node and get_item_group(node.name, "fortress") ~= 0 then
 		return true
 	end
 	return old_is_protected(pos, name)
