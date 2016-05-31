@@ -25,6 +25,7 @@ local get_connected_players = minetest.get_connected_players
 local find_nodes_in_area = minetest.find_nodes_in_area
 local get_item_group = minetest.get_item_group
 local find_nodes_in_area_under_air = minetest.find_nodes_in_area_under_air
+local hunger_mod = minetest.get_modpath("hunger")
 
 
 minetest.register_globalstep(function(dtime)
@@ -115,7 +116,11 @@ minetest.register_globalstep(function(dtime)
 
 			-- hunger
 			if dps_count % hunger_delay == 0 then
-				player:set_hp(player:get_hp() - 1)
+				if hunger_mod then
+					hunger.update_hunger(player, hunger.players[player:get_player_name()].lvl - 4)
+				else
+					player:set_hp(player:get_hp() - 1)
+				end
 				dps_count = hunger_delay
 			end
 		end
