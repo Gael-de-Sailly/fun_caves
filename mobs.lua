@@ -69,6 +69,7 @@ dofile(fun_caves.path .. "/tarantula.lua")
 dofile(fun_caves.path .. "/spider_ice.lua")
 dofile(fun_caves.path .. "/sand_monster.lua")
 dofile(fun_caves.path .. "/tar_monster.lua")
+dofile(fun_caves.path .. "/elephant.lua")
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
