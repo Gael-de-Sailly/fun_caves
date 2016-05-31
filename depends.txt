@@ -1,6 +1,7 @@
 default
 flowers
 wool
+hunger?
 mobs?
 mobs_monster?
 mobs_slimes?
