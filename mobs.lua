@@ -72,7 +72,7 @@ dofile(fun_caves.path .. "/tar_monster.lua")
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
-	mobs:register_spawn("mobs_monster:dirt_monster", {"default:dirt"}, 7, 0, 4000, 1, -50, false)
+	mobs:register_spawn("mobs_monster:dirt_monster", {"default:dirt", "default:dirt_with_dry_grass"}, 7, 0, 4000, 1, -50, false)
 end
 
 if minetest.registered_entities["mobs_slimes:green_big"] then

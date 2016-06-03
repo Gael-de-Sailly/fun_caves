@@ -55,6 +55,6 @@ mobs:register_mob("fun_caves:tarantula", {
 	end,
 })
 
-mobs:register_spawn("fun_caves:tarantula", {"default:desert_sand"}, 99, 0, 2000, 2, 31000)
+mobs:register_spawn("fun_caves:tarantula", {"default:desert_sand", "default:dirt_with_dry_grass"}, 99, 0, 2000, 2, 31000)
 
 --mobs:register_egg("fun_caves:spider", "Deep Spider", "mobs_cobweb.png", 1)
