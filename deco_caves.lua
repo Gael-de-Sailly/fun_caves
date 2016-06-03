@@ -165,6 +165,7 @@ minetest.register_node("fun_caves:giant_mushroom_stem", {
 	is_ground_content = false,
 	groups = {choppy=2, oddly_breakable_by_hand=1, flammable=2,  plant=1}, 
 	sounds = default.node_sound_wood_defaults(),
+	sunlight_propagates = true,
 	paramtype = "light",
 	drawtype = "nodebox",
 	node_box = { type = "fixed", fixed = { {-0.25, -0.5, -0.25, 0.25, 0.5, 0.25}, }},
