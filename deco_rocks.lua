@@ -76,6 +76,9 @@ minetest.register_node("fun_caves:small_rocks", {
 									},
 	groups = {stone=1, oddly_breakable_by_hand=3},
 	sounds = default.node_sound_stone_defaults(),
+	after_place_node = function(pos, placer, itemstack, pointed_thing)
+		minetest.set_node(pos, {name = "fun_caves:small_rocks"..math.random(6)})
+	end,
 })
 
 -- Small rocks can be used to create cobblestone, if you like.
