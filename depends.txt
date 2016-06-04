@@ -1,6 +1,7 @@
 default
 flowers
 wool
+bucket
 hunger?
 mobs?
 mobs_monster?
