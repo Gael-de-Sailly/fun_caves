@@ -1,3 +1,2 @@
-Elephant textures and model: DOOMED <heiselong@gmx.com>
-Original spider textures and model: AspireMint and fishyWET
+Original spider textures: AspireMint
 Original goblins textures and models: Francisco "FreeLikeGNU" Athens

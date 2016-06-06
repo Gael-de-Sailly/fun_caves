@@ -10,6 +10,7 @@ mobs:register_mob("fun_caves:goblin_king", {
 	hp_min = 20,
 	hp_max = 40,
 	armor = 100,
+	fear_height = 4,
 	collisionbox = {-0.35,-1,-0.35, 0.35,-.1,0.35},
 	visual = "mesh",
 	mesh = "goblins_goblin.b3d",

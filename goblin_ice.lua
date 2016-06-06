@@ -10,6 +10,7 @@ mobs:register_mob("fun_caves:goblin_ice", {
 	hp_min = 5,
 	hp_max = 10,
 	armor = 100,
+	fear_height = 4,
 	collisionbox = {-0.35,-1,-0.35, 0.35,-.1,0.35},
 	visual = "mesh",
 	mesh = "goblins_goblin.b3d",

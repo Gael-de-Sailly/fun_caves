@@ -17,6 +17,18 @@ fun_caves.search_replace = function(pos, search_rate, replace_what, replace_with
 	end
 end
 
+function fun_caves.climb(self)
+	if self.state == "stand" and math.random() < 0.2 then
+		if self.fall_speed == 2 then
+			self.fall_speed = -2
+		else
+			self.fall_speed = 2
+		end
+	elseif self.state == "attack" and self.fall_speed ~= -2 then
+		self.fall_speed = -2
+	end
+end
+
 -- causes mobs to take damage from hot/cold surfaces
 fun_caves.surface_damage = function(self, cold_natured)
 	--if not self.fun_caves_damage_timer then
@@ -63,13 +75,171 @@ fun_caves.custom_ready = function(self)
 end
 
 
-dofile(fun_caves.path .. "/danglers.lua")
-dofile(fun_caves.path .. "/spider.lua")
-dofile(fun_caves.path .. "/tarantula.lua")
-dofile(fun_caves.path .. "/spider_ice.lua")
-dofile(fun_caves.path .. "/sand_monster.lua")
-dofile(fun_caves.path .. "/tar_monster.lua")
-dofile(fun_caves.path .. "/elephant.lua")
+if minetest.registered_entities["mobs_monster:spider"] then
+	-- Deep spider
+	local m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.docile_by_day = false
+	m.drops = {
+		{name = "mobs:meat_raw", chance = 1, min = 1, max = 3},
+		{name = "wool:black", chance = 1, min = 1, max = 3},
+	}
+	m.water_damage = 0
+	m.do_custom = function(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
+		fun_caves.surface_damage(self)
+	end
+
+	minetest.registered_entities["fun_caves:spider"] = m
+	mobs.spawning_mobs["fun_caves:spider"] = true
+
+	mobs:register_spawn("fun_caves:spider", {"fun_caves:stone_with_moss", "fun_caves:stone_with_lichen", "fun_caves:stone_with_algae"}, 14, 0, 2000, 2, -51)
+
+	mobs:register_egg("fun_caves:spider", "Deep Spider", "mobs_cobweb.png", 1)
+
+
+	-- ice spider
+	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.docile_by_day = false
+	m.textures = { {"fun_caves_spider_ice.png"}, }
+	m.base_texture = m.textures[1]
+	m.drops = {
+		{name = "mobs:meat_raw", chance = 1, min = 1, max = 3},
+		{name = "wool:white", chance = 1, min = 1, max = 3},
+	}
+	m.water_damage = 0
+	m.do_custom = function(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
+		fun_caves.surface_damage(self, true)
+	end
+
+	minetest.registered_entities["fun_caves:spider_ice"] = m
+	mobs.spawning_mobs["fun_caves:spider_ice"] = true
+
+	mobs:register_spawn("fun_caves:spider_ice", {"default:ice"}, 14, 0, 1000, 2, 31000)
+
+	mobs:register_egg("fun_caves:spider_ice", "Ice Spider", "mobs_cobweb.png", 1)
+
+
+	-- dangling spiders
+	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.docile_by_day = false
+	m.attacks_monsters = true
+	m.damage = 1
+	m.hp_min = 10
+	m.hp_max = 20
+	m.water_damage = 0
+	m.fall_damage = 0
+	m.collisionbox = {-0.32, -0.0, -0.25, 0.25, 0.25, 0.25}
+	m.visual_size = {x = 1.5, y = 1.5}
+	m.drops = {
+		{name = "mobs:meat_raw", chance = 2, min = 1, max = 1},
+		{name = "farming:cotton", chance = 2, min = 1, max = 2},
+	}
+	m.do_custom = function(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
+		fun_caves.climb(self)
+		fun_caves.search_replace(self.object:getpos(), 100, {"air"}, "mobs:cobweb")
+
+		fun_caves.surface_damage(self)
+	end
+
+	minetest.registered_entities["fun_caves:dangler"] = m
+	mobs.spawning_mobs["fun_caves:dangler"] = true
+
+	mobs:register_spawn("fun_caves:dangler", {"fun_caves:stone_with_moss", "fun_caves:stone_with_lichen", "fun_caves:stone_with_algae"}, 14, 0, 1000, 3, -51)
+
+	mobs:register_egg("fun_caves:dangler", "Dangling Spider", "mobs_cobweb.png", 1)
+
+
+	-- tarantula
+	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.type = "animal"
+	m.reach = 1
+	m.damage = 1
+	m.hp_min = 1
+	m.hp_max = 2
+	m.collisionbox = {-0.15, -0.01, -0.15, 0.15, 0.1, 0.15}
+	m.textures = { {"fun_caves_tarantula.png"}, }
+	m.base_texture = m.textures[1]
+	m.visual_size = {x = 1, y = 1}
+	m.sounds = {}
+	m.run_velocity = 2
+	m.jump = false
+	m.drops = { {name = "mobs:meat_raw", chance = 1, min = 1, max = 1}, }
+	m.do_custom = function(self)
+		if not self.fun_caves_damage_timer then
+			self.fun_caves_damage_timer = 0
+		end
+
+		fun_caves.surface_damage(self)
+	end
+	minetest.registered_entities["fun_caves:tarantula"] = m
+	mobs.spawning_mobs["fun_caves:tarantula"] = true
+
+	mobs:register_spawn("fun_caves:tarantula", {"default:desert_sand", "default:dirt_with_dry_grass"}, 99, 0, 3000, 2, 31000)
+
+	mobs:register_egg("fun_caves:tarantula", "Tarantula", "mobs_cobweb.png", 1)
+
+
+	minetest.register_abm({
+		nodenames = {"mobs:cobweb"},
+		interval = 500,
+		chance = 50,
+		action = function(pos, node)
+			minetest.set_node(pos, {name = "air"})
+		end
+	})
+end
+
+if minetest.registered_entities["mobs_monster:sand_monster"] then
+	local m = table.copy(minetest.registered_entities["mobs_monster:sand_monster"])
+	m.damage = 2
+	m.hp_min = 15
+	m.hp_max = 40
+	m.textures = { {"fun_caves_tar_monster.png"}, }
+	m.base_texture = m.textures[1]
+	m.drops = { {name = "default:coal_lump", chance = 1, min = 3, max = 5}, }
+	m.water_damage = 1
+	m.lava_damage = 2
+	m.light_damage = 1
+
+	minetest.registered_entities["fun_caves:tar_monster"] = m
+	mobs.spawning_mobs["fun_caves:tar_monster"] = true
+
+	mobs:register_spawn("fun_caves:tar_monster", {"fun_caves:black_sand"}, 20, 0, 4000, 1, 31000)
+
+	mobs:register_egg("fun_caves:tar_monster", "Tar Monster", "fun_caves_black_sand.png", 1)
+
+
+	m = table.copy(minetest.registered_entities["mobs_monster:sand_monster"])
+	m.textures = { {"fun_caves_sand_monster.png"}, }
+	m.base_texture = m.textures[1]
+	m.drops = { {name = "default:sand", chance = 1, min = 3, max = 5}, }
+
+	minetest.registered_entities["fun_caves:sand_monster"] = m
+	mobs.spawning_mobs["fun_caves:sand_monster"] = true
+
+	mobs:register_spawn("fun_caves:sand_monster", {"default:sand"}, 20, 0, 4000, 3, -50)
+
+	mobs:register_egg("fun_caves:sand_monster", "Deep Sand Monster", "default_sand.png", 1)
+end
+
+-- Change the original, rather than making a copy.
+if minetest.registered_entities["dmobs:elephant"] then
+	local m = minetest.registered_entities["dmobs:elephant"]
+	m.type = "monster"
+	m.reach = 3
+	m.damage = 3
+end
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
 	-- check this
@@ -140,6 +310,9 @@ local t_mobs = {
 	"fun_caves:goblin_gold",
 	"fun_caves:goblin_diamond",
 	"fun_caves:goblin_king",
+	"dmobs:orc",
+	"dmobs:ogre",
+	"dmobs:dragon",
 }
 for _, mob in pairs(t_mobs) do
 	if minetest.registered_entities[mob] then

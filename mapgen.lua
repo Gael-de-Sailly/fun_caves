@@ -366,7 +366,7 @@ local function generate(p_minp, p_maxp, seed)
 								biome_val = biome_val / max(1, log(y - fluid_compression))
 							end
 							-------------------
-							--biome_val = 0.45
+							--biome_val = -0.75
 							-------------------
 							if biome_val < -0.65 then
 								stone_type = node["default:ice"]
@@ -683,8 +683,10 @@ local function generate(p_minp, p_maxp, seed)
 		vm:set_data(data)
 		--vm:set_param2_data(p2data)
 		if fun_caves.DEBUG then
-			vm:set_lighting({day = 15, night = 15})
+			vm:set_lighting({day = 8, night = 8})
 		else
+			-- set_lighting causes shadows
+			--vm:set_lighting({day = 0, night = 0})
 			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z},maxp)
 		end
 		vm:update_liquids()
