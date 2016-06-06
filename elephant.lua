@@ -22,7 +22,7 @@ mobs:register_mob("fun_caves:elephant", {
 	walk_velocity = 1.1,
 	run_velocity = 1.2,
 	jump = false,
-	water_damage = 2,
+	water_damage = 0,
 	lava_damage = 2,
 	light_damage = 0,
 	replace_rate = 10,
