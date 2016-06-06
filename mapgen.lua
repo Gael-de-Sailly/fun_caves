@@ -366,7 +366,7 @@ local function generate(p_minp, p_maxp, seed)
 								biome_val = biome_val / max(1, log(y - fluid_compression))
 							end
 							-------------------
-							--biome_val = 0.55
+							--biome_val = 0.45
 							-------------------
 							if biome_val < -0.65 then
 								stone_type = node["default:ice"]
@@ -440,6 +440,11 @@ local function generate(p_minp, p_maxp, seed)
 									if data[ivm - area.ystride * i] == node["air"] then
 										air_below = true
 									end
+								end
+
+								if not air_above and stone_type == node["default:sand"] then
+									data[ivm] = node["default:sandstone"]
+									break
 								end
 
 								if data[ivm] == node["default:stone"] and air_below then
