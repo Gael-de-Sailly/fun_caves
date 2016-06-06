@@ -311,6 +311,9 @@ local t_mobs = {
 	"fun_caves:goblin_diamond",
 	"fun_caves:goblin_king",
 	"dmobs:orc",
+	"dmobs:orc",
+	"dmobs:orc",
+	"dmobs:ogre",
 	"dmobs:ogre",
 	"dmobs:dragon",
 }

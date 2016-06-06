@@ -37,6 +37,7 @@ local min = math.min
 local log = math.log
 local ceil = math.ceil
 local floor = math.floor
+local abs = math.abs
 local find_nodes_in_area = minetest.find_nodes_in_area
 
 -- This tables looks up nodes that aren't already stored.
@@ -190,7 +191,12 @@ local function generate(p_minp, p_maxp, seed)
 	math.randomseed(minetest.get_perlin(seed_noise):get2d({x=minp.x, y=minp.z}))
 
 	local write = false
-	if fun_caves.is_fortress(minp, csize) then
+	local underzone
+	if minp.y % 4960 < 240 and maxp.y % 4960 > 0 then
+		underzone = true
+	end
+
+	if not underzone and fun_caves.is_fortress(minp, csize) then
 		write = true
 		--------------------------------------------------------------
 		-- fortress decoration non-loop -- only there to enable breaks
@@ -311,8 +317,20 @@ local function generate(p_minp, p_maxp, seed)
 					heightmap[index] = height
 				end
 
+				local column = 0
+				if underzone then
+					if cave_3[index] < 30 then
+						column = 1
+					elseif cave_3[index] < 35 then
+						column = 2
+					end
+				end
+
 				for y = minp.y, maxp.y do
-					if data[ivm] ~= node['air'] and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
+					if column == 1 and data[ivm] ~= node['air'] and y % 4960 < cave_3[index] + 160 and y % 4960 > cave_3[index] + 80 then
+						data[ivm] = node["air"]
+						write = true
+					elseif column < 2 and data[ivm] ~= node['air'] and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
 						data[ivm] = node["air"]
 						write = true
 
@@ -469,7 +487,7 @@ local function generate(p_minp, p_maxp, seed)
 								end
 							end
 
-							if data[ivm] == node["air"] then
+							if data[ivm] == node["air"] and y < maxp.y then
 								-- hanging down
 								if node_above == node["default:stone"] and rand(12) == 1 then
 									if stone_type == node["default:ice"] then
@@ -682,12 +700,12 @@ local function generate(p_minp, p_maxp, seed)
 	if write then
 		vm:set_data(data)
 		--vm:set_param2_data(p2data)
-		if fun_caves.DEBUG then
-			vm:set_lighting({day = 8, night = 8})
+		if underzone or fun_caves.DEBUG then
+			vm:set_lighting({day = 10, night = 10})
 		else
 			-- set_lighting causes shadows
 			--vm:set_lighting({day = 0, night = 0})
-			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z},maxp)
+			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z}, maxp)
 		end
 		vm:update_liquids()
 		vm:write_to_map()
