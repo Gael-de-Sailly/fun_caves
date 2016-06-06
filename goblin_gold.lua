@@ -125,7 +125,7 @@ mobs:register_spawn("fun_caves:goblin_gold", {"default:mossycobble", "fun_caves:
 
 minetest.register_node("fun_caves:molten_gold_source", {
 	description = "Molten Gold Source",
-	inventory_image = minetest.inventorycube("default_lava.png"),
+	wield_image = "goblins_molten_gold.png",
 	drawtype = "liquid",
 	tiles = {
 		{
@@ -173,9 +173,9 @@ minetest.register_node("fun_caves:molten_gold_source", {
 
 minetest.register_node("fun_caves:molten_gold_flowing", {
 	description = "Flowing Molten Gold",
-	inventory_image = minetest.inventorycube("default_lava.png"),
+	wield_image = "goblins_molten_gold.png",
 	drawtype = "flowingliquid",
-	tiles = {"default_lava.png"},
+	tiles = {"goblins_molten_gold.png"},
 	special_tiles = {
 		{
 			name = "goblins_molten_gold_flowing_animated.png",
@@ -218,6 +218,15 @@ minetest.register_node("fun_caves:molten_gold_flowing", {
 	post_effect_color = {a=192, r=255, g=64, b=0},
 	groups = {lava=3, liquid=2, hot=3, igniter=1, not_in_creative_inventory=1},
 })
+
+bucket.register_liquid(
+	"fun_caves:molten_gold_source",
+	"fun_caves:molten_gold_flowing",
+	"fun_caves:bucket_molten_gold",
+	"fun_caves_bucket_molten_gold.png",
+	"Molten Gold Bucket",
+	{lava_bucket = 1}
+)
 
 minetest.register_node("fun_caves:stone_with_gold_trap", {
 	description = "Gold Trap",
