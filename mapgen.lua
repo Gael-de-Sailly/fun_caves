@@ -444,6 +444,7 @@ local function generate(p_minp, p_maxp, seed)
 
 								if not air_above and stone_type == node["default:sand"] then
 									data[ivm] = node["default:sandstone"]
+									write = true
 									break
 								end
 
