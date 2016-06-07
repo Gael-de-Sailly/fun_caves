@@ -89,8 +89,24 @@ minetest.register_node("fun_caves:glowing_fungus", {
 	groups = {dig_immediate = 3},
 })
 
+-- Iron, hot
+newnode = fun_caves.clone_node("default:steelblock")
+newnode.description = "Hot Iron Block"
+newnode.tiles = {"default_steel_block.png^[colorize:#FF3000:150"}
+newnode.groups.surface_hot=3
+newnode.light_source = 3
+minetest.register_node("fun_caves:hot_iron", newnode)
+
+-- Brass, hot
+newnode = fun_caves.clone_node("default:steelblock")
+newnode.description = "Hot Brass Block"
+newnode.tiles = {"default_steel_block.png^[colorize:#FFBF00:150"}
+newnode.groups.surface_hot=3
+newnode.light_source = 2
+minetest.register_node("fun_caves:hot_brass", newnode)
+
 -- moon glass (glows)
-local newnode = fun_caves.clone_node("default:glass")
+newnode = fun_caves.clone_node("default:glass")
 newnode.light_source = default.LIGHT_MAX
 minetest.register_node("fun_caves:moon_glass", newnode)
 
@@ -312,6 +328,19 @@ newnode.sounds = default.node_sound_dirt_defaults({
 	footstep = {name="default_grass_footstep", gain=0.25},
 })
 minetest.register_node("fun_caves:stone_with_algae", newnode)
+
+-- stone, hot
+minetest.register_node("fun_caves:hot_stone", {
+	description = "Hot Stone",
+	tiles = {"default_desert_stone.png^[colorize:#FF0000:150"},
+	is_ground_content = true,
+	groups = {crumbly=2, surface_hot=3},
+	light_source = fun_caves.light_max - 5,
+	damage_per_second = 1,
+	sounds = default.node_sound_stone_defaults({
+		footstep = {name="default_stone_footstep", gain=0.25},
+	}),
+})
 
 -- stone with lichen
 newnode = fun_caves.clone_node("default:stone")
