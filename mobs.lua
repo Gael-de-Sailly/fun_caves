@@ -273,6 +273,26 @@ if minetest.registered_entities["mobs_creeper:creeper"] then
 	)
 end
 
+if minetest.registered_entities["mobs_sharks:shark_lg"] then
+	local m = table.copy(minetest.registered_entities["mobs_sharks:shark_lg"])
+	local l_spawn_in		= {"default:water_flowing","default:water_source"}
+	local l_spawn_near		= {"default:water_flowing","default:water_source","seawrecks:woodship","seawrecks:uboot"}
+
+	m.damage = 15
+	m.hp_min = 40
+	m.hp_max = 50
+	m.visual_size = {x=3, y=3}
+	m.collisionbox = {-2, -1.5, -2, 2, 1.5, 2}
+	m.textures = {"fun_caves_albino.png"}
+	m.base_texture = m.textures[1]
+
+	minetest.registered_entities["fun_caves:shark_giant"] = m
+	mobs.spawning_mobs["fun_caves:shark_giant"] = true
+
+	mobs:spawn_specific("fun_caves:shark_giant", l_spawn_in, l_spawn_near, -1, 20, 30, 60000, 1, -31000, -29620)
+	mobs:register_egg("fun_caves:shark_md", "Shark (giant)", l_egg_texture, 0)
+end
+
 
 fun_caves.goblin_spawn_frequency = 150
 fun_caves.goblin_trap_freq = 25

@@ -336,7 +336,14 @@ local function generate(p_minp, p_maxp, seed)
 
 				for y = minp.y, maxp.y do
 					-- Dis
-					if underzone == 3 then
+					if underzone == 6 and y % 4960 < cave_3[index] + 160 and y % 4960 > cave_3[index] + 80 then
+						if y < -29620 then
+							data[ivm] = node["default:water_source"]
+						else
+							data[ivm] = node["air"]
+						end
+						write = true
+					elseif underzone == 3 then
 						if (x - minp.x) < 8 and (z - minp.z) < 8 then
 							data[ivm] = node["default:steelblock"]
 						elseif data[ivm] ~= node['air'] and y % 4960 < 160 and y % 4960 > 80 then
@@ -357,10 +364,18 @@ local function generate(p_minp, p_maxp, seed)
 						write = true
 					-- Dis
 					elseif column == 1 and underzone ~= 3 and data[ivm] ~= node['air'] and y % 4960 < cave_3[index] + 160 and y % 4960 > cave_3[index] + 80 then
-						data[ivm] = node["air"]
+						if y < -29620 then
+							data[ivm] = node["default:water_source"]
+						else
+							data[ivm] = node["air"]
+						end
 						write = true
 					elseif column < 2 and underzone ~= 3 and data[ivm] ~= node['air'] and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
-						data[ivm] = node["air"]
+						if y < -29620 then
+							data[ivm] = node["default:water_source"]
+						else
+							data[ivm] = node["air"]
+						end
 						write = true
 
 						if y > 0 and cave_3[index] < 1 and y == height then
@@ -421,6 +436,9 @@ local function generate(p_minp, p_maxp, seed)
 							elseif underzone == 3 then
 								stone_type = node["fun_caves:hot_brass"]
 								stone_depth = 1
+							elseif underzone == 6 then
+								stone_type = node["default:dirt"]
+								stone_depth = 2
 							elseif underzone and y % 4960 <= 145 then
 								stone_type = node["fun_caves:hot_cobble"]
 							elseif underzone and y % 4960 > 145 then
@@ -440,6 +458,10 @@ local function generate(p_minp, p_maxp, seed)
 								stone_type = node["fun_caves:stone_with_lichen"]
 							elseif biome_val < 0.2 then
 								stone_type = node["fun_caves:stone_with_algae"]
+							elseif y < 29620 then
+							-- This is seperate to prevent the hot biomes spawning underwater.
+								stone_type = node["default:dirt"]
+								stone_depth = 2
 							elseif biome_val < 0.35 then
 								stone_type = node["fun_caves:stone_with_salt"]
 								stone_depth = 2
@@ -463,7 +485,7 @@ local function generate(p_minp, p_maxp, seed)
 							if data[ivm] == node["default:stone"] then
 								local air_above = false
 								for i = 1, stone_depth do
-									if data[ivm + area.ystride * i] == node["air"] then
+									if data[ivm + area.ystride * i] == node["air"] or (y < 29620 and data[ivm + area.ystride * i] == node["default:water_source"]) then
 										air_above = true
 									end
 								end
