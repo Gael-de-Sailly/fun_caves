@@ -290,7 +290,7 @@ if minetest.registered_entities["mobs_sharks:shark_lg"] then
 	mobs.spawning_mobs["fun_caves:shark_giant"] = true
 
 	mobs:spawn_specific("fun_caves:shark_giant", l_spawn_in, l_spawn_near, -1, 20, 30, 60000, 1, -31000, -29620)
-	mobs:register_egg("fun_caves:shark_md", "Shark (giant)", l_egg_texture, 0)
+	mobs:register_egg("fun_caves:shark_md", "Shark (giant)", "mob_shark_shark_item.png", 0)
 end
 
 
