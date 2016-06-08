@@ -170,7 +170,7 @@ local function generate(p_minp, p_maxp, seed)
 			vm:set_param2_data(p2data)
 		end
 
-		if true or fun_caves.DEBUG then
+		if fun_caves.DEBUG then
 			vm:set_lighting({day = 10, night = 10})
 		else
 			-- set_lighting causes shadows
