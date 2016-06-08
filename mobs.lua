@@ -293,6 +293,8 @@ if minetest.registered_entities["mobs_sharks:shark_lg"] then
 	mobs:register_egg("fun_caves:shark_md", "Shark (giant)", "mob_shark_shark_item.png", 0)
 end
 
+dofile(fun_caves.path.."/zombie.lua")
+
 
 fun_caves.goblin_spawn_frequency = 150
 fun_caves.goblin_trap_freq = 25
@@ -330,6 +332,8 @@ local t_mobs = {
 	"fun_caves:goblin_gold",
 	"fun_caves:goblin_diamond",
 	"fun_caves:goblin_king",
+	"fun_caves:zombie",
+	"fun_caves:zombie",
 	"dmobs:orc",
 	"dmobs:orc",
 	"dmobs:orc",

@@ -16,21 +16,27 @@ newnode.drop = "default:dirt"
 newnode.groups.soil = 0
 minetest.register_node("fun_caves:dirt", newnode)
 
+newnode = fun_caves.clone_node("default:dirt")
+newnode.description = "Polluted Dirt"
+newnode.tiles = {"default_dirt.png^[colorize:#100020:100"}
+newnode.groups.soil = 0
+minetest.register_node("fun_caves:polluted_dirt", newnode)
+
 -- dungeon floor, basic
-local newnode = fun_caves.clone_node("default:stone")
+newnode = fun_caves.clone_node("default:stone")
 newnode.description = "Dungeon Stone"
 newnode.legacy_mineral = false
 newnode.groups = {fortress = 1}
 minetest.register_node("fun_caves:dungeon_floor_1", newnode)
 
 -- dungeon walls, basic
-local newnode = fun_caves.clone_node("default:sandstone")
+newnode = fun_caves.clone_node("default:sandstone")
 newnode.description = "Dungeon Stone"
 newnode.groups = {fortress = 1}
 minetest.register_node("fun_caves:dungeon_wall_1", newnode)
 
 -- dungeon walls, type 2
-local newnode = fun_caves.clone_node("default:desert_stone")
+newnode = fun_caves.clone_node("default:desert_stone")
 newnode.description = "Dungeon Stone"
 newnode.groups = {fortress = 1}
 minetest.register_node("fun_caves:dungeon_wall_2", newnode)
@@ -64,6 +70,33 @@ minetest.register_node('fun_caves:sticks_default', {
 	drop = 'default:stick 2',
 	groups = {snappy = 3, leafdecay = 3, flammable = 2, leaves = 1},
 })
+
+newnode = fun_caves.clone_node("default:leaves")
+newnode.description = "Blackened Leaves"
+newnode.tiles = {"default_leaves.png^[colorize:#100020:200"}
+newnode.special_tiles = {"default_leaves_simple.png^[colorize:#100020:200"}
+newnode.groups = {snappy = 3, flammable = 2}
+minetest.register_node("fun_caves:leaves_black", newnode)
+
+newnode = fun_caves.clone_node("default:water_source")
+newnode.description = "Poisonous Water"
+newnode.tiles[1].name = "fun_caves_water_poison_source_animated.png"
+newnode.special_tiles[1].name = "fun_caves_water_poison_source_animated.png"
+newnode.liquid_alternative_flowing = "fun_caves:water_poison_flowing"
+newnode.liquid_alternative_source = "fun_caves:water_poison_source"
+newnode.light_source = 6
+newnode.groups.poison = 3
+minetest.register_node("fun_caves:water_poison_source", newnode)
+
+newnode = fun_caves.clone_node("default:water_flowing")
+newnode.description = "Poisonous Water"
+newnode.tiles[1] = "fun_caves_water_poison.png"
+newnode.special_tiles[1].name = "fun_caves_water_poison_flowing_animated.png"
+newnode.liquid_alternative_flowing = "fun_caves:water_poison_flowing"
+newnode.liquid_alternative_source = "fun_caves:water_poison_source"
+newnode.light_source = 6
+newnode.groups.poison = 3
+minetest.register_node("fun_caves:water_poison_flowing", newnode)
 
 --minetest.register_node("fun_caves:bright_air", {
 --	drawtype = "glasslike",

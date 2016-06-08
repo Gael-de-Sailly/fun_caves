@@ -107,6 +107,12 @@ minetest.register_globalstep(function(dtime)
 				player:set_hp(player:get_hp() - 1)
 			end
 
+			-- Environmental damage from surfaces/hunger
+			local counts =  find_nodes_in_area(minp, maxp, {"group:poison"})
+			if #counts > 1 then
+				player:set_hp(player:get_hp() - 1)
+			end
+
 			if dps_count % cold_delay == 0 then
 				counts =  find_nodes_in_area(minp, maxp, {"group:surface_cold"})
 				if #counts > 1 then

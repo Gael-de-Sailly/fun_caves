@@ -114,6 +114,74 @@ minetest.register_decoration({
 	decoration = "default:junglegrass",
 })
 
+-- Create and initialize a table for a schematic.
+function fun_caves.schematic_array(width, height, depth)
+	-- Dimensions of data array.
+	local s = {size={x=width, y=height, z=depth}}
+	s.data = {}
+
+	for z = 0,depth-1 do
+		for y = 0,height-1 do
+			for x = 0,width-1 do
+				local i = z*width*height + y*width + x + 1
+				s.data[i] = {}
+				s.data[i].name = "air"
+				s.data[i].param1 = 000
+			end
+		end
+	end
+
+	s.yslice_prob = {}
+
+	return s
+end
+
+fun_caves.schematics = {}
+do
+	local w, h, d = 5, 8, 5
+	local s = fun_caves.schematic_array(w, h, d)
+
+	for y = 0, math.floor(h/2)-1 do
+		s.data[2*d*h + y*d + 2 + 1].name = 'default:tree'
+		s.data[2*d*h + y*d + 2 + 1].param1 = 255
+	end
+
+	for z = 0, d-1 do
+		for y = math.floor(h/2), h-1 do
+			for x = 0, w-1 do
+				if y < h - 1 or (x ~= 0 and x ~= w-1 and z ~= 0 and z ~= d-1) then
+					if math.random(2) == 1 then
+						s.data[z*d*h + y*d + x + 1].name = 'fun_caves:leaves_black'
+					else
+						s.data[z*d*h + y*d + x + 1].name = 'fun_caves:sticks_default'
+					end
+
+					if y == h-1 or x == 0 or x == w-1 or z == 0 or z == d-1 then
+						s.data[z*d*h + y*d + x + 1].param1 = 150
+					else
+						s.data[z*d*h + y*d + x + 1].param1 = 225
+					end
+				end
+			end
+		end
+	end
+
+	for z = math.floor(d/2)-1, math.floor(d/2)+1, 2 do
+		for x = math.floor(w/2)-1, math.floor(w/2)+1, 2 do
+			s.data[z*d*h + math.floor(h/2)*d + x + 1].name = 'default:tree'
+			s.data[z*d*h + math.floor(h/2)*d + x + 1].param1 = 150
+		end
+	end
+
+	for y = 0, h-1 do
+		if y / 3 == math.floor(y / 3) then
+			s.yslice_prob[#s.yslice_prob+1] = {ypos=y,prob=170}
+		end
+	end
+
+	fun_caves.schematics['decaying_tree'] = s
+end
+
 
 dofile(fun_caves.path .. "/deco_caves.lua")
 --dofile(fun_caves.path.."/deco_dirt.lua")
