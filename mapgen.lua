@@ -153,8 +153,8 @@ local function generate(p_minp, p_maxp, seed)
 		end
 	end
 
-	--if not underzone and fun_caves.is_fortress(minp, csize) then
-	if not underzone then
+	if not underzone and fun_caves.is_fortress(minp, csize) then
+	--if not underzone then
 		fun_caves.fortress(minp, maxp, data, area, node)
 		write = true
 	else

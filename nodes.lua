@@ -53,6 +53,18 @@ minetest.register_node("fun_caves:thin_ice", {
 	paramtype = "light",
 })
 
+minetest.register_node('fun_caves:sticks_default', {
+	description = 'Sticks',
+	drawtype = 'allfaces_optional',
+	waving = 1,
+	visual_scale = 1.3,
+	tiles = {'mymonths_sticks.png'},
+	paramtype = 'light',
+	is_ground_content = false,
+	drop = 'default:stick 2',
+	groups = {snappy = 3, leafdecay = 3, flammable = 2, leaves = 1},
+})
+
 --minetest.register_node("fun_caves:bright_air", {
 --	drawtype = "glasslike",
 --	tiles = {"technic_light.png"},
