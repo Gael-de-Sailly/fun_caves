@@ -196,7 +196,7 @@ minetest.register_craft({
 	output = 'fun_caves:teleporter_steel_aquamarine',
 	recipe = {
 		{'fun_caves:pure_steel', 'default:copper_ingot', 'fun_caves:pure_steel'},
-		{'fun_caves:pure_steel', 'fun_caves:perfect_aquamarine', 'fun_caves:pure_steel'},
+		{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine'},
 		{'fun_caves:pure_steel', 'default:obsidianbrick', 'fun_caves:pure_steel'},
 	}
 })
