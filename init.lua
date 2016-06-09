@@ -3,8 +3,18 @@ fun_caves.version = "1.0"
 fun_caves.time_factor = 10
 fun_caves.light_max = 8
 fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
+fun_caves.world = minetest.get_worldpath()
 fun_caves.DEBUG = false
 
+
+
+local inp = io.open(fun_caves.world..'/fun_caves_data.txt','r')
+if inp then
+	local d = inp:read('*a')
+	fun_caves.db = minetest.deserialize(d)
+else
+	fun_caves.db = {}
+end
 
 
 minetest.register_on_mapgen_init(function(mgparams)

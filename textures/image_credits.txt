@@ -1,2 +1,3 @@
 Original spider textures: AspireMint
 Original goblins textures and models: Francisco "FreeLikeGNU" Athens
+Original tesseract: Claudio Rocchini (cc-by-sa 2.5), https://en.wikipedia.org/wiki/File:Runci_trunc_tessaract.png

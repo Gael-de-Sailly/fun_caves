@@ -80,7 +80,7 @@ minetest.register_node("fun_caves:glowing_fungal_stone", {
 })
 
 -- Glowing fungus grows underground.
-minetest.register_node("fun_caves:glowing_fungus", {
+minetest.register_craftitem("fun_caves:glowing_fungus", {
 	description = "Glowing Fungus",
 	drawtype = "plantlike",
 	paramtype = "light",
@@ -111,7 +111,7 @@ newnode.light_source = default.LIGHT_MAX
 minetest.register_node("fun_caves:moon_glass", newnode)
 
 -- Moon juice is extracted from glowing fungus, to make glowing materials.
-minetest.register_node("fun_caves:moon_juice", {
+minetest.register_craftitem("fun_caves:moon_juice", {
 	description = "Moon Juice",
 	drawtype = "plantlike",
 	paramtype = "light",

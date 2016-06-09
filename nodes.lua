@@ -112,3 +112,91 @@ minetest.register_node("fun_caves:water_poison_flowing", newnode)
 --	light_source = LIGHT_MAX,
 --	pointable = false,
 --})
+
+local function teleporter(user, area, power)
+	if not user then
+		return
+	end
+
+	local name = user:get_player_name()
+	local pos = user:getpos()
+
+	if not fun_caves.db then
+		fun_caves.db = {}
+	end
+	if not fun_caves.db.teleport_data then
+		fun_caves.db.teleport_data = {}
+	end
+	if not fun_caves.db.teleport_data[name] then
+		fun_caves.db.teleport_data[name] = {}
+	end
+
+	local out = io.open(fun_caves.world..'/fun_caves_data.txt','w')	
+	if not (out and name) then
+		return
+	end
+
+	if fun_caves.db.teleport_data[name].teleported_from then
+		user:setpos(fun_caves.db.teleport_data[name].teleported_from)
+		fun_caves.db.teleport_data[name].teleported_from = nil
+	else
+		local newpos
+		if area == 'overworld' then
+			newpos = {x=math.random(12000)-6000, y=120, z=math.random(12000)-6000}
+		else
+			return
+		end
+
+		user:setpos(newpos)
+		print('Fun Caves: '..name..' teleported to ('..pos.x..','..pos.y..','..pos.z..')')
+		fun_caves.db.teleport_data[name].teleported_from = pos
+		out:write(minetest.serialize(fun_caves.db))
+		user:set_physics_override({gravity=0.1})
+
+		minetest.after(20, function()
+			user:set_physics_override({gravity=1})
+		end)
+	end
+end
+
+minetest.register_craftitem("fun_caves:teleporter_steel_aquamarine", {
+	description = "Steel and Aquamarine Teleporter",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_tesseract_steel_aqua.png"},
+	inventory_image = "fun_caves_tesseract_steel_aqua.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+	on_use = function(itemstack, user, pointed_thing)
+		teleporter(user, 'overworld', 1)
+	end,
+})
+
+minetest.register_craftitem("fun_caves:pure_steel", {
+	description = "Incredibly Pure Steel",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"default_steel_ingot.png"},
+	inventory_image = "default_steel_ingot.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craftitem("fun_caves:perfect_aquamarine", {
+	description = "Perfect Aquamarine",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"default_diamond.png"},
+	inventory_image = "default_diamond.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_glass_defaults(),
+})
+
+minetest.register_craft({
+	output = 'fun_caves:teleporter_steel_aquamarine',
+	recipe = {
+		{'fun_caves:pure_steel', 'default:copper_ingot', 'fun_caves:pure_steel'},
+		{'fun_caves:pure_steel', 'fun_caves:perfect_aquamarine', 'fun_caves:pure_steel'},
+		{'fun_caves:pure_steel', 'default:obsidianbrick', 'fun_caves:pure_steel'},
+	}
+})
