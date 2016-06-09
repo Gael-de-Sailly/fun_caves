@@ -22,9 +22,6 @@ fun_caves.cavegen = function(minp, maxp, data, area, node, heightmap, underzone)
 
 	local write = false
 
-	-- 32, -41, 123
-
-
 	local index = 0
 	local index3d = 0
 	for z = minp.z, maxp.z do
@@ -53,49 +50,32 @@ fun_caves.cavegen = function(minp, maxp, data, area, node, heightmap, underzone)
 			end
 
 			for y = minp.y-1, maxp.y+1 do
-				-- Dis
-				if underzone == 6 and y % 4960 < cave_3[index] + 160 and y % 4960 > cave_3[index] + 80 then
-					if y < -29620 then
+				if underzone and underzone.regular_columns and (x - minp.x) < 8 and (z - minp.z) < 8 then
+					data[ivm] = node[underzone.column_node]
+					write = true
+				elseif underzone and underzone.column_node and not underzone.regular_columns and column == 2 then
+					if underzone.column_node_rare and rand(70) == 1 then
+						data[ivm] = node[underzone.column_node_rare]
+					else
+						data[ivm] = node[underzone.column_node]
+					end
+					write = true
+				elseif underzone and (y < underzone.ceiling - (underzone.vary and cave_3[index] or 0) and y > underzone.floor + (underzone.vary and cave_3[index] or 0)) then
+					if underzone.sealevel and y <= underzone.sealevel then
 						data[ivm] = node["default:water_source"]
 					else
 						data[ivm] = node["air"]
 					end
 					write = true
-				elseif underzone == 3 then
-					if (x - minp.x) < 8 and (z - minp.z) < 8 then
-						data[ivm] = node["default:steelblock"]
-					elseif data[ivm] ~= node['air'] and y % 4960 < 160 and y % 4960 > 80 then
-						data[ivm] = node["air"]
-					end
-					write = true
-					-- Caina
-				elseif column == 2 and underzone == 1 and (data[ivm] == node['default:stone'] or data[ivm] == node['default:desert_stone']) then
-					if rand(70) == 1 then
-						data[ivm] = node["fun_caves:thin_ice"]
-					else
-						data[ivm] = node["default:ice"]
-					end
-					write = true
-					-- Phlegethos
-				elseif column == 2 and (data[ivm] == node['default:stone'] or data[ivm] == node['default:desert_stone']) and rand(70) == 1 then
-					data[ivm] = node["fun_caves:hot_stone"]
-					write = true
-					-- Dis
-				elseif column == 1 and underzone ~= 3 and data[ivm] ~= node['air'] and y % 4960 < cave_3[index] + 160 and y % 4960 > cave_3[index] + 80 then
-					if y < -29620 then
+				elseif underzone and (y < underzone.ceiling + 10 - (underzone.vary and cave_3[index] or 0) and y > underzone.floor - 10 + (underzone.vary and cave_3[index] or 0)) then
+					-- nop
+				elseif y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
+					if y <= fun_caves.underzones['Styx'].sealevel then
 						data[ivm] = node["default:water_source"]
 					else
 						data[ivm] = node["air"]
 					end
 					write = true
-				elseif column < 2 and underzone ~= 3 and data[ivm] ~= node['air'] and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
-					if y < -29620 then
-						data[ivm] = node["default:water_source"]
-					else
-						data[ivm] = node["air"]
-					end
-					write = true
-
 					if y > 0 and cave_3[index] < 1 and y == height then
 						-- Clear the air above a cave mouth.
 						local ivm2 = ivm

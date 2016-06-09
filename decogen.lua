@@ -117,6 +117,21 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 	local biome_n = minetest.get_perlin_map(biome_noise, map_max):get3dMap_flat(map_min)
 	local plant_n = minetest.get_perlin_map(plant_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 
+	local dis_map = {}
+	if underzone and underzone.name == 'Dis' then
+		for i = 0, 10, 2 do
+			dis_map[i] = {}
+			for j = 0, 10, 2 do
+				dis_map[i][j] = rand(6)
+				if dis_map[i][j] == 6 then
+					dis_map[i][j] = 5 + rand(10)
+				end
+			end
+		end
+	end
+
+	local undersea = fun_caves.underzones['Styx'].sealevel
+
 	local write = false
 	local write_p2 = false
 
@@ -153,25 +168,11 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						-------------------
 						--biome_val = -0.75
 						-------------------
-						if underzone == 1 then
-							stone_type = node["default:ice"]
+						if underzone and y < (underzone.ceiling + underzone.floor) / 2 then
+							stone_type = node[underzone.floor_node]
 							stone_depth = 2
-						elseif underzone == 3 then
-							stone_type = node["fun_caves:hot_brass"]
-							stone_depth = 1
-						elseif underzone == 4 and y % 4960 <= 145 then
-							stone_type = node["fun_caves:polluted_dirt"]
-							stone_depth = 2
-						elseif underzone == 4 and y % 4960 > 145 then
-							stone_type = node["fun_caves:black_sand"]
-							stone_depth = 2
-						elseif underzone == 6 then
-							stone_type = node["default:dirt"]
-							stone_depth = 2
-						elseif underzone and y % 4960 <= 145 then
-							stone_type = node["fun_caves:hot_cobble"]
-						elseif underzone and y % 4960 > 145 then
-							stone_type = node["fun_caves:black_sand"]
+						elseif underzone then
+							stone_type = node[underzone.ceiling_node]
 							stone_depth = 2
 						elseif biome_val < -0.65 then
 							stone_type = node["default:ice"]
@@ -187,7 +188,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							stone_type = node["fun_caves:stone_with_lichen"]
 						elseif biome_val < 0.2 then
 							stone_type = node["fun_caves:stone_with_algae"]
-						elseif y < 29620 then
+						elseif y <= undersea then
 							-- This is seperate to prevent the hot biomes spawning underwater.
 							stone_type = node["default:dirt"]
 							stone_depth = 2
@@ -211,10 +212,20 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						end
 						local node_above = data[ivm + area.ystride]
 
+						if underzone and underzone.name == 'Minauros' and y < underzone.floor + 10 and data[ivm] == node['air'] then
+							data[ivm] = node["fun_caves:water_poison_source"]
+							write = true
+							break
+						elseif underzone and underzone.name == 'Phlegethos' and y < underzone.floor + 5 and data[ivm] == node['air'] then
+							data[ivm] = node["default:lava_source"]
+							write = true
+							break
+						end
+
 						if data[ivm] == node["default:stone"] then
 							local air_above = false
 							for i = 1, stone_depth do
-								if data[ivm + area.ystride * i] == node["air"] or (y < 29620 and data[ivm + area.ystride * i] == node["default:water_source"]) then
+								if data[ivm + area.ystride * i] == node["air"] or (y < undersea and data[ivm + area.ystride * i] == node["default:water_source"]) then
 									air_above = true
 								end
 							end
@@ -278,10 +289,9 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 						end
 
-						-- Dis
-						if underzone == 3 and data[ivm] == node['air'] and floor((x - minp.x) / 8) % 2 == 0 and floor((z - minp.z) / 8) % 2 == 0 and y % 4960 < 82 + dis_map[floor((x - minp.x) / 8)][floor((z - minp.z) / 8)] * 4 and y % 4960 > 80 then
+						if underzone and underzone.name == 'Dis' and data[ivm] == node['air'] and floor((x - minp.x) / 8) % 2 == 0 and floor((z - minp.z) / 8) % 2 == 0 and y - underzone.floor < dis_map[floor((x - minp.x) / 8)][floor((z - minp.z) / 8)] * 4 + 1 and y - underzone.floor >= 0 then
 							local dx = (x - minp.x) % 16
-							local dy = y % 4960 - 80
+							local dy = y - underzone.floor + 1
 							local dz = (z - minp.z) % 16
 							if dx == 1 and dz == 1 then
 								data[ivm] = node["default:ladder_steel"]
@@ -289,7 +299,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 								write_p2 = true
 							elseif ((dx == 0 or dx == 7) and (dz % 3 ~= 2 or dy % 4 == 0)) or ((dz == 0 or dz == 7) and (dx % 3 ~= 2 or dy % 4 == 0)) then
 								data[ivm] = node["fun_caves:hot_iron"]
-							elseif dy %4 == 0 then
+							elseif dy % 4 == 0 then
 								data[ivm] = node["fun_caves:hot_brass"]
 							end
 							write = true
@@ -323,16 +333,20 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 
 							-- fluids
-							if y > minp.y and (node_below == node["default:stone"] or node_below == node["fun_caves:hot_cobble"]) and rand(300) == 1 then
+							if not underzone and y > minp.y and (node_below == node["default:stone"] or node_below == node["fun_caves:hot_cobble"]) and rand(300) == 1 then
 								data[ivm] = node["default:lava_source"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:polluted_dirt"] and rand(400) == 1 then
-								data[ivm] = node["fun_caves:water_poison_source"]
 								write = true
 								break
 							elseif node_below == node["fun_caves:stone_with_moss"] and rand(300) == 1 then
 								data[ivm] = node["default:water_source"]
+								write = true
+								break
+							elseif underzone and underzone.name == 'Phlegethos' and node_below == node["fun_caves:hot_cobble"] and rand(1200) == 1 then
+								data[ivm] = node["default:lava_source"]
+								write = true
+								break
+							elseif node_below == node["fun_caves:polluted_dirt"] and rand(2000) == 1 then
+								data[ivm] = node["fun_caves:water_poison_source"]
 								write = true
 								break
 

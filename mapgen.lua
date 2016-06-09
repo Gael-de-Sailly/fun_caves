@@ -74,6 +74,76 @@ fun_caves.is_fortress = function(pos, cs, debug)
 end
 
 
+fun_caves.underzones = {
+	Caina={
+		name='Caina',
+		ceiling=-4852,
+		ceiling_node='default:ice',
+		column_node='default:ice',
+		column_node_rare = 'fun_caves:thin_ice',
+		floor=-4972,
+		floor_node='default:ice',
+		lower_bound=-4992,
+		regular_columns=false,
+		upper_bound=-4832,
+		vary=true,
+	},
+	Phlegethos={
+		name='Phlegethos',
+		ceiling=-9892,
+		ceiling_node='fun_caves:black_sand',
+		column_node='default:stone',
+		column_node_rare = 'fun_caves:hot_stone',
+		floor=-10012,
+		floor_node='fun_caves:hot_cobble',
+		lower_bound=-10032,
+		regular_columns=false,
+		upper_bound=-9872,
+		vary=true,
+	},
+	Dis={
+		name='Dis',
+		ceiling=-14914,
+		ceiling_node='fun_caves:hot_brass',
+		column_node='default:steelblock',
+		column_node_rare = nil,
+		floor=-14982,
+		floor_node='fun_caves:hot_brass',
+		lower_bound=-14992,
+		regular_columns=true,
+		upper_bound=-14912,
+		vary=false,
+	},
+	Minauros={
+		name='Minauros',
+		ceiling=-19812,
+		ceiling_node='fun_caves:black_sand',
+		column_node='fun_caves:polluted_dirt',
+		column_node_rare = 'fun_caves:glowing_fungal_stone',
+		floor=-19932,
+		floor_node='fun_caves:polluted_dirt',
+		lower_bound=-19952,
+		regular_columns=false,
+		upper_bound=-19792,
+		vary=true,
+	},
+	Styx={
+		name='Styx',
+		ceiling=-29812,
+		ceiling_node='default:dirt',
+		column_node=nil,
+		column_node_rare = nil,
+		floor=-30012,
+		floor_node='default:dirt',
+		lower_bound=-30032,
+		regular_columns=false,
+		sealevel=-29842,
+		upper_bound=-29792,
+		vary=true,
+	},
+}
+
+
 local function generate(p_minp, p_maxp, seed)
 	local minp, maxp = p_minp, p_maxp
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
@@ -88,16 +158,11 @@ local function generate(p_minp, p_maxp, seed)
 
 	local write = false
 	local write_p2 = false
-	local underzone, dis_map = nil, {}
-	if minp.y < -4000 and minp.y % 4960 < 160 and maxp.y % 4960 > 0 then
-		underzone = floor(minp.y / -4960 + 0.5)
-		if underzone == 3 then
-			for i = 0, 10, 2 do
-				dis_map[i] = {}
-				for j = 0, 10, 2 do
-					dis_map[i][j] = rand(4)
-				end
-			end
+	local underzone = nil
+	for _, uz in pairs(fun_caves.underzones) do
+		local avg = (minp.y + maxp.y) / 2
+		if avg <= uz.upper_bound and avg >= uz.lower_bound then
+			underzone = uz
 		end
 	end
 
@@ -106,9 +171,10 @@ local function generate(p_minp, p_maxp, seed)
 		fun_caves.fortress(minp, maxp, data, area, node)
 		write = true
 	else
-		write = fun_caves.cavegen(minp, maxp, data, area, node, heightmap, underzone)
-
-		write, write_p2 = fun_caves.decogen(minp, maxp, data, p2data, area, node, heightmap, biome_ids, underzone, dis_map)
+		local write1, write2
+		write1 = fun_caves.cavegen(minp, maxp, data, area, node, heightmap, underzone)
+		write2, write_p2 = fun_caves.decogen(minp, maxp, data, p2data, area, node, heightmap, biome_ids, underzone)
+		write = write1 or write2
 	end
 
 
@@ -119,7 +185,7 @@ local function generate(p_minp, p_maxp, seed)
 		end
 
 		if fun_caves.DEBUG then
-			vm:set_lighting({day = 10, night = 10})
+			vm:set_lighting({day = 15, night = 15})
 		else
 			-- set_lighting causes shadows
 			--vm:set_lighting({day = 0, night = 0})
