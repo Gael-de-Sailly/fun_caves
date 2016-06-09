@@ -80,22 +80,24 @@ minetest.register_node("fun_caves:leaves_black", newnode)
 
 newnode = fun_caves.clone_node("default:water_source")
 newnode.description = "Poisonous Water"
-newnode.tiles[1].name = "fun_caves_water_poison_source_animated.png"
-newnode.special_tiles[1].name = "fun_caves_water_poison_source_animated.png"
+newnode.groups.poison = 3
+newnode.light_source = 6
 newnode.liquid_alternative_flowing = "fun_caves:water_poison_flowing"
 newnode.liquid_alternative_source = "fun_caves:water_poison_source"
-newnode.light_source = 6
-newnode.groups.poison = 3
+newnode.post_effect_color = {a = 103, r = 108, g = 128, b = 64}
+newnode.special_tiles[1].name = "fun_caves_water_poison_source_animated.png"
+newnode.tiles[1].name = "fun_caves_water_poison_source_animated.png"
 minetest.register_node("fun_caves:water_poison_source", newnode)
 
 newnode = fun_caves.clone_node("default:water_flowing")
 newnode.description = "Poisonous Water"
-newnode.tiles[1] = "fun_caves_water_poison.png"
-newnode.special_tiles[1].name = "fun_caves_water_poison_flowing_animated.png"
+newnode.groups.poison = 3
+newnode.light_source = 6
 newnode.liquid_alternative_flowing = "fun_caves:water_poison_flowing"
 newnode.liquid_alternative_source = "fun_caves:water_poison_source"
-newnode.light_source = 6
-newnode.groups.poison = 3
+newnode.post_effect_color = {a = 103, r = 108, g = 128, b = 64}
+newnode.special_tiles[1].name = "fun_caves_water_poison_flowing_animated.png"
+newnode.tiles[1] = "fun_caves_water_poison.png"
 minetest.register_node("fun_caves:water_poison_flowing", newnode)
 
 --minetest.register_node("fun_caves:bright_air", {

@@ -153,27 +153,21 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							break
 						end
 
-						local biome_val = biome_n[index3d]
-						local stone_type = "default:stone"
-						local stone_depth = 1
-
-						-- Compress biomes at the surface to avoid fluids.
-						if y > fluid_compression then
-							biome_val = biome_val / max(1, log(y - fluid_compression))
-						end
-						-------------------
-						--biome_val = -0.75
-						-------------------
-						local biome = nil
-						if underzone and y < (underzone.ceiling + underzone.floor) / 2 then
+						local biome
+						--if underzone and y < (underzone.ceiling + underzone.floor) / 2 then
+						if underzone then
 							biome = underzone
-							stone_type = underzone.floor_node
-							stone_depth = 2
-						elseif underzone then
-							biome = underzone
-							stone_type = underzone.ceiling_node
-							stone_depth = 2
 						else
+							local biome_val = biome_n[index3d]
+
+							-- Compress biomes at the surface to avoid fluids.
+							if y > fluid_compression then
+								biome_val = biome_val / max(1, log(y - fluid_compression))
+							end
+							-------------------
+							--biome_val = -0.75
+							-------------------
+
 							for _, bi in pairs(fun_caves.cave_biomes) do
 								if biome_val >= bi.biome_val_low and biome_val < bi.biome_val_high then
 									biome = bi
@@ -187,9 +181,6 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							if not biome or (y < undersea and not biome.underwater) then
 								biome = fun_caves.cave_biomes['algae']
 							end
-
-							stone_type = biome.stone_type
-							stone_depth = biome.stone_depth
 						end
 
 
@@ -213,7 +204,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 
 							local air_above = false
-							for i = 1, stone_depth do
+							for i = 1, biome.stone_depth do
 								if data[ivm + area.ystride * i] == node["air"] or (y < undersea and data[ivm + area.ystride * i] == node["default:water_source"]) then
 									air_above = true
 								end
@@ -225,20 +216,20 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 									write = true
 									break
 								else
-									data[ivm] = node[stone_type]
+									data[ivm] = node[biome.floor_node]
 									write = true
 									break
 								end
 							end
 
 							local air_below = false
-							for i = 1, stone_depth do
+							for i = 1, biome.stone_depth do
 								if data[ivm - area.ystride * i] == node["air"] then
 									air_below = true
 								end
 							end
 
-							if not air_above and stone_type == "default:sand" then
+							if not air_above and biome.floor_node == "default:sand" then
 								data[ivm] = node["default:sandstone"]
 								write = true
 								break
@@ -250,7 +241,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 									write = true
 									break
 								else
-									data[ivm] = node[stone_type]
+									data[ivm] = node[biome.ceiling_node]
 									write = true
 									break
 								end
@@ -285,13 +276,13 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 
 							-- fluids
-							if y > minp.y and biome and biome.fluid and node_below == node[stone_type] and rand(biome.fluid_chance) == 1 then
+							if y > minp.y and biome and biome.fluid and node_below == node[biome.floor_node] and rand(biome.fluid_chance) == 1 then
 								data[ivm] = node[biome.fluid]
 								write = true
 								break
 
 								-- standing up
-							elseif node_below == node[stone_type] and biome and biome.stalagmite and rand(biome.stalagmite_chance) == 1 then
+							elseif node_below == node[biome.floor_node] and biome and biome.stalagmite and rand(biome.stalagmite_chance) == 1 then
 								if type(biome.stalagmite) == 'table' then
 									data[ivm] = node[biome.stalagmite[rand(#biome.stalagmite)]]
 								else
