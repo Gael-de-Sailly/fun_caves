@@ -249,17 +249,17 @@ end
 
 if minetest.registered_entities["mobs_slimes:green_big"] then
 	mobs:spawn_specific("mobs_slimes:green_big",
-	{"fun_caves:stone_with_moss", "fun_caves:stone_with_algae"},
+	{"fun_caves:stone_with_moss", "fun_caves:stone_with_algae", 'fun_caves:polluted_dirt'},
 	{"air"},
 	4, 20, 30, 30000, 1, -31000, 31000
 	)
 	mobs:spawn_specific("mobs_slimes:green_medium",
-	{"fun_caves:stone_with_moss", "fun_caves:stone_with_algae"},
+	{"fun_caves:stone_with_moss", "fun_caves:stone_with_algae", 'fun_caves:polluted_dirt'},
 	{"air"},
 	4, 20, 30, 30000, 2, -31000, 31000
 	)
 	mobs:spawn_specific("mobs_slimes:green_small",
-	{"default:dirt_with_grass", "default:junglegrass", "default:mossycobble", "ethereal:green_dirt_top"},
+	{"default:dirt_with_grass", "default:junglegrass", "default:mossycobble", "ethereal:green_dirt_top", 'fun_caves:polluted_dirt'},
 	{"air"},
 	4, 20, 30, 30000, 3, -31000, 31000
 	)

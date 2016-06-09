@@ -2,10 +2,6 @@ local deco_depth = -30  -- place cave stuff this far beneath the surface
 local light_depth = -13  -- depth above which to place corals/sea plants
 local water_level = 1
 local fluid_compression = -200  -- the depth to start planting lava/water
-local dirt_ratio = 10  -- place this many stones for every dirt in caves
-local radioactive_ratio = 500  -- place this much salt for every radioactive ore
-local coalblock_ratio = 100  -- place this many sand for every coalblock
-local fungal_stone_ratio = 50  -- place this many stones for every glowing fungus
 local water_lily_ratio = 15  -- place this many water for every lily
 local max_depth = 31000
 
@@ -158,7 +154,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						end
 
 						local biome_val = biome_n[index3d]
-						local stone_type = node["default:stone"]
+						local stone_type = "default:stone"
 						local stone_depth = 1
 
 						-- Compress biomes at the surface to avoid fluids.
@@ -168,43 +164,34 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						-------------------
 						--biome_val = -0.75
 						-------------------
+						local biome = nil
 						if underzone and y < (underzone.ceiling + underzone.floor) / 2 then
-							stone_type = node[underzone.floor_node]
+							biome = underzone
+							stone_type = underzone.floor_node
 							stone_depth = 2
 						elseif underzone then
-							stone_type = node[underzone.ceiling_node]
-							stone_depth = 2
-						elseif biome_val < -0.65 then
-							stone_type = node["default:ice"]
-							stone_depth = 2
-						elseif biome_val < -0.6 then
-							stone_type = node["fun_caves:thin_ice"]
-							stone_depth = 2
-						elseif biome_val < -0.5 then
-							stone_type = node["fun_caves:stone_with_lichen"]
-						elseif biome_val < -0.3 then
-							stone_type = node["fun_caves:stone_with_moss"]
-						elseif biome_val < -0.0 then
-							stone_type = node["fun_caves:stone_with_lichen"]
-						elseif biome_val < 0.2 then
-							stone_type = node["fun_caves:stone_with_algae"]
-						elseif y <= undersea then
-							-- This is seperate to prevent the hot biomes spawning underwater.
-							stone_type = node["default:dirt"]
-							stone_depth = 2
-						elseif biome_val < 0.35 then
-							stone_type = node["fun_caves:stone_with_salt"]
-							stone_depth = 2
-						elseif biome_val < 0.5 then
-							stone_type = node["default:sand"]
-							stone_depth = 2
-						elseif biome_val < 0.6 then
-							stone_type = node["fun_caves:black_sand"]
+							biome = underzone
+							stone_type = underzone.ceiling_node
 							stone_depth = 2
 						else
-							stone_type = node["fun_caves:hot_cobble"]
+							for _, bi in pairs(fun_caves.cave_biomes) do
+								if biome_val >= bi.biome_val_low and biome_val < bi.biome_val_high then
+									biome = bi
+								end
+							end
+
+							if not biome then
+								print(("* Error in biome selection: %s"):format(biome_val))
+							end
+
+							if not biome or (y < undersea and not biome.underwater) then
+								biome = fun_caves.cave_biomes['algae']
+							end
+
+							stone_type = biome.stone_type
+							stone_depth = biome.stone_depth
 						end
-						--	"glow"
+
 
 						local node_below
 						if y > minp.y then
@@ -212,17 +199,19 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						end
 						local node_above = data[ivm + area.ystride]
 
-						if underzone and underzone.name == 'Minauros' and y < underzone.floor + 10 and data[ivm] == node['air'] then
-							data[ivm] = node["fun_caves:water_poison_source"]
-							write = true
-							break
-						elseif underzone and underzone.name == 'Phlegethos' and y < underzone.floor + 5 and data[ivm] == node['air'] then
-							data[ivm] = node["default:lava_source"]
+						if underzone and underzone.lake and y < underzone.floor + underzone.lake_level and data[ivm] == node['air'] then
+							data[ivm] = node[underzone.lake]
 							write = true
 							break
 						end
 
 						if data[ivm] == node["default:stone"] then
+							if node_above == node["air"] and biome and biome.dirt and rand(biome.dirt_chance) == 1 then
+								data[ivm] = node[biome.dirt]
+								write = true
+								break
+							end
+
 							local air_above = false
 							for i = 1, stone_depth do
 								if data[ivm + area.ystride * i] == node["air"] or (y < undersea and data[ivm + area.ystride * i] == node["default:water_source"]) then
@@ -230,26 +219,13 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 								end
 							end
 
-							if node_above == node["air"] and (stone_type == node["fun_caves:stone_with_algae"] or stone_type == node["fun_caves:stone_with_lichen"]) and rand(dirt_ratio) == 1 then
-								data[ivm] = node["dirt"]
-								write = true
-								break
-							end
-
 							if air_above then
-								if stone_type == node["fun_caves:stone_with_salt"] and rand(radioactive_ratio) == 1 then
-									data[ivm] = node["fun_caves:radioactive_ore"]
-									write = true
-									break
-								elseif stone_type == node["fun_caves:black_sand"] and rand(coalblock_ratio) == 1 then
-									data[ivm] = node["default:coalblock"]
-									break
-								elseif node_above == node["air"] and stone_type == node["fun_caves:stone_with_moss"] and rand(fungal_stone_ratio) == 1 then
-									data[ivm] = node["fun_caves:glowing_fungal_stone"]
+								if biome and biome.deco and rand(biome.deco_chance) == 1 then
+									data[ivm] = node[biome.deco]
 									write = true
 									break
 								else
-									data[ivm] = stone_type
+									data[ivm] = node[stone_type]
 									write = true
 									break
 								end
@@ -262,33 +238,26 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 								end
 							end
 
-							if not air_above and stone_type == node["default:sand"] then
+							if not air_above and stone_type == "default:sand" then
 								data[ivm] = node["default:sandstone"]
 								write = true
 								break
 							end
 
-							if data[ivm] == node["default:stone"] and air_below then
-								if stone_type == node["fun_caves:stone_with_salt"] and rand(radioactive_ratio) == 1 then
-									data[ivm] = node["fun_caves:radioactive_ore"]
-									write = true
-									break
-								elseif stone_type == node["fun_caves:black_sand"] and rand(coalblock_ratio) == 1 then
-									data[ivm] = node["default:coalblock"]
-									write = true
-									break
-								elseif node_below == node["air"] and (stone_type == node["fun_caves:stone_with_lichen"] or stone_type == node["fun_caves:stone_with_moss"]) and rand(fungal_stone_ratio) == 1 then
-									data[ivm] = node["fun_caves:glowing_fungal_stone"]
+							if air_below then
+								if biome and biome.deco and rand(biome.deco_chance) == 1 then
+									data[ivm] = node[biome.deco]
 									write = true
 									break
 								else
-									data[ivm] = stone_type
+									data[ivm] = node[stone_type]
 									write = true
 									break
 								end
 							end
 						end
 
+						-- smallest city generator ever
 						if underzone and underzone.name == 'Dis' and data[ivm] == node['air'] and floor((x - minp.x) / 8) % 2 == 0 and floor((z - minp.z) / 8) % 2 == 0 and y - underzone.floor < dis_map[floor((x - minp.x) / 8)][floor((z - minp.z) / 8)] * 4 + 1 and y - underzone.floor >= 0 then
 							local dx = (x - minp.x) % 16
 							local dy = y - underzone.floor + 1
@@ -308,73 +277,26 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 
 						if data[ivm] == node["air"] and y < maxp.y then
 							-- hanging down
-							if node_above == node["default:stone"] and rand(12) == 1 then
-								if stone_type == node["default:ice"] then
-									data[ivm] = node["fun_caves:icicle_down"]
-									write = true
-									break
-								elseif stone_type == node["fun_caves:stone_with_algae"] then
-									data[ivm] = node["fun_caves:stalactite_slimy"]
-									write = true
-									break
-								elseif stone_type == node["fun_caves:stone_with_moss"] then
-									data[ivm] = node["fun_caves:stalactite_mossy"]
-									write = true
-									break
-								elseif stone_type == node["fun_caves:stone_with_lichen"] then
-									data[ivm] = node["fun_caves:stalactite"]
-									write = true
-									break
-								elseif stone_type == node["default:stone"] then
-									data[ivm] = node["fun_caves:stalactite"]
-									write = true
-									break
-								end
+							--  stone hasn't yet been changed
+							if biome and biome.stalactite and node_above == node["default:stone"] and rand(biome.stalactite_chance) == 1 then
+								data[ivm] = node[biome.stalactite]
+								write = true
+								break
 							end
 
 							-- fluids
-							if not underzone and y > minp.y and (node_below == node["default:stone"] or node_below == node["fun_caves:hot_cobble"]) and rand(300) == 1 then
-								data[ivm] = node["default:lava_source"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:stone_with_moss"] and rand(300) == 1 then
-								data[ivm] = node["default:water_source"]
-								write = true
-								break
-							elseif underzone and underzone.name == 'Phlegethos' and node_below == node["fun_caves:hot_cobble"] and rand(1200) == 1 then
-								data[ivm] = node["default:lava_source"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:polluted_dirt"] and rand(2000) == 1 then
-								data[ivm] = node["fun_caves:water_poison_source"]
+							if y > minp.y and biome and biome.fluid and node_below == node[stone_type] and rand(biome.fluid_chance) == 1 then
+								data[ivm] = node[biome.fluid]
 								write = true
 								break
 
 								-- standing up
-							elseif node_below == node["default:ice"] and rand(12) == 1 then
-								data[ivm] = node["fun_caves:icicle_up"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:stone_with_algae"] and rand(12) == 1 then
-								data[ivm] = node["fun_caves:stalagmite_slimy"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:stone_with_moss"] and rand(12) == 1 then
-								data[ivm] = node["fun_caves:stalagmite_mossy"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:stone_with_lichen"] and rand(12) == 1 then
-								data[ivm] = node["fun_caves:stalagmite"]
-								write = true
-								break
-							elseif node_below == node["default:stone"] and rand(12) == 1 then
-								data[ivm] = node["fun_caves:stalagmite"]
-								write = true
-								break
-							elseif node_below == node["fun_caves:hot_cobble"] and rand(50) == 1 then
-								data[ivm] = node[fun_caves.hot_spikes[rand(#fun_caves.hot_spikes)]]
-							elseif node_below == node["fun_caves:black_sand"] and rand(50) == 1 then
-								data[ivm] = node["fun_caves:constant_flame"]
+							elseif node_below == node[stone_type] and biome and biome.stalagmite and rand(biome.stalagmite_chance) == 1 then
+								if type(biome.stalagmite) == 'table' then
+									data[ivm] = node[biome.stalagmite[rand(#biome.stalagmite)]]
+								else
+									data[ivm] = node[biome.stalagmite]
+								end
 								write = true
 								break
 
@@ -397,7 +319,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 										place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y,z=z}, fun_caves.schematics['decaying_tree'], true)
 									end
 								end
-							elseif node_below == node["default:dirt"] and (stone_type == node["fun_caves:stone_with_lichen"] or stone_type == node["fun_caves:stone_with_algae"]) and biome_val >= -0.5 then
+							elseif node_below == node["default:dirt"] and biome and biome.fungi then
 								if rand(10) == 1 then
 									data[ivm] = node["flowers:mushroom_red"]
 									write = true
