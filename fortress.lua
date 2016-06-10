@@ -2,6 +2,12 @@ local rand = math.random
 local floor = math.floor
 
 
+local treasures = {
+	'fun_caves:stone_with_aquamarines',
+	'fun_caves:stone_with_sky_iron',
+	'default:obsidian',
+}
+
 fun_caves.fortress = function(minp, maxp, data, area, node)
 	-- invisible maze
 	-- hungry maze
@@ -16,6 +22,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 	local inner_floor = node['fun_caves:dungeon_floor_1']
 	local outer_wall = node['fun_caves:dungeon_wall_2']
 	local inner_wall = node['fun_caves:dungeon_wall_1']
+	local treasure_count = 0
 
 	for y2 = 0, n-1 do
 		--for y2 = 0, 0 do
@@ -40,7 +47,12 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 						end
 					elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
 						--data[ivm] = fun_caves.DEBUG and node["default:glass"] or inner_wall
-						data[ivm] = inner_wall
+						if y2 == 0 and rand(3000) == 1 then
+							treasure_count = treasure_count + 1
+							data[ivm] = node[treasures[rand(#treasures)]]
+						else
+							data[ivm] = inner_wall
+						end
 					else
 						data[ivm] = node["air"]
 					end
@@ -88,4 +100,5 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 			end
 		end
 	end
+	--print(treasure_count)
 end

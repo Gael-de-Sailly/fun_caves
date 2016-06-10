@@ -241,6 +241,46 @@ minetest.register_abm({
 	end
 })
 
+-- meteor strikes
+minetest.register_abm({
+	nodenames = {"default:dirt_with_grass", "default:dirt_with_dry_grass"},
+	neighbors = {"air"},
+	interval = 100000 * fun_caves.time_factor,
+	catch_up = false,
+	chance = 10000,
+	action = function(pos, node)
+		local ps = {}
+		local players = minetest.get_connected_players()
+		for i = 1, #players do
+			local pp = players[i]:getpos()
+			if pp and pp.y > 0 then
+				local sky = {}
+				sky.bgcolor, sky.type, sky.textures = players[i]:get_sky()
+				ps[#ps+1] = { p = players[i], sky = sky }
+				players[i]:set_sky(0xffffff, "plain", {})
+			end
+		end
+
+		minetest.set_node(pos, {name="fun_caves:meteorite_crater"})
+		--print('Fun Caves: meteorite impact '..pos.x..','..pos.y..','..pos.z)
+
+		minetest.after(1, function()
+			for i = 1, #ps do
+				ps[i].p:set_sky(ps[i].sky.bgcolor, ps[i].sky.type, ps[i].sky.textures)
+			end
+		end)
+	end
+})
+
+minetest.register_abm({
+	nodenames = {"fun_caves:meteorite_crater"},
+	interval = 100 * fun_caves.time_factor,
+	chance = 10,
+	action = function(pos, node)
+		minetest.set_node(pos, {name="default:dirt"})
+	end
+})
+
 -- new mushrooms
 minetest.register_abm({
 	nodenames = {"default:dirt"},

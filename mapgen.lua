@@ -48,6 +48,7 @@ fun_caves.is_fortress = function(pos, cs, debug)
 	-- Fix this to get csize, somehow.
 	-- Remember that this function may be called
 	--  before any chunks are generated.
+
 	local cs = cs or {x=80, y=80, z=80}
 	local offset = floor(cs.y / 2) - 8 + 1
 
@@ -63,10 +64,11 @@ fun_caves.is_fortress = function(pos, cs, debug)
 	local z = floor((pos.z + offset) / cs.z)
 
 	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
-	if debug then
-		print(x, y, z, n, floor((n * 10000) % 19))
+	if fun_caves.DEBUG and floor((n * 10000) % 4) == 1 then
+		print('fortress ('..x..','..y..','..zn..')')
+		return true
 	end
-	if floor((n * 10000) % 19) == 1 or fun_caves.DEBUG then
+	if floor((n * 10000) % 19) == 1 then
 		return true
 	end
 

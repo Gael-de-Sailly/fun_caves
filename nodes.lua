@@ -159,12 +159,12 @@ local function teleporter(user, area, power)
 	end
 end
 
-minetest.register_craftitem("fun_caves:teleporter_steel_aquamarine", {
-	description = "Steel and Aquamarine Teleporter",
+minetest.register_craftitem("fun_caves:teleporter_iron_aquamarine", {
+	description = "Iron and Aquamarine Teleporter",
 	drawtype = "plantlike",
 	paramtype = "light",
-	tiles = {"fun_caves_tesseract_steel_aqua.png"},
-	inventory_image = "fun_caves_tesseract_steel_aqua.png",
+	tiles = {"fun_caves_tesseract_iron_aqua.png"},
+	inventory_image = "fun_caves_tesseract_iron_aqua.png",
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
 	on_use = function(itemstack, user, pointed_thing)
@@ -172,14 +172,103 @@ minetest.register_craftitem("fun_caves:teleporter_steel_aquamarine", {
 	end,
 })
 
-minetest.register_craftitem("fun_caves:pure_steel", {
-	description = "Incredibly Pure Steel",
+minetest.register_craft({
+	output = 'fun_caves:teleporter_iron_aquamarine',
+	recipe = {
+		{'fun_caves:sky_iron', 'default:copper_ingot', 'fun_caves:sky_iron'},
+		{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine'},
+		{'fun_caves:sky_iron', 'default:obsidian_shard', 'fun_caves:sky_iron'},
+	}
+})
+
+minetest.register_craftitem("fun_caves:meteorite", {
+	description = "Iron Meteorite",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_meteorite.png"},
+	inventory_image = "fun_caves_meteorite.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craftitem("fun_caves:sky_iron", {
+	description = "Sky Iron",
 	drawtype = "plantlike",
 	paramtype = "light",
 	tiles = {"default_steel_ingot.png"},
 	inventory_image = "default_steel_ingot.png",
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
+})
+
+local newnode = fun_caves.clone_node("default:stone_with_iron")
+newnode.description = "Stone With Sky Iron"
+newnode.drop = "fun_caves:sky_iron"
+minetest.register_node("fun_caves:stone_with_sky_iron", newnode)
+
+minetest.register_craftitem("fun_caves:meteoritic_iron_crucible", {
+	description = "Crucible of Meteoritic Iron",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"crucible.png"},
+	inventory_image = "crucible.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craft({
+	output = 'fun_caves:meteoritic_iron_crucible',
+	recipe = {
+		{'fun_caves:meteorite', 'fun_caves:meteorite', 'fun_caves:meteorite'},
+		{'fun_caves:meteorite', 'fun_caves:meteorite', 'fun_caves:meteorite'},
+		{'fun_caves:meteorite', 'fun_caves:crucible', 'fun_caves:meteorite'},
+	}
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "fun_caves:sky_iron",
+	recipe = "fun_caves:meteoritic_iron_crucible",
+	cooktime = 30,
+})
+
+
+minetest.register_craftitem("fun_caves:crucible", {
+	description = "Crucible",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"crucible.png"},
+	inventory_image = "crucible.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craft({
+	output = 'fun_caves:crucible',
+	recipe = {
+		{'default:clay', '', 'default:clay'},
+		{'default:clay', '', 'default:clay'},
+		{'', 'default:clay', ''},
+	}
+})
+
+minetest.register_node("fun_caves:stone_with_aquamarines", {
+	description = "Aquamarine Ore",
+	tiles = {"default_stone.png^default_mineral_diamond.png"},
+	groups = {cracky = 1},
+	drop = "fun_caves:perfect_aquamarine",
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_ore({
+	ore_type       = "scatter",
+	ore            = "fun_caves:stone_with_aquamarines",
+	wherein        = "default:stone",
+	clust_scarcity = 30 * 30 * 30,
+	clust_num_ores = 1,
+	clust_size     = 1,
+	y_min          = -6000,
+	y_max          = 31000,
 })
 
 minetest.register_craftitem("fun_caves:perfect_aquamarine", {
@@ -192,11 +281,9 @@ minetest.register_craftitem("fun_caves:perfect_aquamarine", {
 	sounds = default.node_sound_glass_defaults(),
 })
 
-minetest.register_craft({
-	output = 'fun_caves:teleporter_steel_aquamarine',
-	recipe = {
-		{'fun_caves:pure_steel', 'default:copper_ingot', 'fun_caves:pure_steel'},
-		{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine'},
-		{'fun_caves:pure_steel', 'default:obsidianbrick', 'fun_caves:pure_steel'},
-	}
-})
+local newnode = fun_caves.clone_node("default:dirt")
+newnode.description = "Meteor Crater"
+newnode.tiles = {"fun_caves_crater.png", "default_dirt.png", "default_dirt.png", "default_dirt.png", "default_dirt.png", "default_dirt.png"}
+newnode.drop = "fun_caves:meteorite"
+newnode.groups.soil = 0
+minetest.register_node("fun_caves:meteorite_crater", newnode)
