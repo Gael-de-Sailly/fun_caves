@@ -41,6 +41,14 @@ fun_caves.plantlist = {
 	 sounds = default.node_sound_stone_defaults(),
 	},
 
+	{name="precious_coral",
+	 desc="Precious Coral",
+	 water=true,
+	 light_source=1,
+	 coral=true,
+	 sounds = default.node_sound_stone_defaults(),
+	},
+
 	{name="water_plant_1",
 	 desc="Water Plant",
 	 water=true,

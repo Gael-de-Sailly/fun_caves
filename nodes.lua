@@ -142,7 +142,9 @@ local function teleporter(user, area, power)
 	else
 		local newpos
 		if area == 'overworld' then
-			newpos = {x=math.random(12000)-6000, y=120, z=math.random(12000)-6000}
+			newpos = {x=(math.random(2)*2-3)*(math.random(math.floor(map_max/6))+power*math.floor(map_max/6)), y=120, z=(math.random(2)*2-3)*(math.random(math.floor(map_max/6))+power*math.floor(map_max/6))}
+		elseif area == 'hell' then
+			newpos = {x=pos.x, y=fun_caves.underzones[({'Caina','Phlegethos','Dis','Minauros','Styx'})[power+1]].ceiling-30, z=pos.z}
 		else
 			return
 		end
@@ -159,6 +161,45 @@ local function teleporter(user, area, power)
 	end
 end
 
+minetest.register_craftitem("fun_caves:teleporter_iron_coral", {
+	description = "Iron and Moonstone Teleporter",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_tesseract_iron_coral.png"},
+	inventory_image = "fun_caves_tesseract_iron_coral.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+	on_use = function(itemstack, user, pointed_thing)
+		teleporter(user, 'hell', 0)
+	end,
+})
+
+minetest.register_craft({
+	output = 'fun_caves:teleporter_iron_coral',
+	recipe = {
+		{'fun_caves:sky_iron', 'default:copper_ingot', 'fun_caves:sky_iron'},
+		{'fun_caves:coral_gem', 'fun_caves:coral_gem', 'fun_caves:coral_gem'},
+		{'fun_caves:sky_iron', 'default:obsidian_shard', 'fun_caves:sky_iron'},
+	}
+})
+
+minetest.register_craftitem("fun_caves:coral_gem", {
+	description = "Coral Gem",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_coral_gem.png"},
+	inventory_image = "fun_caves_coral_gem.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "fun_caves:coral_gem",
+	recipe = "fun_caves:precious_coral",
+	cooktime = 5,
+})
+
 minetest.register_craftitem("fun_caves:teleporter_iron_aquamarine", {
 	description = "Iron and Aquamarine Teleporter",
 	drawtype = "plantlike",
@@ -168,7 +209,7 @@ minetest.register_craftitem("fun_caves:teleporter_iron_aquamarine", {
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
 	on_use = function(itemstack, user, pointed_thing)
-		teleporter(user, 'overworld', 1)
+		teleporter(user, 'overworld', 0)
 	end,
 })
 
@@ -264,7 +305,7 @@ minetest.register_ore({
 	ore_type       = "scatter",
 	ore            = "fun_caves:stone_with_aquamarines",
 	wherein        = "default:stone",
-	clust_scarcity = 30 * 30 * 30,
+	clust_scarcity = 17 * 17 * 17,
 	clust_num_ores = 1,
 	clust_size     = 1,
 	y_min          = -6000,

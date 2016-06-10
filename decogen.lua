@@ -23,6 +23,7 @@ local log = math.log
 local floor = math.floor
 local find_nodes_in_area = minetest.find_nodes_in_area
 local csize
+local node_match_cache = {}
 
 
 local function place_schematic(minp, maxp, data, p2data, area, node, pos, schem, center)
@@ -356,13 +357,11 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 					-----------------------------------------------------
 					-- end of cave decoration non-loop
 					-----------------------------------------------------
-				elseif y < height then
+				elseif y < height and data[ivm] == node["air"] and (data[ivm - area.ystride] == node['default:stone'] or data[ivm - area.ystride] == node['default:sandstone']) then
 					-- This just places non-abm dirt inside caves.
 					-- Its value is questionable.
-					if data[ivm] == node["air"] and (data[ivm - area.ystride] == node['default:stone'] or data[ivm - area.ystride] == node['default:sandstone']) then
 						data[ivm - area.ystride] = node["fun_caves:dirt"]
 						write = true
-					end
 				else
 					local pn = plant_n[index]
 					local biome
@@ -382,7 +381,11 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						local node_above = data[ivm + area.ystride]
 
 						if y < water_level and data[ivm] == node["default:sand"] and node_above == node["default:water_source"] and data[ivm + area.ystride * 2] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) == 1 and surround(node, data, area, ivm) then
-							data[ivm] = node["fun_caves:staghorn_coral_water_sand"]
+							if rand(100) == 1 then
+								data[ivm] = node["fun_caves:precious_coral_water_sand"]
+							else
+								data[ivm] = node["fun_caves:staghorn_coral_water_sand"]
+							end
 							write = true
 							break
 						elseif y < water_level and node_below == node["default:sand"] and node_above == node["default:water_source"] and data[ivm] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) < 3 then

@@ -19,7 +19,6 @@ local node = setmetatable({}, {
 
 local data = {}
 local p2data = {}  -- vm rotation data buffer
-local node_match_cache = {}
 
 
 -- Create a table of biome ids, so I can use the biomemap.
