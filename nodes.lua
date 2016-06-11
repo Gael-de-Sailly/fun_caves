@@ -410,8 +410,8 @@ minetest.register_craftitem("fun_caves:crucible", {
 	description = "Crucible",
 	drawtype = "plantlike",
 	paramtype = "light",
-	tiles = {"crucible.png"},
-	inventory_image = "crucible.png",
+	tiles = {"fun_caves_crucible.png"},
+	inventory_image = "fun_caves_crucible.png",
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
 })
@@ -441,6 +441,14 @@ local treasures = {
 	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'default:obsidian'},
 }
 local filler = {'default:apple 10', 'default:coal_lump 10', 'default:wood 10'}
+local trophies = {
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+	{'fun_caves:unobtainium', 'fun_caves:philosophers_stone'},
+}
 local chest_formspec =
 	"size[8,9]" ..
 	default.gui_bg ..
@@ -468,6 +476,29 @@ newnode.on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 		for i = 1, math.random(4) do
 			inv:add_item('main', filler[math.random(#filler)])
 		end
+		if math.random(10) == 1 then
+			inv:add_item('main', trophies[level][math.random(#trophies[level])])
+		end
 	end
 end
 minetest.register_node("fun_caves:coffer", newnode)
+
+minetest.register_craftitem("fun_caves:unobtainium", {
+	description = "Unobtainium",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_unobtainium.png"},
+	inventory_image = "fun_caves_unobtainium.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_craftitem("fun_caves:philosophers_stone", {
+	description = "Philosopher's Stone",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_phil_stone.png"},
+	inventory_image = "fun_caves_phil_stone.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+})
