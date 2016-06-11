@@ -1,5 +1,6 @@
 local get_node_or_nil = minetest.get_node_or_nil
 local get_item_group = minetest.get_item_group
+local map_max = 31000
 
 local old_is_protected = minetest.is_protected
 function minetest.is_protected(pos, name)
@@ -200,6 +201,108 @@ minetest.register_craft({
 	cooktime = 5,
 })
 
+minetest.register_craftitem("fun_caves:teleporter_iron_garnet", {
+	description = "Iron and Garnet Teleporter",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_tesseract_iron_garnet.png"},
+	inventory_image = "fun_caves_tesseract_iron_garnet.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+	on_use = function(itemstack, user, pointed_thing)
+		teleporter(user, 'underworld', 0)
+	end,
+})
+
+minetest.register_craft({
+	output = 'fun_caves:teleporter_iron_garnet',
+	recipe = {
+		{'fun_caves:sky_iron', 'default:copper_ingot', 'fun_caves:sky_iron'},
+		{'fun_caves:perfect_garnet', 'fun_caves:perfect_garnet', 'fun_caves:perfect_garnet'},
+		{'fun_caves:sky_iron', 'default:obsidian_shard', 'fun_caves:sky_iron'},
+	}
+})
+
+minetest.register_craftitem("fun_caves:perfect_garnet", {
+	description = "Perfect Garnet",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_garnet.png"},
+	inventory_image = "fun_caves_garnet.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_glass_defaults(),
+})
+
+minetest.register_node("fun_caves:stone_with_garnets", {
+	description = "Garnet Ore",
+	tiles = {"default_stone.png^fun_caves_mineral_garnet.png"},
+	groups = {cracky = 1},
+	drop = "fun_caves:perfect_garnet",
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_ore({
+	ore_type       = "scatter",
+	ore            = "fun_caves:stone_with_garnets",
+	wherein        = "default:stone",
+	clust_scarcity = 17 * 17 * 17,
+	clust_num_ores = 1,
+	clust_size     = 1,
+	y_min          = -31000,
+	y_max          = 31000,
+})
+
+minetest.register_craftitem("fun_caves:teleporter_iron_zoisite", {
+	description = "Iron and Zoisite Teleporter",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_tesseract_iron_zois.png"},
+	inventory_image = "fun_caves_tesseract_iron_zois.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_stone_defaults(),
+	on_use = function(itemstack, user, pointed_thing)
+		teleporter(user, 'underworld', 0)
+	end,
+})
+
+minetest.register_craft({
+	output = 'fun_caves:teleporter_iron_zoisite',
+	recipe = {
+		{'fun_caves:sky_iron', 'default:copper_ingot', 'fun_caves:sky_iron'},
+		{'fun_caves:perfect_zoisite', 'fun_caves:perfect_zoisite', 'fun_caves:perfect_zoisite'},
+		{'fun_caves:sky_iron', 'default:obsidian_shard', 'fun_caves:sky_iron'},
+	}
+})
+
+minetest.register_craftitem("fun_caves:perfect_zoisite", {
+	description = "Perfect Zoisite",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_zoisite.png"},
+	inventory_image = "fun_caves_zoisite.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_glass_defaults(),
+})
+
+minetest.register_node("fun_caves:stone_with_zoisites", {
+	description = "Zoisite Ore",
+	tiles = {"default_stone.png^fun_caves_mineral_zoisite.png"},
+	groups = {cracky = 1},
+	drop = "fun_caves:perfect_zoisite",
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_ore({
+	ore_type       = "scatter",
+	ore            = "fun_caves:stone_with_zoisites",
+	wherein        = "default:stone",
+	clust_scarcity = 17 * 17 * 17,
+	clust_num_ores = 1,
+	clust_size     = 1,
+	y_min          = -31000,
+	y_max          = 31000,
+})
+
 minetest.register_craftitem("fun_caves:teleporter_iron_aquamarine", {
 	description = "Iron and Aquamarine Teleporter",
 	drawtype = "plantlike",
@@ -220,6 +323,35 @@ minetest.register_craft({
 		{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine', 'fun_caves:perfect_aquamarine'},
 		{'fun_caves:sky_iron', 'default:obsidian_shard', 'fun_caves:sky_iron'},
 	}
+})
+
+minetest.register_craftitem("fun_caves:perfect_aquamarine", {
+	description = "Perfect Aquamarine",
+	drawtype = "plantlike",
+	paramtype = "light",
+	tiles = {"fun_caves_aquamarine.png"},
+	inventory_image = "fun_caves_aquamarine.png",
+	groups = {dig_immediate = 3},
+	sounds = default.node_sound_glass_defaults(),
+})
+
+minetest.register_node("fun_caves:stone_with_aquamarines", {
+	description = "Aquamarine Ore",
+	tiles = {"default_stone.png^fun_caves_mineral_aquamarine.png"},
+	groups = {cracky = 1},
+	drop = "fun_caves:perfect_aquamarine",
+	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_ore({
+	ore_type       = "scatter",
+	ore            = "fun_caves:stone_with_aquamarines",
+	wherein        = "default:stone",
+	clust_scarcity = 17 * 17 * 17,
+	clust_num_ores = 1,
+	clust_size     = 1,
+	y_min          = -31000,
+	y_max          = 31000,
 })
 
 minetest.register_craftitem("fun_caves:meteorite", {
@@ -293,38 +425,49 @@ minetest.register_craft({
 	}
 })
 
-minetest.register_node("fun_caves:stone_with_aquamarines", {
-	description = "Aquamarine Ore",
-	tiles = {"default_stone.png^default_mineral_diamond.png"},
-	groups = {cracky = 1},
-	drop = "fun_caves:perfect_aquamarine",
-	sounds = default.node_sound_stone_defaults(),
-})
-
-minetest.register_ore({
-	ore_type       = "scatter",
-	ore            = "fun_caves:stone_with_aquamarines",
-	wherein        = "default:stone",
-	clust_scarcity = 17 * 17 * 17,
-	clust_num_ores = 1,
-	clust_size     = 1,
-	y_min          = -6000,
-	y_max          = 31000,
-})
-
-minetest.register_craftitem("fun_caves:perfect_aquamarine", {
-	description = "Perfect Aquamarine",
-	drawtype = "plantlike",
-	paramtype = "light",
-	tiles = {"default_diamond.png"},
-	inventory_image = "default_diamond.png",
-	groups = {dig_immediate = 3},
-	sounds = default.node_sound_glass_defaults(),
-})
-
 local newnode = fun_caves.clone_node("default:dirt")
 newnode.description = "Meteor Crater"
 newnode.tiles = {"fun_caves_crater.png", "default_dirt.png", "default_dirt.png", "default_dirt.png", "default_dirt.png", "default_dirt.png"}
 newnode.drop = "fun_caves:meteorite"
 newnode.groups.soil = 0
 minetest.register_node("fun_caves:meteorite_crater", newnode)
+
+local treasures = {
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'fun_caves:sky_iron', 'fun_caves:sky_iron', 'fun_caves:sky_iron', 'fun_caves:sky_iron', 'default:obsidian'},
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'fun_caves:pure_copper', 'fun_caves:pure_copper', 'fun_caves:pure_copper', 'fun_caves:pure_copper', 'default:obsidian'},
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'default:obsidian'},
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'default:obsidian'},
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'default:obsidian'},
+	{'fun_caves:perfect_aquamarine', 'fun_caves:perfect_garnet', 'fun_caves:perfect_zoisite', 'fun_caves:coral_gem', 'default:obsidian'},
+}
+local filler = {'default:apple 10', 'default:coal_lump 10', 'default:wood 10'}
+local chest_formspec =
+	"size[8,9]" ..
+	default.gui_bg ..
+	default.gui_bg_img ..
+	default.gui_slots ..
+	"list[current_name;main;0,0.3;8,4;]" ..
+	"list[current_player;main;0,4.85;8,1;]" ..
+	"list[current_player;main;0,6.08;8,3;8]" ..
+	"listring[current_name;main]" ..
+	"listring[current_player;main]" ..
+	default.get_hotbar_bg(0,4.85)
+
+local newnode = fun_caves.clone_node("default:chest")
+newnode.description = "Treasure Chest"
+newnode.on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+	local meta = minetest.get_meta(pos)
+	local ready = meta:get_string('formspec')
+	if ready == '' then
+		local level = math.max(6, math.ceil(pos.y / math.floor(map_max / 6)))
+		local big_item = treasures[level][math.random(#treasures[level])]
+		meta:set_string("formspec", chest_formspec)
+		local inv = meta:get_inventory()
+		inv:set_size("main", 8*4)
+		inv:add_item('main', big_item)
+		for i = 1, math.random(4) do
+			inv:add_item('main', filler[math.random(#filler)])
+		end
+	end
+end
+minetest.register_node("fun_caves:coffer", newnode)

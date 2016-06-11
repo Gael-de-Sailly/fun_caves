@@ -43,6 +43,7 @@ local fruit = minetest.get_content_id("fun_caves:fungal_tree_fruit")
 
 function fun_caves.make_fungal_tree(data, area, ivm, height)
 	local leaf = minetest.get_content_id(fungal_tree_leaves[rand(#fungal_tree_leaves)])
+	local air = minetest.get_content_id('air')
 	for y = 0, height do
 		local radius = 1
 		if y > 1 and y < height - 2 then
@@ -52,12 +53,14 @@ function fun_caves.make_fungal_tree(data, area, ivm, height)
 			for x = -radius,radius do
 				local sr = rand(1,100)
 				local i = ivm + z*area.zstride + y*area.ystride + x
-				if x == 0 and y == 0 and z == 0 then
-					data[i] = leaf
-				elseif sr == 1 then
-					data[i] = fruit
-				elseif sr < 50 then
-					data[i] = leaf
+				if data[i] == air then
+					if x == 0 and y == 0 and z == 0 then
+						data[i] = leaf
+					elseif sr == 1 then
+						data[i] = fruit
+					elseif sr < 50 then
+						data[i] = leaf
+					end
 				end
 			end
 		end

@@ -64,7 +64,7 @@ fun_caves.is_fortress = function(pos, cs, debug)
 
 	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
 	if fun_caves.DEBUG and floor((n * 10000) % 4) == 1 then
-		print('fortress ('..x..','..y..','..zn..')')
+		--print('fortress ('..x..','..y..','..z..')')
 		return true
 	end
 	if floor((n * 10000) % 19) == 1 then

@@ -1,12 +1,9 @@
 local rand = math.random
 local floor = math.floor
+local ceil = math.ceil
+local max = math.max
+local map_max = 31000
 
-
-local treasures = {
-	'fun_caves:stone_with_aquamarines',
-	'fun_caves:stone_with_sky_iron',
-	'default:obsidian',
-}
 
 fun_caves.fortress = function(minp, maxp, data, area, node)
 	-- invisible maze
@@ -16,7 +13,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 	-- hidden doors/downs
 	-- hot/ice floors
 	--
-	--local level = ceil(maxp.y / 3100)
+	local level = max(6, ceil(maxp.y / floor(map_max / 6)))
 	local n = 16
 	local walls = {}
 	local inner_floor = node['fun_caves:dungeon_floor_1']
@@ -49,7 +46,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 						--data[ivm] = fun_caves.DEBUG and node["default:glass"] or inner_wall
 						if y2 == 0 and rand(3000) == 1 then
 							treasure_count = treasure_count + 1
-							data[ivm] = node[treasures[rand(#treasures)]]
+							data[ivm] = node['fun_caves:coffer']
 						else
 							data[ivm] = inner_wall
 						end

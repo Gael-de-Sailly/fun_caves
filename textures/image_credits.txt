@@ -2,3 +2,6 @@ Original spider textures: AspireMint
 Original goblins textures and models: Francisco "FreeLikeGNU" Athens
 Original tesseract: Claudio Rocchini (cc-by-sa 2.5), https://en.wikipedia.org/wiki/File:Runci_trunc_tessaract.png
 Original meteorite: MeteoriteKid (cc-by-sa 3), https://en.wikipedia.org/wiki/File:Oriented_Taza_Meteorite.jpg
+Original tanzanite: Chromalys (cc-by-sa 4), https://en.wikipedia.org/wiki/File:Trichroic_Tanzanite_Gem_-_blue,_violet_%26_purple.jpg
+Original aquamarine: Diamondexpert (cc-by-sa 2.5), https://commons.wikimedia.org/wiki/File:Gems_aquamarine.jpg
+Original garnet: von de Wela49 (cc-by-sa 3), https://en.wikipedia.org/wiki/File:Garnet_cut.JPG

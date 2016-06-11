@@ -69,7 +69,7 @@ fun_caves.cavegen = function(minp, maxp, data, area, node, heightmap, underzone)
 					write = true
 				elseif underzone and (y < underzone.ceiling + 10 - (underzone.vary and cave_3[index] or 0) and y > underzone.floor - 10 + (underzone.vary and cave_3[index] or 0)) then
 					-- nop
-				elseif y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
+				elseif ((y <= maxp.y and y >= minp.y) or (data[ivm] == node['default:stone'])) and y < height - cave_3[index] and cave_1[index3d] * cave_2[index3d] > cave_width then
 					if y <= fun_caves.underzones['Styx'].sealevel then
 						data[ivm] = node["default:water_source"]
 					else
