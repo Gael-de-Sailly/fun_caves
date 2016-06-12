@@ -143,6 +143,10 @@ minetest.register_abm({
 	interval = 200 * fun_caves.time_factor,
 	chance = 25,
 	action = function(pos, node)
+		-- Clumsy, but it's the best way to limit them to caves.
+		if pos.y > 0 then
+			return
+		end
 		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
 		local node_up = get_node_or_nil(pos_up)
 		if not node_up then
