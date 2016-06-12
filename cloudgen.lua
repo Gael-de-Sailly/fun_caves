@@ -51,7 +51,7 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 				local dy = y - minp.y
 				if dy > 32 and cloud_1[index] > 15 and dy < 47 then
 					if dy < 48 - (cloud_1[index] - 15) then
-						if rand(200) == 1 then
+						if cloud == 'cloud' and rand(10000) == 1 then
 							data[ivm] = node['fun_caves:silver_lining']
 						else
 							data[ivm] = node['fun_caves:'..cloud]
@@ -61,7 +61,7 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 						write = true
 					end
 				elseif cloud_1[index] > 0 and (dy <= 32 or cloud_1[index] <= 15) and dy >= 32 - cloud_1[index] and dy <= 32 + cloud_1[index] then
-						if rand(200) == 1 then
+						if cloud == 'cloud' and rand(10000) == 1 then
 							data[ivm] = node['fun_caves:silver_lining']
 						else
 							data[ivm] = node['fun_caves:'..cloud]
