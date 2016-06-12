@@ -302,7 +302,9 @@ local function generate(p_minp, p_maxp, seed)
 		end
 	end
 
-	if not underzone and fun_caves.is_fortress(minp, csize) then
+	if minp.y > 3000 then
+		write = fun_caves.cloudgen(minp, maxp, data, area, node)
+	elseif not underzone and fun_caves.is_fortress(minp, csize) then
 	--if not underzone then
 		fun_caves.fortress(minp, maxp, data, area, node)
 		write = true
@@ -342,6 +344,7 @@ end
 
 
 dofile(fun_caves.path .. "/cavegen.lua")
+dofile(fun_caves.path .. "/cloudgen.lua")
 dofile(fun_caves.path .. "/decogen.lua")
 dofile(fun_caves.path .. "/fortress.lua")
 

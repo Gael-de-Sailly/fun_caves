@@ -383,7 +383,7 @@ minetest.register_craftitem("fun_caves:meteoritic_iron_crucible", {
 	description = "Crucible of Meteoritic Iron",
 	drawtype = "plantlike",
 	paramtype = "light",
-	tiles = {"crucible.png"},
+	tiles = {"fun_caves_crucible.png"},
 	inventory_image = "crucible.png",
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
