@@ -95,6 +95,19 @@ if minetest.registered_entities["dmobs:dragon"] then
 	mobs:spawn_specific("dmobs:dragon", {"air"}, {"fun_caves:cloud", "fun_caves:storm_cloud"}, 20, 10, 300, 15000, 2, 4000, 31000)
 end
 
+if minetest.registered_entities["kpgmobs:medved"] then
+	local m = table.copy(minetest.registered_entities["kpgmobs:medved"])
+	m.textures = { {"fun_caves_moon_bear.png"}, }
+	m.type = 'monster'
+	m.base_texture = m.textures[1]
+
+	minetest.registered_entities["fun_caves:moon_bear"] = m
+	mobs.spawning_mobs["fun_caves:moon_bear"] = true
+
+	mobs:register_spawn("fun_caves:moon_bear", {"default:dirt_with_snow", "fun_caves:cloud", "fun_caves:storm_cloud"}, 20, -1, 11000, 3, 31000, false)
+	mobs:register_egg("fun_caves:moon_bear", "Moon Bear", "wool_white.png", 1)
+end
+
 if minetest.registered_entities["mobs_fish:clownfish"] then
 	--local l_spawn_near		= {"default:sand","default:dirt","group:seaplants","group:seacoral"}
 	mobs:spawn_specific("mobs_fish:clownfish", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 31000)
