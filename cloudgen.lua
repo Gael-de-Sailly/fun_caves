@@ -72,7 +72,7 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 						data[ivm] = node['fun_caves:moon_weed']
 						write = true
 					elseif rand(60) == 1 and plant_n[index] > 0.5 then
-						fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y-1,z=z}, fun_caves.schematics['lumin_tree'], true)
+						fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y,z=z}, fun_caves.schematics['lumin_tree'], true)
 						write = true
 					elseif rand(10) == 1 then
 						data[ivm] = node['default:grass_'..rand(4)]

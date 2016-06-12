@@ -91,6 +91,10 @@ if minetest.registered_entities["kpgmobs:horse2"] then
 	mobs:register_spawn("kpgmobs:horse2", {"fun_caves:cloud", "fun_caves:storm_cloud"}, 20, 8, 11000, 1, 31000)
 end
 
+if minetest.registered_entities["dmobs:dragon"] then
+	mobs:spawn_specific("dmobs:dragon", {"air"}, {"fun_caves:cloud", "fun_caves:storm_cloud"}, 20, 10, 300, 15000, 2, 4000, 31000)
+end
+
 if minetest.registered_entities["mobs_fish:clownfish"] then
 	--local l_spawn_near		= {"default:sand","default:dirt","group:seaplants","group:seacoral"}
 	mobs:spawn_specific("mobs_fish:clownfish", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 31000)
