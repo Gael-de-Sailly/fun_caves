@@ -47,38 +47,36 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 			end
 
 			cloud_1[index] = floor(cloud_1[index] + 0.5)
-			if cloud_1[index] > 0 then
-				for y = minp.y, maxp.y do
-					local dy = y - minp.y
-					if dy > 32 and cloud_1[index] > 15 and dy < 47 then
-						if dy < 47 - (cloud_1[index] - 15) then
-							data[ivm] = node['fun_caves:'..cloud]
-						else
-							data[ivm] = node['default:water_source']
-							write = true
-						end
-					elseif (dy <= 32 or cloud_1[index] <= 15) and dy >= 32 - cloud_1[index] and dy <= 32 + cloud_1[index] then
+			for y = minp.y, maxp.y do
+				local dy = y - minp.y
+				if dy > 32 and cloud_1[index] > 15 and dy < 47 then
+					if dy < 48 - (cloud_1[index] - 15) then
 						data[ivm] = node['fun_caves:'..cloud]
-						write = true
-					elseif data[ivm - area.ystride] == node['fun_caves:'..cloud] and data[ivm] == node['air'] then
-						if rand(30) == 1 and plant_n[index] > 0.5 then
-							data[ivm] = node['fun_caves:moon_weed']
-							write = true
-						elseif rand(60) == 1 and plant_n[index] > 0.5 then
-							fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y-1,z=z}, fun_caves.schematics['lumin_tree'], true)
-							write = true
-						elseif rand(10) == 1 then
-							data[ivm] = node['default:grass_'..rand(4)]
-							write = true
-						end
-					elseif data[ivm] == node['air'] and (dy < 29 - cloud_1[index] or dy > 35 + cloud_1[index]) and cloud_2[index3d] > abs((dy - 40) / 20) then
-						data[ivm] = node['fun_caves:wispy_cloud']
+					else
+						data[ivm] = node['default:water_source']
 						write = true
 					end
-
-					ivm = ivm + area.ystride
-					index3d = index3d + csize.x
+				elseif cloud_1[index] > 0 and (dy <= 32 or cloud_1[index] <= 15) and dy >= 32 - cloud_1[index] and dy <= 32 + cloud_1[index] then
+					data[ivm] = node['fun_caves:'..cloud]
+					write = true
+				elseif data[ivm - area.ystride] == node['fun_caves:'..cloud] and data[ivm] == node['air'] then
+					if rand(30) == 1 and plant_n[index] > 0.5 then
+						data[ivm] = node['fun_caves:moon_weed']
+						write = true
+					elseif rand(60) == 1 and plant_n[index] > 0.5 then
+						fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y-1,z=z}, fun_caves.schematics['lumin_tree'], true)
+						write = true
+					elseif rand(10) == 1 then
+						data[ivm] = node['default:grass_'..rand(4)]
+						write = true
+					end
+				elseif data[ivm] == node['air'] and (dy < 29 - cloud_1[index] or dy > 35 + cloud_1[index]) and cloud_2[index3d] > abs((dy - 40) / 20) then
+					data[ivm] = node['fun_caves:wispy_cloud']
+					write = true
 				end
+
+				ivm = ivm + area.ystride
+				index3d = index3d + csize.x
 			end
 		end
 	end
