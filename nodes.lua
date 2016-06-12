@@ -1,6 +1,6 @@
 local get_node_or_nil = minetest.get_node_or_nil
 local get_item_group = minetest.get_item_group
-local map_max = 31000
+local max_depth = 31000
 
 local old_is_protected = minetest.is_protected
 function minetest.is_protected(pos, name)
@@ -143,7 +143,7 @@ local function teleporter(user, area, power)
 	else
 		local newpos
 		if area == 'overworld' then
-			newpos = {x=(math.random(2)*2-3)*(math.random(math.floor(map_max/6))+power*math.floor(map_max/6)), y=120, z=(math.random(2)*2-3)*(math.random(math.floor(map_max/6))+power*math.floor(map_max/6))}
+			newpos = {x=(math.random(2)*2-3)*(math.random(math.floor(max_depth/6))+power*math.floor(max_depth/6)), y=120, z=(math.random(2)*2-3)*(math.random(math.floor(max_depth/6))+power*math.floor(max_depth/6))}
 		elseif area == 'hell' then
 			newpos = {x=pos.x, y=fun_caves.underzones[({'Caina','Phlegethos','Dis','Minauros','Styx'})[power+1]].ceiling-30, z=pos.z}
 		else
@@ -467,7 +467,7 @@ newnode.on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 	local meta = minetest.get_meta(pos)
 	local ready = meta:get_string('formspec')
 	if ready == '' then
-		local level = math.max(6, math.ceil(pos.y / math.floor(map_max / 6)))
+		local level = math.max(6, math.ceil(pos.y / math.floor(max_depth / 6)))
 		local big_item = treasures[level][math.random(#treasures[level])]
 		meta:set_string("formspec", chest_formspec)
 		local inv = meta:get_inventory()

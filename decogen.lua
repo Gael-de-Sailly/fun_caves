@@ -26,79 +26,6 @@ local csize
 local node_match_cache = {}
 
 
-local function place_schematic(minp, maxp, data, p2data, area, node, pos, schem, center)
-	local rot = rand(4) - 1
-	local yslice = {}
-	if schem.yslice_prob then
-		for _, ys in pairs(schem.yslice_prob) do
-			yslice[ys.ypos] = ys.prob
-		end
-	end
-
-	if center then
-		pos.x = pos.x - floor(schem.size.x / 2)
-		pos.z = pos.z - floor(schem.size.z / 2)
-	end
-
-	for z1 = 0, schem.size.z - 1 do
-		for x1 = 0, schem.size.x - 1 do
-			local x, z
-			if rot == 0 then
-				x, z = x1, z1
-			elseif rot == 1 then
-				x, z = schem.size.z - z1 - 1, x1
-			elseif rot == 2 then
-				x, z = schem.size.x - x1 - 1, schem.size.z - z1 - 1
-			elseif rot == 3 then
-				x, z = z1, schem.size.x - x1 - 1
-			end
-			local dz = pos.z - minp.z + z
-			local dx = pos.x - minp.x + x
-			if pos.x + x > minp.x and pos.x + x < maxp.x and pos.z + z > minp.z and pos.z + z < maxp.z then
-				local ivm = area:index(pos.x + x, pos.y, pos.z + z)
-				local isch = z1 * schem.size.y * schem.size.x + x1 + 1
-				for y = 0, schem.size.y - 1 do
-					local dy = pos.y - minp.y + y
-					--if math.min(dx, csize.x - dx) + math.min(dy, csize.y - dy) + math.min(dz, csize.z - dz) > bevel then
-						if yslice[y] or 255 >= rand(255) then
-							local prob = schem.data[isch].prob or schem.data[isch].param1 or 255
-							if prob >= rand(255) and schem.data[isch].name ~= "air" then
-								data[ivm] = node[schem.data[isch].name]
-							end
-							local param2 = schem.data[isch].param2 or 0
-							p2data[ivm] = param2
-						end
-					--end
-
-					ivm = ivm + area.ystride
-					isch = isch + schem.size.x
-				end
-			end
-		end
-	end
-end
-
-local function surround(node, data, area, ivm)
-	-- Check to make sure that a plant root is fully surrounded.
-	-- This is due to the kludgy way you have to make water plants
-	--  in minetest, to avoid bubbles.
-	for x1 = -1,1,2 do
-		local n = data[ivm+x1] 
-		if n == node["default:river_water_source"] or n == node["default:water_source"] or n == node["air"] then
-			return false
-		end
-	end
-	for z1 = -area.zstride,area.zstride,2*area.zstride do
-		local n = data[ivm+z1] 
-		if n == node["default:river_water_source"] or n == node["default:water_source"] or n == node["air"] then
-			return false
-		end
-	end
-
-	return true
-end
-
-
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
 local plant_noise = {offset = 0.0, scale = 1.0, spread = {x = 200, y = 200, z = 200}, seed = 33, octaves = 3, persist = 0.7, lacunarity = 2.0}
 
@@ -308,7 +235,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 										end
 									end
 									if air_count > 6 then
-										place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y,z=z}, fun_caves.schematics['decaying_tree'], true)
+										fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y,z=z}, fun_caves.schematics['decaying_tree'], true)
 									end
 								end
 							elseif node_below == node["default:dirt"] and biome and biome.fungi then
@@ -380,7 +307,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						local node_below = data[ivm - area.ystride]
 						local node_above = data[ivm + area.ystride]
 
-						if y < water_level and data[ivm] == node["default:sand"] and node_above == node["default:water_source"] and data[ivm + area.ystride * 2] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) == 1 and surround(node, data, area, ivm) then
+						if y < water_level and data[ivm] == node["default:sand"] and node_above == node["default:water_source"] and data[ivm + area.ystride * 2] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) == 1 and fun_caves.surround(node, data, area, ivm) then
 							if rand(100) == 1 then
 								data[ivm] = node["fun_caves:precious_coral_water_sand"]
 							else
@@ -404,7 +331,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 						elseif x < maxp.x and y < maxp.y and z < maxp.z and x > minp.x and y > minp.y and z > minp.z and (node_above == node["default:water_source"] or node_above == node["default:river_water_source"]) and (data[ivm] == node["default:sand"] or data[ivm] == node["default:dirt"]) then
 							-- Check the biomes and plant water plants, if called for.
-							if not surround(node, data, area, ivm) then
+							if not fun_caves.surround(node, data, area, ivm) then
 								break
 							end
 

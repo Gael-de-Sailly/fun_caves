@@ -134,6 +134,14 @@ for _, plant in ipairs(fun_caves.plantlist) do
 		def2.tiles = { "default_dirt.png", "fun_caves_"..plant.name..".png",}
 		def2.drop = {max_items=2, items={{items={"fun_caves:"..plant.name}, rarity=1}, {items={"default:dirt"}, rarity=1}}}
 		minetest.register_node("fun_caves:"..plant.name.."_water_soil", def2)
+		def2 = table.copy(def)
+		def2.tiles = { "fun_caves_cloud.png", "fun_caves_"..plant.name..".png",}
+		def2.drop = {max_items=2, items={{items={"fun_caves:"..plant.name}, rarity=1}, {items={"fun_caves:cloud"}, rarity=1}}}
+		minetest.register_node("fun_caves:"..plant.name.."_water_cloud", def2)
+		def2 = table.copy(def)
+		def2.tiles = { "fun_caves_storm_cloud.png", "fun_caves_"..plant.name..".png",}
+		def2.drop = {max_items=2, items={{items={"fun_caves:"..plant.name}, rarity=1}, {items={"fun_caves:storm_cloud"}, rarity=1}}}
+		minetest.register_node("fun_caves:"..plant.name.."_water_storm_cloud", def2)
 	end
 end
 
@@ -199,9 +207,17 @@ do
 	local water_plant_1_def_soil = table.copy(water_plant_1_def_sand)
 	water_plant_1_def_soil.place_on = {"group:soil"}
 	water_plant_1_def_soil.decoration = {"fun_caves:water_plant_1_water_soil",}
+	local water_plant_1_def_cloud = table.copy(water_plant_1_def_sand)
+	water_plant_1_def_cloud.place_on = {"group:cloud"}
+	water_plant_1_def_cloud.decoration = {"fun_caves:water_plant_1_water_cloud",}
+	local water_plant_1_def_storm_cloud = table.copy(water_plant_1_def_sand)
+	water_plant_1_def_storm_cloud.place_on = {"group:cloud"}
+	water_plant_1_def_storm_cloud.decoration = {"fun_caves:water_plant_1_water_storm_cloud",}
 
 	register_water_plant(water_plant_1_def_sand)
 	register_water_plant(water_plant_1_def_soil)
+	register_water_plant(water_plant_1_def_cloud)
+	register_water_plant(water_plant_1_def_storm_cloud)
 end
 
 
