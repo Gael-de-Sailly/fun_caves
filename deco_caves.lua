@@ -227,7 +227,7 @@ newnode = fun_caves.clone_node("fun_caves:stone_with_salt")
 
 -- salt, radioactive ore
 newnode.description = "Salt With Radioactive Ore"
-newnode.tiles = {"caverealms_salty2.png^[colorize:#004000:250"}
+newnode.tiles = {"fun_caves_radioactive_ore.png"}
 newnode.light_source = 4
 minetest.register_node("fun_caves:radioactive_ore", newnode)
 

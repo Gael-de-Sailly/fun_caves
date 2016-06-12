@@ -92,15 +92,13 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							if y > fluid_compression then
 								biome_val = biome_val / max(1, log(y - fluid_compression))
 							end
-							-------------------
-							--biome_val = -0.75
-							-------------------
 
 							for _, bi in pairs(fun_caves.cave_biomes) do
 								if biome_val >= bi.biome_val_low and biome_val < bi.biome_val_high then
 									biome = bi
 								end
 							end
+							--biome = fun_caves.cave_biomes['salt']
 
 							if not biome then
 								print(("* Error in biome selection: %s"):format(biome_val))
