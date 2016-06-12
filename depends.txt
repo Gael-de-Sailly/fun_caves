@@ -7,4 +7,6 @@ mobs?
 mobs_monster?
 mobs_slimes?
 mobs_creeper?
+kpgmobs?
+mobs_fish?
 dmobs?

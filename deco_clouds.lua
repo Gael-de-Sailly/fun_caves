@@ -88,3 +88,14 @@ minetest.register_node("fun_caves:lumin_tree", {
 
 	on_place = minetest.rotate_node
 })
+
+newnode = fun_caves.clone_node("default:stone_with_iron")
+newnode.description = "Silver Lining"
+newnode.tiles = {'fun_caves_cloud.png^default_mineral_coal.png^[colorize:#FFFFFF:175'}
+newnode.drop = "fun_caves:silver_lump"
+minetest.register_node("fun_caves:silver_lining", newnode)
+
+minetest.register_craftitem("fun_caves:silver_lump", {
+	description = "Lump of Silver",
+	inventory_image = 'default_coal_lump.png^[colorize:#FFFFFF:175',
+})
