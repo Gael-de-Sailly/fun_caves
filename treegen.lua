@@ -7,12 +7,24 @@ local abs = math.abs
 local max_depth = 31000
 
 
-local newnode = fun_caves.clone_node("default:wood")
+local newnode = fun_caves.clone_node("default:tree")
 newnode.description = "Bark"
 newnode.tiles = {"default_tree.png"}
 newnode.is_ground_content = false
---newnode.groups.oddly_breakable_by_hand
 minetest.register_node("fun_caves:bark", newnode)
+
+newnode = fun_caves.clone_node("default:tree")
+newnode.description = "Giant Wood"
+newnode.tiles = {"fun_caves_tree.png"}
+newnode.is_ground_content = false
+minetest.register_node("fun_caves:tree", newnode)
+
+minetest.register_craft({
+	output = 'default:wood 4',
+	recipe = {
+		{'fun_caves:tree'},
+	}
+})
 
 minetest.register_node("fun_caves:leaves", {
 	description = "Leaves",
@@ -73,17 +85,19 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 				end
 
 				if floor(dx ^ 2 + dz ^ 2) < r ^ 2 then
-					data[ivm] = node['default:wood']
+					data[ivm] = node['fun_caves:tree']
 					write = true
 				elseif y < 222 and y > -102 and floor(dx ^ 2 + dz ^ 2) < (r + 2) ^ 2 then
 					data[ivm] = node['fun_caves:bark']
 					write = true
 				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
-					data[ivm] = node['default:wood']
-					write = true
+					if data[ivm] == node['air'] then
+						data[ivm] = node['fun_caves:tree']
+						write = true
+					end
 				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
 					local r = abs(((y + 3) % 10) - 3)
-					if r < 2 or rand(r) == 1 then
+					if (r < 2 or rand(r) == 1) and data[ivm] == node['air'] then
 						data[ivm] = node['fun_caves:leaves']
 						write = true
 					end
