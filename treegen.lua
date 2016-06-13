@@ -26,6 +26,29 @@ minetest.register_craft({
 	}
 })
 
+minetest.register_node("fun_caves:ironwood", {
+	description = "Ironwood",
+	tiles = {"fun_caves_tree.png^[colorize:#B7410E:80"},
+	is_ground_content = false,
+	groups = {tree = 1, choppy = 2, level=1},
+	sounds = default.node_sound_wood_defaults(),
+})
+
+minetest.register_node("fun_caves:diamondwood", {
+	description = "Diamondwood",
+	tiles = {"fun_caves_tree.png^[colorize:#5D8AA8:80"},
+	is_ground_content = false,
+	groups = {tree = 1, choppy = 2, level=2},
+	sounds = default.node_sound_wood_defaults(),
+})
+
+minetest.register_node("fun_caves:petrified_wood", {
+	description = "Petrified Wood",
+	tiles = {"ores_petrified_wood.png"},
+	groups = {cracky = 3, stone = 1},
+	sounds = default.node_sound_stone_defaults(),
+})
+
 minetest.register_node("fun_caves:leaves", {
 	description = "Leaves",
 	visual_scale = 1.3,
@@ -48,8 +71,111 @@ minetest.register_node("fun_caves:leaves", {
 	sounds = default.node_sound_leaves_defaults(),
 })
 
+local newnode = fun_caves.clone_node("default:water_source")
+newnode.description = "Sap"
+newnode.inventory_image = minetest.inventorycube("default_water.png^[colorize:#FF7E00:B0")
+newnode.tiles[1].name =  "fun_caves_sap_source_animated.png"
+newnode.special_tiles[1].name =  "fun_caves_sap_source_animated.png"
+newnode.liquid_alternative_flowing = "fun_caves:sap"
+newnode.liquid_alternative_source = "fun_caves:sap"
+newnode.liquid_viscosity = 15
+newnode.liquid_range = 0
+newnode.post_effect_color = {a = 120, r = 255, g = 191, b = 0}
+minetest.register_node("fun_caves:sap", newnode)
+
+minetest.register_node("fun_caves:syrup", {
+	description = "Syrup",
+	drawtype = "plantlike",
+	tiles = {"fun_caves_syrup.png"},
+	inventory_image  = "fun_caves_syrup.png",
+	paramtype = "light",
+	walkable = false,
+	selection_box = {
+		type = "fixed",
+		fixed = {-0.25, -0.5, -0.25, 0.25, 0.25, 0.25}
+	},
+	groups = {vessel = 1, dig_immediate = 3, attached_node = 1},
+	on_use = minetest.item_eat(2, "vessels:glass_bottle"),
+	sounds = default.node_sound_glass_defaults(),
+})
+
+minetest.register_craftitem("fun_caves:charcoal", {
+	description = "Charcoal Briquette",
+	inventory_image = "default_coal_lump.png",
+	groups = {coal = 1}
+})
+
+minetest.register_craft({
+	type = "fuel",
+	recipe = "fun_caves:charcoal",
+	burntime = 50,
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "default:sand",
+	recipe = "fun_caves:bark",
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "default:iron_lump",
+	recipe = "fun_caves:ironwood",
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "default:diamond",
+	recipe = "fun_caves:diamondwood",
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "fun_caves:charcoal",
+	recipe = "group:tree",
+})
+
+minetest.register_craft({
+	output = 'default:torch 4',
+	recipe = {
+		{'fun_caves:charcoal'},
+		{'group:stick'},
+	}
+})
+
+minetest.register_craft({
+	output = 'fun_caves:syrup',
+	type = "shapeless",
+	recipe = {
+		'vessels:glass_bottle',
+		'fun_caves:bucket_sap',
+	},
+	replacements = {{'fun_caves:bucket_sap', 'bucket:bucket_empty'},},
+})
+
+bucket.register_liquid(
+	"fun_caves:sap",
+	"fun_caves:sap",
+	"fun_caves:bucket_sap",
+	"fun_caves_bucket_sap.png",
+	"Bucket of Sap",
+	{}
+)
+
+
+--minetest.register_craft( {
+--	output = "vessels:glass_bottle 10",
+--	recipe = {
+--		{ "fun_caves:amber", "", "fun_caves:amber" },
+--		{ "fun_caves:amber", "", "fun_caves:amber" },
+--		{ "", "fun_caves:amber", "" }
+--	}
+--})
+
+
 local tree_noise_1 = {offset = 0, scale = 1, seed = 7227, spread = {x = 10, y = 10, z = 10}, octaves = 3, persist = 1, lacunarity = 2}
-local limb_noise_1 = {offset = 0, scale = 1, seed = 3901, spread = {x = 80, y = 3, z = 80}, octaves = 3, persist = 1, lacunarity = 2}
+local wood_noise = {offset = 0, scale = 1, seed = -4640, spread = {x = 32, y = 32, z = 32}, octaves = 4, persist = 0.7, lacunarity = 2}
+
 
 fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 	local tree_n = minetest.get_perlin(tree_noise_1):get2d({x=floor((minp.x + 32) / 160) * 80, y=floor((minp.z + 32) / 160) * 80})
@@ -61,7 +187,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 	local map_max = {x = csize.x, y = csize.y, z = csize.z}
 	local map_min = {x = minp.x, y = minp.y, z = minp.z}
 
-	local limb_1 = minetest.get_perlin_map(limb_noise_1, map_max):get3dMap_flat(map_min)
+	local wood_1 = minetest.get_perlin_map(wood_noise, map_max):get3dMap_flat(map_min)
 
 	local write = false
 
@@ -80,16 +206,37 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 			for y = minp.y, maxp.y do
 				local dy = y - minp.y
 				local r = 20
-				if abs(y - 80) > 100 then
-					r = max(0, r - floor((abs(y - 80) - 100) / 2))
+				if abs(y - 50) > 130 then
+					r = max(0, r - floor((abs(y - 50) - 130) / 2))
 				end
 
-				if floor(dx ^ 2 + dz ^ 2) < r ^ 2 then
-					data[ivm] = node['fun_caves:tree']
+				local distance = floor(math.sqrt(dx ^ 2 + dz ^ 2))
+				if distance < r then
+					if rand(500) == 1 then
+						data[ivm] = node['fun_caves:sap']
+					elseif distance % 8 == 7 and wood_1[index3d] < 0.3 then
+						data[ivm] = node['fun_caves:petrified_wood']
+					elseif wood_1[index3d] < -0.98 then
+						data[ivm] = node['default:water_source']
+					elseif wood_1[index3d] < -0.8 then
+						data[ivm] = node['air']
+					elseif wood_1[index3d] < -0.05 then
+						data[ivm] = node['fun_caves:tree']
+					elseif wood_1[index3d] < 0.05 then
+						data[ivm] = node['air']
+					elseif wood_1[index3d] < 0.6 then
+						data[ivm] = node['fun_caves:tree']
+					elseif wood_1[index3d] < 0.97 then
+						data[ivm] = node['fun_caves:ironwood']
+					else
+						data[ivm] = node['fun_caves:diamondwood']
+					end
 					write = true
-				elseif y < 222 and y > -102 and floor(dx ^ 2 + dz ^ 2) < (r + 2) ^ 2 then
+				elseif y < 222 and y > -132 and floor(dx ^ 2 + dz ^ 2) < (r + 2) ^ 2 then
 					data[ivm] = node['fun_caves:bark']
 					write = true
+
+				-- foliage
 				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
 					if data[ivm] == node['air'] then
 						data[ivm] = node['fun_caves:tree']
