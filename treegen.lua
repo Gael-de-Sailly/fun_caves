@@ -179,13 +179,13 @@ local wood_noise = {offset = 0, scale = 1, seed = -4640, spread = {x = 32, y = 3
 
 fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 	local tree_n = minetest.get_perlin(tree_noise_1):get2d({x=floor((minp.x + 32) / 160) * 80, y=floor((minp.z + 32) / 160) * 80})
-	if minp.y < -112 or minp.y > 208 or tree_n < 0.5 then
+	if minp.y < -112 or minp.y > 208 or (not fun_caves.DEBUG and tree_n < 0.5) then
 		return
 	end
 
 	local csize = vector.add(vector.subtract(maxp, minp), 1)
-	local map_max = {x = csize.x, y = csize.y, z = csize.z}
-	local map_min = {x = minp.x, y = minp.y, z = minp.z}
+	local map_max = {x = csize.x, y = csize.y + 2, z = csize.z}
+	local map_min = {x = minp.x, y = minp.y - 1, z = minp.z}
 
 	local wood_1 = minetest.get_perlin_map(wood_noise, map_max):get3dMap_flat(map_min)
 
@@ -200,10 +200,10 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 			local r2 = 70 + floor(dx / 4) % 3 * 6 + floor(dz / 4) % 3 * 6
 
 			index = index + 1
-			index3d = (z - minp.z) * (csize.y) * csize.x + (x - minp.x) + 1
-			local ivm = area:index(x, minp.y, z)
+			index3d = (z - minp.z) * (csize.y + 2) * csize.x + (x - minp.x) + 1
+			local ivm = area:index(x, minp.y - 1, z)
 
-			for y = minp.y, maxp.y do
+			for y = minp.y - 1, maxp.y + 1 do
 				local dy = y - minp.y
 				local r = 20
 				if abs(y - 50) > 130 then
@@ -212,12 +212,10 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 
 				local distance = floor(math.sqrt(dx ^ 2 + dz ^ 2))
 				if distance < r then
-					if rand(500) == 1 then
-						data[ivm] = node['fun_caves:sap']
-					elseif distance % 8 == 7 and wood_1[index3d] < 0.3 then
+					if distance % 8 == 7 and wood_1[index3d] < 0.3 then
 						data[ivm] = node['fun_caves:petrified_wood']
-					elseif wood_1[index3d] < -0.98 then
-						data[ivm] = node['default:water_source']
+					--elseif wood_1[index3d] < -0.98 then
+					--	data[ivm] = node['default:water_source']
 					elseif wood_1[index3d] < -0.8 then
 						data[ivm] = node['air']
 					elseif wood_1[index3d] < -0.05 then
@@ -231,6 +229,10 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 					else
 						data[ivm] = node['fun_caves:diamondwood']
 					end
+
+					if data[ivm] ~= node['air'] and data[ivm] ~= node['default:water_source'] and rand(500) == 1 then
+						data[ivm] = node['fun_caves:sap']
+					end
 					write = true
 				elseif y < 222 and y > -132 and floor(dx ^ 2 + dz ^ 2) < (r + 2) ^ 2 then
 					data[ivm] = node['fun_caves:bark']
@@ -242,7 +244,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 						data[ivm] = node['fun_caves:tree']
 						write = true
 					end
-				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
+				elseif y < 275 and y > 115 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
 					local r = abs(((y + 3) % 10) - 3)
 					if (r < 2 or rand(r) == 1) and data[ivm] == node['air'] then
 						data[ivm] = node['fun_caves:leaves']
