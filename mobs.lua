@@ -110,8 +110,9 @@ end
 
 if minetest.registered_entities["mobs_fish:clownfish"] then
 	--local l_spawn_near		= {"default:sand","default:dirt","group:seaplants","group:seacoral"}
-	mobs:spawn_specific("mobs_fish:clownfish", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 31000)
-	mobs:spawn_specific("mobs_fish:tropical", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 31000)
+	mobs:spawn_specific("mobs_fish:clownfish", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 5000)
+	mobs:spawn_specific("mobs_fish:tropical", {"default:water_source", "default:water_flowing"}, {"default:sand","default:dirt", "fun_caves:cloud", "fun_caves:storm_cloud","group:seaplants","group:seacoral"}, 5, 20, 30, 10000, 1, 4000, 5000)
+	mobs:spawn_specific("mobs_fish:tropical", {"default:water_source", "default:water_flowing"}, nil, 5, 20, 30, 10000, 1, 8769, 8798)
 end
 
 if minetest.registered_entities["mobs_monster:spider"] then
@@ -313,6 +314,10 @@ if minetest.registered_entities["mobs_creeper:creeper"] then
 end
 
 if minetest.registered_entities["mobs_sharks:shark_lg"] then
+	mobs:spawn_specific("mobs_sharks:shark_sm", {"default:water_source"}, nil, 5, 20, 30, 60000, 1, 8769, 8798)
+	mobs:spawn_specific("mobs_sharks:shark_md", {"default:water_source"}, nil, 5, 20, 30, 60000, 1, 8769, 8798)
+	mobs:spawn_specific("mobs_sharks:shark_lg", {"default:water_source"}, nil, 5, 20, 30, 60000, 1, 8769, 8798)
+
 	local m = table.copy(minetest.registered_entities["mobs_sharks:shark_lg"])
 	local l_spawn_in		= {"default:water_flowing","default:water_source"}
 	local l_spawn_near		= {"default:water_flowing","default:water_source","seawrecks:woodship","seawrecks:uboot"}

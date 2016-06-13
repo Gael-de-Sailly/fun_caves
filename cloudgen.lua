@@ -15,8 +15,7 @@ local plant_noise = {offset = 0.0, scale = 1.0, spread = {x = 200, y = 200, z = 
 local biome_noise = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = -1471, octaves = 3, persist = 0.5, lacunarity = 2.0}
 
 fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
-	local clouds = ceil(minp.y / floor(max_depth / 7))
-	if abs(clouds * floor(max_depth / 7) - minp.y) > 80 then
+	if minp.y ~= 4368 then
 		return
 	end
 
