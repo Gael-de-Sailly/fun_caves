@@ -241,7 +241,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 				-- foliage
 				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
 					if data[ivm] == node['air'] then
-						data[ivm] = node['fun_caves:tree']
+						data[ivm] = node['fun_caves:bark']
 						write = true
 					end
 				elseif y < 275 and y > 115 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then

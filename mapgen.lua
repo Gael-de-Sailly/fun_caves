@@ -402,9 +402,12 @@ local function generate(p_minp, p_maxp, seed)
 		if fun_caves.DEBUG then
 			vm:set_lighting({day = 15, night = 15})
 		else
-			-- set_lighting causes shadows
-			--vm:set_lighting({day = 0, night = 0})
-			vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z}, maxp)
+			-- set_lighting causes lighting artifacts,
+			-- but corrects the light inside trees.
+			vm:set_lighting({day = 0, night = 0})
+			vm:calc_lighting()
+			-- Does not work:
+			--vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z}, maxp)
 		end
 		vm:update_liquids()
 		vm:write_to_map()

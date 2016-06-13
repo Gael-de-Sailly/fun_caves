@@ -61,9 +61,109 @@ fun_caves.surface_damage = function(self, cold_natured)
 	--end
 end
 
+local cardinals = {{x=0,y=0,z=0.75}, {x=-0.75,y=0,z=0}, {x=0,y=0,z=-0.75}, {x=0.75,y=0,z=0}}
+--local diggable_nodes = {"group:stone", "group:sand", "group:soil", "group:plant", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_mese", "default:stone_with_diamond", "default:mese", "default:coalblock"}
+local diggable_nodes = {
+	digger = {"group:cracky", "group:snappy", "group:crumbly"},
+	bee = {"fun_caves:tree",  "fun_caves:glowing_fungal_wood", "fun_caves:sap"},
+}
+fun_caves.tunneling = function(self, type)
+	-- Types are available for fine-tuning.
+	if type == nil then
+		type = "digger"
+	end
+
+	-- This translates yaw into vectors.
+	local pos = self.object:getpos()
+
+	if self.state == "tunnel" then
+		-- Yaw is stored as one of the four cardinal directions.
+		if not self.digging_dir then
+			self.digging_dir = math.random(0,3)
+		end
+
+		-- Turn him roughly in the right direction.
+		self.object:setyaw(self.digging_dir * math.pi * 0.5)
+
+		-- Get a pair of coordinates that should cover what's in front of him.
+		local p = vector.add(pos, cardinals[self.digging_dir+1])
+
+		-- What's this about?
+		if type == "digger" then
+			p.y = p.y - 0.5
+		else
+			p.y = p.y + 0.25
+		end
+		local p1 = vector.add(p, -0.3)
+		local p2 = vector.add(p, 0.3)
+
+		-- Get any diggable nodes in that area.
+		local np_list = minetest.find_nodes_in_area(p1, p2, diggable_nodes[type])
+
+		if #np_list > 0 then
+			-- Dig it.
+			for _, np in pairs(np_list) do
+				if type ~= 'digger' or np.name ~= "default:cobble" then
+					minetest.remove_node(np)
+				end
+			end
+		end
+
+		if math.random() < 0.2 then
+			local d = {-1,1}
+			self.digging_dir = (self.digging_dir + d[math.random(2)]) % 4
+		end
+
+		set_animation(self, "walk")
+		set_velocity(self, self.walk_velocity)
+	elseif self.state == "room" then  -- Dig a room.
+		if not self.room_radius or not self.room_count then
+			self.room_radius = 1
+			self.room_count = 0
+		end
+
+		set_animation(self, "stand")
+		set_velocity(self, 0)
+
+		-- Work from the inside, out.
+		for r = 1,self.room_radius do
+			-- Get a pair of coordinates that form a room.
+			local p1 = vector.add(pos, -r)
+			local p2 = vector.add(pos, r)
+			-- But not below him.
+			p1.y = pos.y
+
+			local np_list = minetest.find_nodes_in_area(p1, p2, diggable_nodes[type])
+
+			-- I wanted to leave the outer layer incomplete, but this
+			--  actually tends to make it look worse.
+			if r >= self.room_radius and self.room_count > (self.room_radius * 2 + 1) ^ 3 or #np_list == 0 then
+				self.room_radius = math.random(1,2) + math.random(0,1)
+				self.state = "stand"
+				break
+			end
+
+			self.room_count = self.room_count + 1
+			if #np_list > 0 then
+				-- Dig it.
+				minetest.remove_node(np_list[math.random(#np_list)])
+				break
+			end
+		end
+	end
+
+	if self.state ~= "room" and math.random() < (type == 'digger' and 0.5 or 0.2) then
+		self.state = "tunnel"
+	elseif self.state == "tunnel" and math.random() < 0.01 then
+		self.state = "room"
+	elseif self.state == "tunnel" and math.random() < 0.1 then
+		self.state = "stand"
+	end
+end
+
 -- executed in a mob's do_custom() to regulate their actions
 -- if false, do nothing
-local custom_delay = 1000000
+local custom_delay = 5000000
 fun_caves.custom_ready = function(self)
 	local time = minetest.get_us_time()
 	if not self.custom_time or time - self.custom_time > custom_delay then
@@ -74,6 +174,125 @@ fun_caves.custom_ready = function(self)
 	end
 end
 
+
+if minetest.registered_entities["mobs:bee"] then
+	local function bee_summon(self)
+		if self.health < (self.hp_max / 2) and self.state == "attack" and math.random(4) == 1 then
+			local pos = self.object:getpos()
+			local p1 = vector.subtract(pos, 1)
+			local p2 = vector.add(pos, 1)
+
+			--look for nodes
+			local nodelist = minetest.find_nodes_in_area(p1, p2, "air")
+
+			if #nodelist > 0 then
+				for key,value in pairs(nodelist) do 
+					minetest.add_entity(value, "fun_caves:killer_bee_drone")
+					print("Queen bee summons reinforcement.")
+					return  -- only one at a time
+				end
+			end
+		end
+	end
+
+	local function bee_do(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
+		if self.name == 'fun_caves:killer_bee' then
+			fun_caves.tunneling(self, "bee")
+		end
+		if self.name == 'fun_caves:killer_bee_queen' then
+			bee_summon(self)
+		end
+
+		fun_caves.climb(self)
+		--fun_caves.search_replace(self.object:getpos(), 50, {"fun_caves:wood"}, "fun_caves:glowing_fungal_wood")
+		fun_caves.surface_damage(self)
+	end
+	mobs:register_mob("fun_caves:killer_bee", {
+		description = "Killer Bee",
+		type = "monster",
+		passive = false,
+		attack_type = "dogfight",
+		attacks_monsters = true,
+		reach = 2,
+		damage = 1,
+		hp_min = 5,
+		hp_max = 10,
+		armor = 200,
+		collisionbox = {-0.2, -0.01, -0.2, 0.2, 0.2, 0.2},
+		visual = "mesh",
+		mesh = "mobs_bee.x",
+		drawtype = "front",
+		textures = {
+			{"mobs_bee.png"},
+		},
+		--textures = { {"fun_caves_killer_bee.png"}, }
+		--visual_size = {x = 1.5, y = 1.5},
+		makes_footstep_sound = false,
+		sounds = {
+			random = "mobs_bee",
+		},
+		walk_velocity = 1,
+		run_velocity = 3,
+		jump = true,
+		view_range = 15,
+		floats = 0,
+		drops = {
+			{name = "mobs:honey", chance = 2, min = 1, max = 2},
+		},
+		water_damage = 1,
+		lava_damage = 5,
+		light_damage = 0,
+		fall_damage = 0,
+		--fall_speed = -3,
+		lifetimer = 360,
+		follow = nil,
+		animation = {
+			speed_normal = 15,
+			stand_start = 0,
+			stand_end = 30,
+			walk_start = 35,
+			walk_end = 65,
+		},
+		replace_rate = 50,
+		replace_what = {"fun_caves:glowing_fungal_wood", "fun_caves:sap",},
+		replace_with = "air",
+		replace_offset = -1,
+		do_custom = bee_do
+	})
+
+
+	mobs:register_spawn("fun_caves:killer_bee", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 500, 5, 31000)
+	mobs:register_egg("fun_caves:killer_bee", "Killer Bee", "mobs_bee_inv.png", 1)
+
+
+	local m = table.copy(minetest.registered_entities["fun_caves:killer_bee"])
+	m.name = 'fun_caves:killer_bee_drone'
+	m.damage = 3
+	m.hp_min = 10
+	m.hp_max = 20
+	m.visual_size = {x = 1.25, y = 1.25}
+
+	minetest.registered_entities["fun_caves:killer_bee_drone"] = m
+	mobs.spawning_mobs["fun_caves:killer_bee_drone"] = true
+
+	mobs:register_spawn("fun_caves:killer_bee_drone", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 1000, 5, 31000)
+
+	m = table.copy(minetest.registered_entities["fun_caves:killer_bee"])
+	m.damage = 2
+	m.hp_min = 15
+	m.hp_max = 30
+	m.name = 'fun_caves:killer_bee_queen'
+	m.visual_size = {x = 1.5, y = 1.25}
+
+	minetest.registered_entities["fun_caves:killer_bee_queen"] = m
+	mobs.spawning_mobs["fun_caves:killer_bee_queen"] = true
+
+	mobs:register_spawn("fun_caves:killer_bee_queen", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 4000, 5, 31000)
+end
 
 if minetest.registered_entities["kpgmobs:wolf"] then
 	local m = table.copy(minetest.registered_entities["kpgmobs:wolf"])
