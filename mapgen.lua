@@ -385,10 +385,11 @@ local function generate(p_minp, p_maxp, seed)
 		fun_caves.fortress(minp, maxp, data, area, node)
 		write = true
 	else
-		local write1, write2
+		local write1, write2, write3
 		write1 = fun_caves.cavegen(minp, maxp, data, area, node, heightmap, underzone)
 		write2, write_p2 = fun_caves.decogen(minp, maxp, data, p2data, area, node, heightmap, biome_ids, underzone)
-		write = write1 or write2
+		write3 = fun_caves.treegen(minp, maxp, data, p2data, area, node)
+		write = write1 or write2 or write3
 	end
 
 
@@ -423,6 +424,7 @@ dofile(fun_caves.path .. "/cavegen.lua")
 dofile(fun_caves.path .. "/cloudgen.lua")
 dofile(fun_caves.path .. "/decogen.lua")
 dofile(fun_caves.path .. "/fortress.lua")
+dofile(fun_caves.path .. "/treegen.lua")
 dofile(fun_caves.path .. "/skyseagen.lua")
 
 
