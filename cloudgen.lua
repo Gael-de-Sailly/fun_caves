@@ -1,11 +1,6 @@
 dofile(fun_caves.path .. "/deco_clouds.lua")
 
 
-local rand = math.random
-local min = math.min
-local floor = math.floor
-local ceil = math.ceil
-local abs = math.abs
 local max_depth = 31000
 
 
@@ -45,12 +40,12 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 				cloud = 'cloud'
 			end
 
-			cloud_1[index] = floor(cloud_1[index] + 0.5)
+			cloud_1[index] = math.floor(cloud_1[index] + 0.5)
 			for y = minp.y, maxp.y do
 				local dy = y - minp.y
 				if dy > 32 and cloud_1[index] > 15 and dy < 47 then
 					if dy < 48 - (cloud_1[index] - 15) then
-						if cloud == 'cloud' and rand(10000) == 1 then
+						if cloud == 'cloud' and math.random(10000) == 1 then
 							data[ivm] = node['fun_caves:silver_lining']
 						else
 							data[ivm] = node['fun_caves:'..cloud]
@@ -60,24 +55,24 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 						write = true
 					end
 				elseif cloud_1[index] > 0 and (dy <= 32 or cloud_1[index] <= 15) and dy >= 32 - cloud_1[index] and dy <= 32 + cloud_1[index] then
-						if cloud == 'cloud' and rand(10000) == 1 then
+						if cloud == 'cloud' and math.random(10000) == 1 then
 							data[ivm] = node['fun_caves:silver_lining']
 						else
 							data[ivm] = node['fun_caves:'..cloud]
 						end
 					write = true
 				elseif data[ivm - area.ystride] == node['fun_caves:'..cloud] and data[ivm] == node['air'] then
-					if rand(30) == 1 and plant_n[index] > 0.5 then
+					if math.random(30) == 1 and plant_n[index] > 0.5 then
 						data[ivm] = node['fun_caves:moon_weed']
 						write = true
-					elseif rand(60) == 1 and plant_n[index] > 0.5 then
+					elseif math.random(60) == 1 and plant_n[index] > 0.5 then
 						fun_caves.place_schematic(minp, maxp, data, p2data, area, node, {x=x,y=y,z=z}, fun_caves.schematics['lumin_tree'], true)
 						write = true
-					elseif rand(10) == 1 then
-						data[ivm] = node['default:grass_'..rand(4)]
+					elseif math.random(10) == 1 then
+						data[ivm] = node['default:grass_'..math.random(4)]
 						write = true
 					end
-				elseif data[ivm] == node['air'] and (dy < 29 - cloud_1[index] or dy > 35 + cloud_1[index]) and cloud_2[index3d] > abs((dy - 40) / 20) then
+				elseif data[ivm] == node['air'] and (dy < 29 - cloud_1[index] or dy > 35 + cloud_1[index]) and cloud_2[index3d] > math.abs((dy - 40) / 20) then
 					data[ivm] = node['fun_caves:wispy_cloud']
 					write = true
 				end
@@ -102,11 +97,11 @@ fun_caves.cloudgen = function(minp, maxp, data, p2data, area, node)
 				cloud = 'cloud'
 			end
 
-			cloud_1[index] = floor(cloud_1[index] + 0.5)
+			cloud_1[index] = math.floor(cloud_1[index] + 0.5)
 			if cloud_1[index] > 0 then
 				for y = minp.y, maxp.y do
 					local dy = y - minp.y
-					if data[ivm] == node['fun_caves:'..cloud] and data[ivm + area.ystride] == node['default:water_source'] and rand(30) == 1 and fun_caves.surround(node, data, area, ivm) then
+					if data[ivm] == node['fun_caves:'..cloud] and data[ivm + area.ystride] == node['default:water_source'] and math.random(30) == 1 and fun_caves.surround(node, data, area, ivm) then
 						data[ivm] = node['fun_caves:water_plant_1_water_'..cloud]
 					end
 

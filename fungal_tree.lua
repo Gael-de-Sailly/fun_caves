@@ -2,9 +2,6 @@
 -- Fungal Tree   --
 -------------------
 
-local rand = math.random
-local max = math.max
-
 local colors = {}
 colors["^[colorize:#FF00FF:60"] = "dye:violet"
 colors["^[colorize:#0000FF:60"] = "dye:blue"
@@ -42,7 +39,7 @@ minetest.register_node("fun_caves:fungal_tree_fruit", {
 local fruit = minetest.get_content_id("fun_caves:fungal_tree_fruit")
 
 function fun_caves.make_fungal_tree(data, area, ivm, height)
-	local leaf = minetest.get_content_id(fungal_tree_leaves[rand(#fungal_tree_leaves)])
+	local leaf = minetest.get_content_id(fungal_tree_leaves[math.random(#fungal_tree_leaves)])
 	local air = minetest.get_content_id('air')
 	for y = 0, height do
 		local radius = 1
@@ -51,7 +48,7 @@ function fun_caves.make_fungal_tree(data, area, ivm, height)
 		end
 		for z = -radius,radius do
 			for x = -radius,radius do
-				local sr = rand(1,100)
+				local sr = math.random(1,100)
 				local i = ivm + z*area.zstride + y*area.ystride + x
 				if data[i] == air then
 					if x == 0 and y == 0 and z == 0 then

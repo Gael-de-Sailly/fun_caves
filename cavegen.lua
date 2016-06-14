@@ -7,9 +7,6 @@ local cave_noise_2 = {offset = 0, scale = 1, seed = -8402, spread = {x = 40, y =
 local cave_noise_3 = {offset = 15, scale = 10, seed = 3721, spread = {x = 40, y = 40, z = 40}, octaves = 3, persist = 1, lacunarity = 2}
 
 
-local rand = math.random
-
-
 fun_caves.cavegen = function(minp, maxp, data, area, node, heightmap, underzone)
 	local csize = vector.add(vector.subtract(maxp, minp), 1)
 	local map_max = {x = csize.x, y = csize.y + 2, z = csize.z}
@@ -54,7 +51,7 @@ fun_caves.cavegen = function(minp, maxp, data, area, node, heightmap, underzone)
 					data[ivm] = node[underzone.column_node]
 					write = true
 				elseif underzone and underzone.column_node and not underzone.regular_columns and column == 2 then
-					if underzone.column_node_rare and rand(70) == 1 then
+					if underzone.column_node_rare and math.random(70) == 1 then
 						data[ivm] = node[underzone.column_node_rare]
 					else
 						data[ivm] = node[underzone.column_node]

@@ -16,12 +16,6 @@ for _, i in pairs({"desert_ocean", "savanna_ocean", "rainforest_ocean", }) do
 end
 
 
-local rand = math.random
-local max = math.max
-local min = math.min
-local log = math.log
-local floor = math.floor
-local find_nodes_in_area = minetest.find_nodes_in_area
 local csize
 local node_match_cache = {}
 
@@ -46,9 +40,9 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 		for i = 0, 10, 2 do
 			dis_map[i] = {}
 			for j = 0, 10, 2 do
-				dis_map[i][j] = rand(6)
+				dis_map[i][j] = math.random(6)
 				if dis_map[i][j] == 6 then
-					dis_map[i][j] = 5 + rand(10)
+					dis_map[i][j] = 5 + math.random(10)
 				end
 			end
 		end
@@ -90,7 +84,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 
 							-- Compress biomes at the surface to avoid fluids.
 							if y > fluid_compression then
-								biome_val = biome_val / max(1, log(y - fluid_compression))
+								biome_val = biome_val / math.max(1, math.log(y - fluid_compression))
 							end
 
 							for _, bi in pairs(fun_caves.cave_biomes) do
@@ -123,7 +117,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						end
 
 						if data[ivm] == node["default:stone"] then
-							if node_above == node["air"] and biome and biome.dirt and rand(biome.dirt_chance) == 1 then
+							if node_above == node["air"] and biome and biome.dirt and math.random(biome.dirt_chance) == 1 then
 								data[ivm] = node[biome.dirt]
 								write = true
 								break
@@ -137,7 +131,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 
 							if air_above then
-								if biome and biome.deco and rand(biome.deco_chance) == 1 then
+								if biome and biome.deco and math.random(biome.deco_chance) == 1 then
 									data[ivm] = node[biome.deco]
 									write = true
 									break
@@ -162,7 +156,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 							end
 
 							if air_below then
-								if biome and biome.deco and rand(biome.deco_chance) == 1 then
+								if biome and biome.deco and math.random(biome.deco_chance) == 1 then
 									data[ivm] = node[biome.deco]
 									write = true
 									break
@@ -175,7 +169,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						end
 
 						-- smallest city generator ever
-						if underzone and underzone.name == 'Dis' and data[ivm] == node['air'] and floor((x - minp.x) / 8) % 2 == 0 and floor((z - minp.z) / 8) % 2 == 0 and y - underzone.floor < dis_map[floor((x - minp.x) / 8)][floor((z - minp.z) / 8)] * 4 + 1 and y - underzone.floor >= 0 then
+						if underzone and underzone.name == 'Dis' and data[ivm] == node['air'] and math.floor((x - minp.x) / 8) % 2 == 0 and math.floor((z - minp.z) / 8) % 2 == 0 and y - underzone.floor < dis_map[math.floor((x - minp.x) / 8)][math.floor((z - minp.z) / 8)] * 4 + 1 and y - underzone.floor >= 0 then
 							local dx = (x - minp.x) % 16
 							local dy = y - underzone.floor + 1
 							local dz = (z - minp.z) % 16
@@ -195,22 +189,22 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						if data[ivm] == node["air"] and y < maxp.y then
 							-- hanging down
 							--  stone hasn't yet been changed
-							if biome and biome.stalactite and node_above == node["default:stone"] and rand(biome.stalactite_chance) == 1 then
+							if biome and biome.stalactite and node_above == node["default:stone"] and math.random(biome.stalactite_chance) == 1 then
 								data[ivm] = node[biome.stalactite]
 								write = true
 								break
 							end
 
 							-- fluids
-							if y > minp.y and biome and biome.fluid and node_below == node[biome.floor_node] and rand(biome.fluid_chance) == 1 then
+							if y > minp.y and biome and biome.fluid and node_below == node[biome.floor_node] and math.random(biome.fluid_chance) == 1 then
 								data[ivm] = node[biome.fluid]
 								write = true
 								break
 
 								-- standing up
-							elseif node_below == node[biome.floor_node] and biome and biome.stalagmite and rand(biome.stalagmite_chance) == 1 then
+							elseif node_below == node[biome.floor_node] and biome and biome.stalagmite and math.random(biome.stalagmite_chance) == 1 then
 								if type(biome.stalagmite) == 'table' then
-									data[ivm] = node[biome.stalagmite[rand(#biome.stalagmite)]]
+									data[ivm] = node[biome.stalagmite[math.random(#biome.stalagmite)]]
 								else
 									data[ivm] = node[biome.stalagmite]
 								end
@@ -219,11 +213,11 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 
 								-- vegetation
 							elseif node_below == node["fun_caves:polluted_dirt"] then
-								if rand(10) == 1 then
+								if math.random(10) == 1 then
 									data[ivm] = node["default:dry_shrub"]
 									write = true
 									break
-								elseif rand(50) == 1 then
+								elseif math.random(50) == 1 then
 									local air_count = 0
 									local j
 									for i = 1, 9 do
@@ -237,19 +231,19 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 									end
 								end
 							elseif node_below == node["default:dirt"] and biome and biome.fungi then
-								if rand(10) == 1 then
+								if math.random(10) == 1 then
 									data[ivm] = node["flowers:mushroom_red"]
 									write = true
 									break
-								elseif rand(10) == 1 then
+								elseif math.random(10) == 1 then
 									data[ivm] = node["flowers:mushroom_brown"]
 									write = true
 									break
-								elseif node_above == node["air"] and rand(10) == 1 then
+								elseif node_above == node["air"] and math.random(10) == 1 then
 									data[ivm] = node["fun_caves:giant_mushroom_stem"]
 									write = true
 									break
-								elseif rand(30) == 1 then
+								elseif math.random(30) == 1 then
 									local air_count = 0
 									local j
 									for i = 1, 12 do
@@ -259,7 +253,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 										end
 									end
 									if air_count > 5 then
-										fun_caves.make_fungal_tree(data, area, ivm, rand(2, min(air_count, 12)))
+										fun_caves.make_fungal_tree(data, area, ivm, math.random(2, math.min(air_count, 12)))
 									end
 								end
 							elseif node_below == node["fun_caves:giant_mushroom_stem"] and data[ivm - area.ystride * 2] == node["fun_caves:giant_mushroom_stem"] then
@@ -267,7 +261,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 								write = true
 								break
 							elseif node_below == node["fun_caves:giant_mushroom_stem"] then
-								if node_above == node["air"] and rand(3) == 1 then
+								if node_above == node["air"] and math.random(3) == 1 then
 									data[ivm] = node["fun_caves:giant_mushroom_stem"]
 									write = true
 									break
@@ -305,20 +299,20 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 						local node_below = data[ivm - area.ystride]
 						local node_above = data[ivm + area.ystride]
 
-						if y < water_level and data[ivm] == node["default:sand"] and node_above == node["default:water_source"] and data[ivm + area.ystride * 2] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) == 1 and fun_caves.surround(node, data, area, ivm) then
-							if rand(100) == 1 then
+						if y < water_level and data[ivm] == node["default:sand"] and node_above == node["default:water_source"] and data[ivm + area.ystride * 2] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and math.random(5) == 1 and fun_caves.surround(node, data, area, ivm) then
+							if math.random(100) == 1 then
 								data[ivm] = node["fun_caves:precious_coral_water_sand"]
 							else
 								data[ivm] = node["fun_caves:staghorn_coral_water_sand"]
 							end
 							write = true
 							break
-						elseif y < water_level and node_below == node["default:sand"] and node_above == node["default:water_source"] and data[ivm] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and rand(5) < 3 then
-							if rand(15) == 1 then
+						elseif y < water_level and node_below == node["default:sand"] and node_above == node["default:water_source"] and data[ivm] == node["default:water_source"] and coral_biomes[biome] and pn < -0.1 and math.random(5) < 3 then
+							if math.random(15) == 1 then
 								data[ivm] = node["fun_caves:brain_coral"]
 								write = true
 								break
-							elseif rand(15) == 1 then
+							elseif math.random(15) == 1 then
 								data[ivm] = node["fun_caves:dragon_eye"]
 								write = true
 								break
@@ -346,7 +340,7 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 										-- against a given node (or nodes). However, it's slow.
 										-- To speed it up, we cache the results for each plant
 										-- on each node, and avoid calling find_nodes every time.
-										local posm, count = find_nodes_in_area({x=x, y=y, z=z}, {x=x, y=y, z=z}, desc.place_on)
+										local posm, count = minetest.find_nodes_in_area({x=x, y=y, z=z}, {x=x, y=y, z=z}, desc.place_on)
 										if #posm > 0 then
 											node_match_cache[desc.content_id][data[ivm]] = "good" 
 										else
@@ -354,14 +348,14 @@ fun_caves.decogen = function(minp, maxp, data, p2data, area, node, heightmap, bi
 										end
 									end
 
-									if node_match_cache[desc.content_id][data[ivm]] == "good" and desc.fill_ratio and (not desc.biomes or (biome and desc.biomes and table.contains(desc.biomes, biome))) and rand() <= desc.fill_ratio then
+									if node_match_cache[desc.content_id][data[ivm]] == "good" and desc.fill_ratio and (not desc.biomes or (biome and desc.biomes and table.contains(desc.biomes, biome))) and math.random() <= desc.fill_ratio then
 										data[ivm] = desc.content_id
 										write = true
 										break
 									end
 								end
 							end
-						elseif y > minp.y and node_below == node["default:river_water_source"] and data[ivm] == node["air"] and water_lily_biomes[biome] and pn > 0.5 and rand(water_lily_ratio) == 1 then
+						elseif y > minp.y and node_below == node["default:river_water_source"] and data[ivm] == node["air"] and water_lily_biomes[biome] and pn > 0.5 and math.random(water_lily_ratio) == 1 then
 							-- on top of the water
 							-- I haven't figured out what the decoration manager is
 							--  doing with the noise functions, but this works ok.

@@ -1,10 +1,3 @@
-local rand = math.random
-local min = math.min
-local max = math.max
-local floor = math.floor
-local ceil = math.ceil
-local abs = math.abs
-local sqrt = math.sqrt
 local max_depth = 31000
 
 
@@ -191,7 +184,7 @@ local wood_noise = {offset = 0, scale = 1, seed = -4640, spread = {x = 32, y = 3
 
 
 fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
-	local tree_n = minetest.get_perlin(tree_noise_1):get2d({x=floor((minp.x + 32) / 160) * 80, y=floor((minp.z + 32) / 160) * 80})
+	local tree_n = minetest.get_perlin(tree_noise_1):get2d({x=math.floor((minp.x + 32) / 160) * 80, y=math.floor((minp.z + 32) / 160) * 80})
 	if minp.y < -112 or minp.y > 208 or (not fun_caves.DEBUG and tree_n < 1) then
 		return
 	end
@@ -210,23 +203,23 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 		for x = minp.x, maxp.x do
 			local dx = (x + 32) % 160 - 80
 			local dz = (z + 32) % 160 - 80
-			local r2 = 70 + floor(dx / 4) % 3 * 6 + floor(dz / 4) % 3 * 6
+			local r2 = 70 + math.floor(dx / 4) % 3 * 6 + math.floor(dz / 4) % 3 * 6
 
 			index = index + 1
 			index3d = (z - minp.z) * (csize.y + 2) * csize.x + (x - minp.x) + 1
 			local ivm = area:index(x, minp.y - 1, z)
-			local distance = floor(sqrt(dx ^ 2 + dz ^ 2))
+			local distance = math.floor(math.sqrt(dx ^ 2 + dz ^ 2))
 
 			for y = minp.y - 1, maxp.y + 1 do
 				local dy = y - minp.y
 				local r = 20
-				if abs(y - 50) > 130 then
-					r = max(0, r - floor((abs(y - 50) - 130) / 2))
+				if math.abs(y - 50) > 130 then
+					r = math.max(0, r - math.floor((math.abs(y - 50) - 130) / 2))
 				end
 
 				local distance3
 				if y > 112 then
-					distance3 = floor(sqrt(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2))
+					distance3 = math.floor(math.sqrt(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2))
 				end
 
 				if distance < r then
@@ -248,7 +241,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 						data[ivm] = node['fun_caves:diamondwood']
 					end
 
-					if data[ivm] ~= node['air'] and data[ivm] ~= node['fun_caves:weightless_water'] and rand(500) == 1 then
+					if data[ivm] ~= node['air'] and data[ivm] ~= node['fun_caves:weightless_water'] and math.random(500) == 1 then
 						data[ivm] = node['fun_caves:sap']
 					end
 					write = true
@@ -257,15 +250,15 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 					write = true
 
 				-- foliage
-				elseif y < 272 and y > 112 and distance3 and distance3 < r2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
+				elseif y < 272 and y > 112 and distance3 and distance3 < r2 and y % 10 == 0 and (math.floor(dx / 4) % 3 == 0 or math.floor(dz / 4) % 3 == 0) then
 					if data[ivm] == node['air'] then
 						data[ivm] = node['fun_caves:bark']
 						write = true
 					end
-				elseif y < 275 and y > 115 and distance3 and distance3 < r2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
-					local r = abs(((y + 3) % 10) - 3)
-					if (r < 2 or rand(r) == 1) and data[ivm] == node['air'] then
-						if distance3 > r2 - 10 and rand(10) == 1 then
+				elseif y < 275 and y > 115 and distance3 and distance3 < r2 and (y + 3) % 10 < 7 and (math.floor((dx + 3) / 4) % 3 < 2 or math.floor((dz + 3) / 4) % 3 < 2) then
+					local r = math.abs(((y + 3) % 10) - 3)
+					if (r < 2 or math.random(r) == 1) and data[ivm] == node['air'] then
+						if distance3 > r2 - 10 and math.random(10) == 1 then
 							data[ivm] = node['fun_caves:leaves_special']
 						else
 							data[ivm] = node['fun_caves:leaves']

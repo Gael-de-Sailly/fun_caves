@@ -5,11 +5,6 @@ local seed_noise = {offset = 0, scale = 32768, seed = 5202, spread = {x = 80, y 
 local fortress_noise = {offset = 0, scale = 1, seed = -4082, spread = {x = 7, y = 7, z = 7}, octaves = 4, persist = 1, lacunarity = 2}
 
 
--- These may speed up function access.
-local rand = math.random
-local min = math.min
-local floor = math.floor
-
 -- This tables looks up nodes that aren't already stored.
 local node = setmetatable({}, {
 	__index = function(t, k)
@@ -33,7 +28,7 @@ end
 --		if not deco.biomes or deco.biomes[biome] then
 --			local range = 1000
 --			if deco.deco_type == "simple" then
---				if deco.fill_ratio and rand(range) - 1 < deco.fill_ratio * 1000 then
+--				if deco.fill_ratio and math.random(range) - 1 < deco.fill_ratio * 1000 then
 --					return deco.decoration
 --				end
 --			else
@@ -49,9 +44,9 @@ fun_caves.is_fortress = function(pos, cs, debug)
 	--  before any chunks are generated.
 
 	local cs = cs or {x=80, y=80, z=80}
-	local offset = floor(cs.y / 2) - 8 + 1
+	local offset = math.floor(cs.y / 2) - 8 + 1
 
-	local y = floor((pos.y + offset) / cs.y)
+	local y = math.floor((pos.y + offset) / cs.y)
 
 	-- Fortresses show up below ground.
 	-- Calls from the first dungeon level should return false.
@@ -59,15 +54,15 @@ fun_caves.is_fortress = function(pos, cs, debug)
 		return false
 	end
 
-	local x = floor((pos.x + offset) / cs.x)
-	local z = floor((pos.z + offset) / cs.z)
+	local x = math.floor((pos.x + offset) / cs.x)
+	local z = math.floor((pos.z + offset) / cs.z)
 
 	local n = minetest.get_perlin(fortress_noise):get3d({x=x, y=y, z=z})
-	if fun_caves.DEBUG and floor((n * 10000) % 4) == 1 then
+	if fun_caves.DEBUG and math.floor((n * 10000) % 4) == 1 then
 		--print('fortress ('..x..','..y..','..z..')')
 		return true
 	end
-	if floor((n * 10000) % 19) == 1 then
+	if math.floor((n * 10000) % 19) == 1 then
 		return true
 	end
 
@@ -75,7 +70,7 @@ fun_caves.is_fortress = function(pos, cs, debug)
 end
 
 fun_caves.place_schematic = function(minp, maxp, data, p2data, area, node, pos, schem, center)
-	local rot = rand(4) - 1
+	local rot = math.random(4) - 1
 	local yslice = {}
 	if schem.yslice_prob then
 		for _, ys in pairs(schem.yslice_prob) do
@@ -84,8 +79,8 @@ fun_caves.place_schematic = function(minp, maxp, data, p2data, area, node, pos, 
 	end
 
 	if center then
-		pos.x = pos.x - floor(schem.size.x / 2)
-		pos.z = pos.z - floor(schem.size.z / 2)
+		pos.x = pos.x - math.floor(schem.size.x / 2)
+		pos.z = pos.z - math.floor(schem.size.z / 2)
 	end
 
 	for z1 = 0, schem.size.z - 1 do
@@ -108,9 +103,9 @@ fun_caves.place_schematic = function(minp, maxp, data, p2data, area, node, pos, 
 				for y = 0, schem.size.y - 1 do
 					local dy = pos.y - minp.y + y
 					--if math.min(dx, csize.x - dx) + math.min(dy, csize.y - dy) + math.min(dz, csize.z - dz) > bevel then
-						if yslice[y] or 255 >= rand(255) then
+						if yslice[y] or 255 >= math.random(255) then
 							local prob = schem.data[isch].prob or schem.data[isch].param1 or 255
-							if prob >= rand(255) and schem.data[isch].name ~= "air" then
+							if prob >= math.random(255) and schem.data[isch].name ~= "air" then
 								data[ivm] = node[schem.data[isch].name]
 							end
 							local param2 = schem.data[isch].param2 or 0

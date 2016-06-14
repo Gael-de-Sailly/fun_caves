@@ -1,8 +1,4 @@
-local rand = math.random
-local floor = math.floor
-local ceil = math.ceil
-local max = math.max
-local map_max = 31000
+local max_depth = 31000
 
 
 fun_caves.fortress = function(minp, maxp, data, area, node)
@@ -13,7 +9,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 	-- hidden doors/downs
 	-- hot/ice floors
 	--
-	local level = max(6, ceil(maxp.y / floor(map_max / 6)))
+	local level = math.max(6, math.ceil(maxp.y / math.floor(max_depth / 6)))
 	local n = 16
 	local walls = {}
 	local inner_floor = node['fun_caves:dungeon_floor_1']
@@ -29,7 +25,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 		end
 		table.shuffle(walls)
 
-		local dox, doz = rand(0, n-1), rand(0, n-1)
+		local dox, doz = math.random(0, n-1), math.random(0, n-1)
 		for z = minp.z, maxp.z do
 			for y = minp.y + y2 * 5, minp.y + y2 * 5 + 4 do
 				local ivm = area:index(minp.x, y, z)
@@ -37,14 +33,14 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 					if x == minp.x or z == minp.z or x == maxp.x or z == maxp.z then
 						data[ivm] = outer_wall
 					elseif (y - minp.y) % 5 == 0 then
-						if floor((z - minp.z) / 5) == doz and floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
+						if math.floor((z - minp.z) / 5) == doz and math.floor((x - minp.x) / 5) == dox and (z - minp.z) % 5 ~= 0 and (x - minp.x) % 5 ~= 0 and y ~= minp.y then
 							data[ivm] = node["air"]
 						else
 							data[ivm] = inner_floor
 						end
 					elseif (z - minp.z) % 5 == 0 or (x - minp.x) % 5 == 0 then
 						--data[ivm] = fun_caves.DEBUG and node["default:glass"] or inner_wall
-						if y2 == 0 and rand(3000) == 1 then
+						if y2 == 0 and math.random(3000) == 1 then
 							treasure_count = treasure_count + 1
 							data[ivm] = node['fun_caves:coffer']
 						else
@@ -62,9 +58,9 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 
 		for m = 0, #walls do
 			local c = walls[m]
-			local a = floor(c / 2)
+			local a = math.floor(c / 2)
 			local i = a % n
-			local j = floor(a / n)
+			local j = math.floor(a / n)
 			local u = c % 2 == 0 and 1 or 0
 			local v = c % 2 == 1 and 1 or 0
 			local b = a + u + n * v
@@ -73,7 +69,7 @@ fun_caves.fortress = function(minp, maxp, data, area, node)
 				local x = (i + u) * 5 + minp.x
 				local y = minp.y + y2 * 5
 				local z = (j + v) * 5 + minp.z
-				--if y > minp.y and rand(20) == 1 then
+				--if y > minp.y and math.random(20) == 1 then
 				--	for z1 = z + 1, z + 4 do
 				--		ivm = area:index(x+1, y, z1)
 				--		for x1 = x + 1, x + 4 do

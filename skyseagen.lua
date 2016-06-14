@@ -1,8 +1,3 @@
-local rand = math.random
-local min = math.min
-local floor = math.floor
-local ceil = math.ceil
-local abs = math.abs
 local max_depth = 31000
 
 
@@ -44,7 +39,7 @@ fun_caves.skysea = function(minp, maxp, data, p2data, area, node)
 			index3d = (z - minp.z) * (csize.y) * csize.x + (x - minp.x) + 1
 			local ivm = area:index(x, minp.y, z)
 
-			terrain_1[index] = floor(terrain_1[index] + 0.5)
+			terrain_1[index] = math.floor(terrain_1[index] + 0.5)
 			for y = minp.y, maxp.y do
 				local dy = y - minp.y
 				if dy == 0 then
@@ -83,7 +78,7 @@ fun_caves.skysea = function(minp, maxp, data, p2data, area, node)
 			local cloud
 			--if biome_n[index] < 0 then
 
-			terrain_1[index] = floor(terrain_1[index] + 0.5)
+			terrain_1[index] = math.floor(terrain_1[index] + 0.5)
 			if terrain_1[index] > 0 then
 				for y = minp.y, maxp.y do
 					local dy = y - minp.y
