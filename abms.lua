@@ -50,7 +50,8 @@ minetest.register_globalstep(function(dtime)
 		local minp = vector.subtract(pos, 0.5)
 		local maxp = vector.add(pos, 0.5)
 
-		if dps_count % monster_delay == 0 then
+		if fun_caves.fortress_spawns
+				and dps_count % monster_delay == 0 then
 			local mob_count = 0
 			for _, mob in pairs(minetest.luaentities) do
 				if mob.health and mob.started_in_fortress then
