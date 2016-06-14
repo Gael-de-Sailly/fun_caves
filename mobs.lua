@@ -177,7 +177,15 @@ end
 
 if minetest.registered_entities["mobs:bee"] then
 	local function bee_summon(self)
-		if self.health < (self.hp_max / 2) and self.state == "attack" and math.random(4) == 1 then
+		if self.state ~= 'attack' then
+			return
+		end
+
+		local prob = 10
+		if self.name == 'fun_caves:killer_bee_queen' then
+			prob = 4
+		end
+		if math.random(prob) == 1 then
 			local pos = self.object:getpos()
 			local p1 = vector.subtract(pos, 1)
 			local p2 = vector.add(pos, 1)
@@ -188,7 +196,7 @@ if minetest.registered_entities["mobs:bee"] then
 			if #nodelist > 0 then
 				for key,value in pairs(nodelist) do 
 					minetest.add_entity(value, "fun_caves:killer_bee_drone")
-					print("Queen bee summons reinforcement.")
+					print("A bee summons reinforcement.")
 					return  -- only one at a time
 				end
 			end
@@ -203,14 +211,14 @@ if minetest.registered_entities["mobs:bee"] then
 		if self.name == 'fun_caves:killer_bee' then
 			fun_caves.tunneling(self, "bee")
 		end
-		if self.name == 'fun_caves:killer_bee_queen' then
-			bee_summon(self)
-		end
+
+		bee_summon(self)
 
 		fun_caves.climb(self)
 		fun_caves.search_replace(self.object:getpos(), 50, {"fun_caves:tree"}, "fun_caves:glowing_fungal_wood")
 		fun_caves.surface_damage(self)
 	end
+
 	mobs:register_mob("fun_caves:killer_bee", {
 		description = "Killer Bee",
 		type = "monster",
@@ -265,7 +273,7 @@ if minetest.registered_entities["mobs:bee"] then
 	})
 
 
-	mobs:register_spawn("fun_caves:killer_bee", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 500, 5, 31000)
+	mobs:register_spawn("fun_caves:killer_bee", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 300, 5, 31000)
 	mobs:register_egg("fun_caves:killer_bee", "Killer Bee", "mobs_bee_inv.png", 1)
 
 
