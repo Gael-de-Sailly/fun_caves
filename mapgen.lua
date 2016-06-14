@@ -404,8 +404,8 @@ local function generate(p_minp, p_maxp, seed)
 		else
 			-- set_lighting causes lighting artifacts,
 			-- but corrects the light inside trees.
-			vm:set_lighting({day = 0, night = 0})
-			vm:calc_lighting()
+			vm:set_lighting({day = 0, night = 0}, minp, maxp)
+			vm:calc_lighting(minp, maxp)
 			-- Does not work:
 			--vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z}, maxp)
 		end

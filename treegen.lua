@@ -4,6 +4,7 @@ local max = math.max
 local floor = math.floor
 local ceil = math.ceil
 local abs = math.abs
+local sqrt = math.sqrt
 local max_depth = 31000
 
 
@@ -49,27 +50,17 @@ minetest.register_node("fun_caves:petrified_wood", {
 	sounds = default.node_sound_stone_defaults(),
 })
 
-minetest.register_node("fun_caves:leaves", {
-	description = "Leaves",
-	visual_scale = 1.3,
-	tiles = {"default_leaves.png^[noalpha"},
-	paramtype = "light",
-	is_ground_content = false,
-	groups = {snappy = 3, flammable = 2},
-	drop = {
-		max_items = 1,
-		items = {
-			{
-				items = {'default:sapling'},
-				rarity = 20,
-			},
-			{
-				items = {'default:leaves'},
-			}
-		}
-	},
-	sounds = default.node_sound_leaves_defaults(),
-})
+newnode = fun_caves.clone_node("default:leaves")
+newnode.tiles = {"default_leaves.png^[noalpha"}
+newnode.special_tiles = nil
+newnode.groups.leafdecay = 0
+newnode.drawtype = nil
+newnode.waving = nil
+minetest.register_node("fun_caves:leaves", newnode)
+
+-- save for special occasions
+newnode = fun_caves.clone_node("fun_caves:leaves")
+minetest.register_node("fun_caves:leaves_special", newnode)
 
 newnode = fun_caves.clone_node("default:water_source")
 newnode.description = "Water"
@@ -201,7 +192,7 @@ local wood_noise = {offset = 0, scale = 1, seed = -4640, spread = {x = 32, y = 3
 
 fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 	local tree_n = minetest.get_perlin(tree_noise_1):get2d({x=floor((minp.x + 32) / 160) * 80, y=floor((minp.z + 32) / 160) * 80})
-	if minp.y < -112 or minp.y > 208 or (not fun_caves.DEBUG and tree_n < 0.5) then
+	if minp.y < -112 or minp.y > 208 or (not fun_caves.DEBUG and tree_n < 1) then
 		return
 	end
 
@@ -224,6 +215,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 			index = index + 1
 			index3d = (z - minp.z) * (csize.y + 2) * csize.x + (x - minp.x) + 1
 			local ivm = area:index(x, minp.y - 1, z)
+			local distance = floor(sqrt(dx ^ 2 + dz ^ 2))
 
 			for y = minp.y - 1, maxp.y + 1 do
 				local dy = y - minp.y
@@ -232,7 +224,11 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 					r = max(0, r - floor((abs(y - 50) - 130) / 2))
 				end
 
-				local distance = floor(math.sqrt(dx ^ 2 + dz ^ 2))
+				local distance3
+				if y > 112 then
+					distance3 = floor(sqrt(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2))
+				end
+
 				if distance < r then
 					if distance % 8 == 7 and wood_1[index3d] < 0.3 then
 						data[ivm] = node['fun_caves:petrified_wood']
@@ -256,20 +252,24 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 						data[ivm] = node['fun_caves:sap']
 					end
 					write = true
-				elseif y < 222 and y > -132 and floor(dx ^ 2 + dz ^ 2) < (r + 2) ^ 2 then
+				elseif y < 222 and y > -132 and distance < r + 2 then
 					data[ivm] = node['fun_caves:bark']
 					write = true
 
 				-- foliage
-				elseif y < 272 and y > 112 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
+				elseif y < 272 and y > 112 and distance3 and distance3 < r2 and y % 10 == 0 and (floor(dx / 4) % 3 == 0 or floor(dz / 4) % 3 == 0) then
 					if data[ivm] == node['air'] then
 						data[ivm] = node['fun_caves:bark']
 						write = true
 					end
-				elseif y < 275 and y > 115 and floor(dx ^ 2 + dz ^ 2 + (y - 192) ^ 2) < r2 ^ 2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
+				elseif y < 275 and y > 115 and distance3 and distance3 < r2 and (y + 3) % 10 < 7 and (floor((dx + 3) / 4) % 3 < 2 or floor((dz + 3) / 4) % 3 < 2) then
 					local r = abs(((y + 3) % 10) - 3)
 					if (r < 2 or rand(r) == 1) and data[ivm] == node['air'] then
-						data[ivm] = node['fun_caves:leaves']
+						if distance3 > r2 - 10 and rand(10) == 1 then
+							data[ivm] = node['fun_caves:leaves_special']
+						else
+							data[ivm] = node['fun_caves:leaves']
+						end
 						write = true
 					end
 				end
