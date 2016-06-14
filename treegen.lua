@@ -121,6 +121,15 @@ minetest.register_node("fun_caves:syrup", {
 	sounds = default.node_sound_glass_defaults(),
 })
 
+newnode = fun_caves.clone_node("default:tree")
+newnode.description = "Glowing Fungal Wood"
+newnode.tiles = {"fun_caves_tree.png^vmg_glowing_fungal.png",}
+newnode.drop = {items={ {items={"default:wood"},}, {items={"fun_caves:glowing_fungus",},},},}
+newnode.light_source = fun_caves.light_max - 4
+newnode.groups.oddly_breakable_by_hand = 1
+minetest.register_node("fun_caves:glowing_fungal_wood", newnode)
+
+
 minetest.register_craftitem("fun_caves:charcoal", {
 	description = "Charcoal Briquette",
 	inventory_image = "default_coal_lump.png",

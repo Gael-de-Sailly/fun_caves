@@ -208,7 +208,7 @@ if minetest.registered_entities["mobs:bee"] then
 		end
 
 		fun_caves.climb(self)
-		--fun_caves.search_replace(self.object:getpos(), 50, {"fun_caves:wood"}, "fun_caves:glowing_fungal_wood")
+		fun_caves.search_replace(self.object:getpos(), 50, {"fun_caves:tree"}, "fun_caves:glowing_fungal_wood")
 		fun_caves.surface_damage(self)
 	end
 	mobs:register_mob("fun_caves:killer_bee", {
