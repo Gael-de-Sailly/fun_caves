@@ -71,17 +71,39 @@ minetest.register_node("fun_caves:leaves", {
 	sounds = default.node_sound_leaves_defaults(),
 })
 
-local newnode = fun_caves.clone_node("default:water_source")
+newnode = fun_caves.clone_node("default:water_source")
+newnode.description = "Water"
+newnode.liquid_range = 0
+newnode.liquid_viscosity = 7
+newnode.liquid_renewable = false
+newnode.liquid_alternative_flowing = "fun_caves:weightless_water"
+newnode.liquid_alternative_source = "fun_caves:weightless_water"
+minetest.register_node("fun_caves:weightless_water", newnode)
+
+bucket.liquids['fun_caves:weightless_water'] = {
+	source = 'fun_caves:weightless_water',
+	flowing = 'fun_caves:weightless_water',
+	itemname = 'bucket:bucket_water',
+}
+
+newnode = fun_caves.clone_node("fun_caves:weightless_water")
 newnode.description = "Sap"
-newnode.inventory_image = minetest.inventorycube("default_water.png^[colorize:#FF7E00:B0")
 newnode.tiles[1].name =  "fun_caves_sap_source_animated.png"
 newnode.special_tiles[1].name =  "fun_caves_sap_source_animated.png"
+newnode.inventory_image = minetest.inventorycube("default_water.png^[colorize:#FF7E00:B0")
 newnode.liquid_alternative_flowing = "fun_caves:sap"
 newnode.liquid_alternative_source = "fun_caves:sap"
-newnode.liquid_viscosity = 15
-newnode.liquid_range = 0
 newnode.post_effect_color = {a = 120, r = 255, g = 191, b = 0}
 minetest.register_node("fun_caves:sap", newnode)
+
+bucket.register_liquid(
+	"fun_caves:sap",
+	"fun_caves:sap",
+	"fun_caves:bucket_sap",
+	"fun_caves_bucket_sap.png",
+	"Bucket of Sap",
+	{}
+)
 
 minetest.register_node("fun_caves:syrup", {
 	description = "Syrup",
@@ -153,15 +175,6 @@ minetest.register_craft({
 	replacements = {{'fun_caves:bucket_sap', 'bucket:bucket_empty'},},
 })
 
-bucket.register_liquid(
-	"fun_caves:sap",
-	"fun_caves:sap",
-	"fun_caves:bucket_sap",
-	"fun_caves_bucket_sap.png",
-	"Bucket of Sap",
-	{}
-)
-
 
 --minetest.register_craft( {
 --	output = "vessels:glass_bottle 10",
@@ -214,8 +227,8 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 				if distance < r then
 					if distance % 8 == 7 and wood_1[index3d] < 0.3 then
 						data[ivm] = node['fun_caves:petrified_wood']
-					--elseif wood_1[index3d] < -0.98 then
-					--	data[ivm] = node['default:water_source']
+					elseif wood_1[index3d] < -0.98 then
+						data[ivm] = node['fun_caves:weightless_water']
 					elseif wood_1[index3d] < -0.8 then
 						data[ivm] = node['air']
 					elseif wood_1[index3d] < -0.05 then
@@ -230,7 +243,7 @@ fun_caves.treegen = function(minp, maxp, data, p2data, area, node)
 						data[ivm] = node['fun_caves:diamondwood']
 					end
 
-					if data[ivm] ~= node['air'] and data[ivm] ~= node['default:water_source'] and rand(500) == 1 then
+					if data[ivm] ~= node['air'] and data[ivm] ~= node['fun_caves:weightless_water'] and rand(500) == 1 then
 						data[ivm] = node['fun_caves:sap']
 					end
 					write = true
