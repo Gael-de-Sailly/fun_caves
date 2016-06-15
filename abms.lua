@@ -14,9 +14,11 @@ local mushrooms = {"flowers:mushroom_brown", "flowers:mushroom_red"}
 local hunger_mod = minetest.get_modpath("hunger")
 
 
+-- all the fun_caves globalstep functions
 minetest.register_globalstep(function(dtime)
 	local time = minetest.get_us_time()
 
+	-- Execute only after an interval.
 	if last_dps_check and time - last_dps_check < dps_delay then
 		return
 	end
@@ -33,7 +35,9 @@ minetest.register_globalstep(function(dtime)
 				end
 				mob.hp_max = math.floor(mob.hp_max * factor)
 				mob.damage = math.floor(mob.damage * factor)
-				--print("Promoting "..mob.name..": "..mob.hp_max.." at "..pos.x..","..pos.y..","..pos.z)
+				if fun_caves.DEBUG then
+					print("Promoting "..mob.name..": "..mob.hp_max.." at "..pos.x..","..pos.y..","..pos.z)
+				end
 				mob.object:set_hp(mob.hp_max)
 				mob.health = mob.hp_max
 				mob.initial_promotion = true
@@ -47,9 +51,8 @@ minetest.register_globalstep(function(dtime)
 	for i = 1, #players do
 		local player = players[i]
 		local pos = player:getpos()
-		local minp = vector.subtract(pos, 0.5)
-		local maxp = vector.add(pos, 0.5)
 
+		-- How many mobs are up at the moment? This is a rough check.
 		if fun_caves.fortress_spawns and #fun_caves.fortress_spawns > 0 and dps_count % monster_delay == 0 then
 			local mob_count = 0
 			for _, mob in pairs(minetest.luaentities) do
@@ -57,24 +60,24 @@ minetest.register_globalstep(function(dtime)
 					local dist = vector.subtract(pos, mob.object:getpos())
 					local dist2 = math.max(math.abs(dist.x), math.abs(dist.y * 5), math.abs(dist.z))
 					if dist2 < 30 then
-						--print(mob.name, dist.y)
 						mob_count = mob_count + 1
-					else
-						--print("* not", mob.name, dist2)
-						--print(dump(dist))
 					end
 				end
 			end
 
+			-- If we need more, spawn them.
 			if mob_count < fortress_mob_count then
-				local pos1, count = minetest.find_nodes_in_area_under_air({x=pos.x-30, y=pos.y-2, z=pos.z-30}, {x=pos.x+30, y=pos.y+2, z=pos.z+30}, {"group:fortress"})
-				if #pos1 > 0 then
-					local pos2 = pos1[math.random(#pos1)]
-					pos2.y = pos2.y + 2
+				local floor_nodes, count = minetest.find_nodes_in_area_under_air({x=pos.x-30, y=pos.y-2, z=pos.z-30}, {x=pos.x+30, y=pos.y+2, z=pos.z+30}, {"group:fortress"})
+				if #floor_nodes > 0 then
+					local new_mob_pos = floor_nodes[math.random(#floor_nodes)]
+					new_mob_pos.y = new_mob_pos.y + 2
+					--------------------------------------
+					-- Mobs are treated exacty the same. Spawn harder ones differently?
+					--------------------------------------
 					local name = fun_caves.fortress_spawns[math.random(#fun_caves.fortress_spawns)]
-					local mob = minetest.add_entity(pos2, name)
+					local mob = minetest.add_entity(new_mob_pos, name)
 					if mob then
-						print("Fun Caves: Spawned "..name.." at ("..pos2.x..","..pos2.y..","..pos2.z..")")
+						print("Fun Caves: Spawned "..name.." at ("..new_mob_pos.x..","..new_mob_pos.y..","..new_mob_pos.z..")")
 					else
 						print("Fun Caves: failed to spawn "..name)
 					end
@@ -82,23 +85,29 @@ minetest.register_globalstep(function(dtime)
 			end
 		end
 
+		-- environmental damage
 		if fun_caves.DEBUG and player:get_hp() < 20 then
+			-- Regenerate the player while testing.
 			print("HP: "..player:get_hp())
 			player:set_hp(20)
 			return
 		else
-			-- Environmental damage from surfaces/hunger
+			local minp = vector.subtract(pos, 0.5)
+			local maxp = vector.add(pos, 0.5)
+
+			-- ... from standing on or near hot objects.
 			local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_hot"})
 			if #counts > 1 then
 				player:set_hp(player:get_hp() - 1)
 			end
 
-			-- Environmental damage from surfaces/hunger
+			-- ... from standing on or near poison.
 			local counts =  minetest.find_nodes_in_area(minp, maxp, {"group:poison"})
 			if #counts > 1 then
 				player:set_hp(player:get_hp() - 1)
 			end
 
+			-- ... from standing on or near cold objects (less often).
 			if dps_count % cold_delay == 0 then
 				counts =  minetest.find_nodes_in_area(minp, maxp, {"group:surface_cold"})
 				if #counts > 1 then
@@ -106,16 +115,20 @@ minetest.register_globalstep(function(dtime)
 				end
 			end
 
-			-- hunger
+			-- ... from hunger (even less often).
 			if dps_count % hunger_delay == 0 then
 				if hunger_mod then
 					hunger.update_hunger(player, hunger.players[player:get_player_name()].lvl - 4)
 				else
 					player:set_hp(player:get_hp() - 1)
 				end
-				dps_count = hunger_delay
 			end
 		end
+	end
+
+	-- Set this outside of the player loop, to affect everyone.
+	if dps_count % hunger_delay == 0 then
+		dps_count = hunger_delay
 	end
 
 	last_dps_check = minetest.get_us_time()

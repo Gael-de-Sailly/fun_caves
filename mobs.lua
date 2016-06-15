@@ -164,9 +164,12 @@ end
 -- executed in a mob's do_custom() to regulate their actions
 -- if false, do nothing
 local custom_delay = 5000000
-fun_caves.custom_ready = function(self)
+fun_caves.custom_ready = function(self, delay)
 	local time = minetest.get_us_time()
-	if not self.custom_time or time - self.custom_time > custom_delay then
+	if not delay then
+		delay = custom_delay
+	end
+	if not self.custom_time or time - self.custom_time > delay then
 		self.custom_time = time
 		return true
 	else
@@ -174,6 +177,39 @@ fun_caves.custom_ready = function(self)
 	end
 end
 
+
+if minetest.registered_entities["dmobs:fox"] then
+	local function fire_walk(self)
+		if not fun_caves.custom_ready(self, 1000000) then
+			return
+		end
+
+		local pos = self.object:getpos()
+		local p1 = vector.subtract(pos, 1)
+		local p2 = vector.add(pos, 1)
+
+		--look for nodes
+		local nodelist = minetest.find_nodes_in_area(p1, p2, "air")
+		for n in pairs(nodelist) do
+			minetest.set_node(pos, {name='fire:basic_flame'})
+		end
+	end
+
+	local m = table.copy(minetest.registered_entities["dmobs:fox"])
+	m.name = 'fun_caves:fire_fox'
+	m.damage = 3
+	--hp_min = 42,
+	--hp_max = 52,
+	m.lava_damage = 0
+	m.textures = { {"fun_caves_fire_fox_2.png"}, }
+	m.base_texture = m.textures[1]
+	m.do_custom = fire_walk
+
+	minetest.registered_entities["fun_caves:fire_fox"] = m
+	mobs.spawning_mobs["fun_caves:fire_fox"] = true
+
+	--mobs:register_spawn("fun_caves:fire_fox", {'default:dirt_with_grass'}, 20, -1, 1000, 5, 31000)
+end
 
 if minetest.registered_entities["mobs:bee"] then
 	local function bee_summon(self)
