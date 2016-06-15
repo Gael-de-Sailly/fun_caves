@@ -167,7 +167,7 @@ end)
 -- Exploding fungal fruit
 minetest.register_abm({
 	nodenames = {"fun_caves:fungal_tree_fruit"},
-	interval = 30 * fun_caves.time_factor,
+	interval = 20 * fun_caves.time_factor,
 	chance = 15,
 	catch_up = false,
 	action = function(pos, node)
@@ -286,7 +286,7 @@ minetest.register_abm({
 	nodenames = {"default:dirt"},
 	neighbors = {"air"},
 	interval = 10 * fun_caves.time_factor,
-	chance = 10,
+	chance = 15,
 	action = function(pos, node)
 		if pos.y > 0 then
 			return
@@ -308,7 +308,7 @@ minetest.register_abm({
 -- mushroom growth -- small into huge
 minetest.register_abm({
 	nodenames = mushrooms,
-	interval = 100 * fun_caves.time_factor,
+	interval = 75 * fun_caves.time_factor,
 	chance = 25,
 	action = function(pos, node)
 		-- Clumsy, but it's the best way to limit them to caves.
@@ -337,7 +337,7 @@ minetest.register_abm({
 -- mushroom growth -- huge into giant
 minetest.register_abm({
 	nodenames = {"fun_caves:huge_mushroom_cap"},
-	interval = 500 * fun_caves.time_factor,
+	interval = 300 * fun_caves.time_factor,
 	chance = 30,
 	action = function(pos, node)
 		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
