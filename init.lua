@@ -1,10 +1,10 @@
 fun_caves = {}
 fun_caves.version = "1.0"
-fun_caves.time_factor = 10
-fun_caves.light_max = 8
+fun_caves.time_factor = 10  -- affects growth abms
+fun_caves.light_max = 8  -- light intensity for mushroom growth
 fun_caves.path = minetest.get_modpath(minetest.get_current_modname())
 fun_caves.world = minetest.get_worldpath()
-fun_caves.DEBUG = false
+fun_caves.DEBUG = false  -- for maintenance only
 
 
 

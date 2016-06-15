@@ -14,7 +14,31 @@ local mushrooms = {"flowers:mushroom_brown", "flowers:mushroom_red"}
 local hunger_mod = minetest.get_modpath("hunger")
 
 
+-- fungal tree nodes
+local fungal_tree_leaves = {}
+for i = 1, 4 do
+	fungal_tree_leaves[#fungal_tree_leaves+1] = "fun_caves:fungal_tree_leaves_"..i
+end
+
+local leaves = {}
+for _, leaf in pairs(fungal_tree_leaves) do
+	leaves[leaf] = true
+end
+
+-- hot spike parameters
+local spike_air = {}
+spike_air['default:lava_source'] = true
+spike_air['default:lava_source'] = true
+spike_air['default:lava_flowing'] = true
+
+local spike_soil = {}
+spike_soil['fun_caves:hot_cobble'] = true
+spike_soil['fun_caves:black_sand'] = true
+
+
+------------------------------------------------------------
 -- all the fun_caves globalstep functions
+------------------------------------------------------------
 minetest.register_globalstep(function(dtime)
 	local time = minetest.get_us_time()
 
@@ -136,66 +160,105 @@ minetest.register_globalstep(function(dtime)
 end)
 
 
--- mushroom growth -- small into huge
+------------------------------------------------------------
+-- destruction
+------------------------------------------------------------
+
+-- Exploding fungal fruit
 minetest.register_abm({
-	nodenames = mushrooms,
-	interval = 200 * fun_caves.time_factor,
-	chance = 25,
+	nodenames = {"fun_caves:fungal_tree_fruit"},
+	interval = 30 * fun_caves.time_factor,
+	chance = 15,
+	catch_up = false,
 	action = function(pos, node)
-		-- Clumsy, but it's the best way to limit them to caves.
-		if pos.y > 0 then
-			return
-		end
-		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
-		local node_up = minetest.get_node_or_nil(pos_up)
-		if not node_up then
-			return
-		end
-		if node_up.name ~= "air" then
-			return
-		end
+		fun_caves.soft_boom(pos)
+	end
+})
+
+-- Exploding fungal fruit -- in a fire
+minetest.register_abm({
+	nodenames = {"fun_caves:fungal_tree_fruit"},
+	neighbors = {"fire:basic_flame"},
+	interval = 10 * fun_caves.time_factor,
+	chance = 5,
+	catch_up = false,
+	action = function(pos, node)
+		fun_caves.soft_boom(pos)
+	end
+})
+
+-- giant/huge mushroom "leaf decay"
+-- This should be more efficient than the normal leaf decay,
+-- since it only checks below the node.
+minetest.register_abm({
+	nodenames = {"fun_caves:giant_mushroom_cap", "fun_caves:huge_mushroom_cap"},
+	interval = 5 * fun_caves.time_factor,
+	chance = 5,
+	action = function(pos, node)
+		-- Check for stem under the cap.
 		local node_under = minetest.get_node_or_nil({x = pos.x, y = pos.y - 1, z = pos.z})
-		if not node_under then
+		if not node_under or node_under.name ~= "fun_caves:giant_mushroom_stem" then
+			minetest.set_node(pos, {name = "air"})
 			return
-		end
-		if minetest.get_item_group(node_under.name, "soil") ~= 0 and
-				(minetest.get_node_light(pos_up, nil) or 99) <= fun_caves.light_max then
-			minetest.set_node(pos_up, {name = "fun_caves:huge_mushroom_cap"})
-			minetest.set_node(pos, {name = "fun_caves:giant_mushroom_stem"})
 		end
 	end
 })
 
--- mushroom growth -- huge into giant
+-- Destroy mushroom caps in the light.
 minetest.register_abm({
-	nodenames = {"fun_caves:huge_mushroom_cap"},
-	interval = 500 * fun_caves.time_factor,
-	chance = 30,
+	nodenames = {"fun_caves:giant_mushroom_cap", "fun_caves:huge_mushroom_cap"},
+	interval = 15 * fun_caves.time_factor,
+	chance = 15,
 	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
+		if (minetest.get_node_light(pos, nil) or 99) >= fun_caves.light_max + 2 then
 			minetest.set_node(pos, {name = "air"})
 			return
 		end
-		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
-		local node_up = minetest.get_node_or_nil(pos_up)
-		if not node_up then
+	end
+})
+
+------------------------------------------------------------
+-- creation
+------------------------------------------------------------
+
+-- fungal spread
+minetest.register_abm({
+	nodenames = fungal_tree_leaves,
+	neighbors = {"air", "group:liquid"},
+	interval = 5 * fun_caves.time_factor,
+	chance = 10,
+	catch_up = false,
+	action = function(pos, node)
+		if (minetest.get_node_light(pos, nil) or 99) >= fun_caves.light_max + 2 then
+			minetest.remove_node(pos)
 			return
 		end
-		if node_up.name ~= "air" then
+
+		local grow_pos = {x=pos.x, y=pos.y-1, z=pos.z}
+		local grow_node = minetest.get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" then
+			minetest.set_node(grow_pos, {name = node.name})
 			return
 		end
-		local node_under = minetest.get_node_or_nil({x = pos.x, y = pos.y - 1, z = pos.z})
-		if not node_under or node_under.name ~= "fun_caves:giant_mushroom_stem" then
+
+		grow_pos = {x=math.random(-1,1)+pos.x, y=math.random(-1,1)+pos.y, z=math.random(-1,1)+pos.z}
+		grow_node = minetest.get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air" and (minetest.get_node_light(grow_pos, nil) or 99) <= fun_caves.light_max then
+			minetest.set_node(grow_pos, {name = node.name})
+			return
+		elseif grow_node and leaves[grow_node.name] and grow_node.name ~= node.name then
+			minetest.set_node(grow_pos, {name = 'air'})
 			return
 		end
-		node_under = minetest.get_node_or_nil({x = pos.x, y = pos.y - 2, z = pos.z})
-		if not node_under then
+
+		if math.random(40) == 1 then
+			minetest.set_node(pos, {name = "fun_caves:fungal_tree_fruit"})
 			return
 		end
-		if minetest.get_item_group(node_under.name, "soil") ~= 0 and
-				(minetest.get_node_light(pos_up, nil) or 99) <= fun_caves.light_max then
-			minetest.set_node(pos_up, {name = "fun_caves:giant_mushroom_cap"})
-			minetest.set_node(pos, {name = "fun_caves:giant_mushroom_stem"})
+
+		if math.random(100) == 1 then
+			minetest.set_node(pos, {name = fungal_tree_leaves[math.random(#fungal_tree_leaves)]})
+			return
 		end
 	end
 })
@@ -208,41 +271,136 @@ minetest.register_abm({
 	action = function(pos, node)
 		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
 		local node_up = minetest.get_node_or_nil(pos_up)
-		if not node_up then
+		if not node_up or node_up.name ~= "air" then
 			return
 		end
-		if node_up.name ~= "air" then
-			return
-		end
+
 		if (minetest.get_node_light(pos_up, nil) or 99) <= fun_caves.light_max then
 			minetest.set_node(pos_up, {name = "fun_caves:huge_mushroom_cap"})
 		end
 	end
 })
 
--- mushroom spread -- spores produce small mushrooms
+-- new fungi
 minetest.register_abm({
-	nodenames = {"fun_caves:giant_mushroom_cap", "fun_caves:huge_mushroom_cap"},
-	interval = 15 * fun_caves.time_factor,
+	nodenames = {"default:dirt"},
+	neighbors = {"air"},
+	interval = 10 * fun_caves.time_factor,
 	chance = 10,
 	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
-			minetest.set_node(pos, {name = "air"})
+		if pos.y > 0 then
 			return
 		end
-		local pos_down = pos
-		pos_down.y = pos_down.y - 1
-		local pos1, count = minetest.find_nodes_in_area_under_air(vector.subtract(pos_down, 4), vector.add(pos_down, 4), {"group:soil"})
-		if #pos1 < 1 then
-			return
-		end
-		local random = pos1[math.random(1, #pos1)]
-		random.y = random.y + 1
-		if (minetest.get_node_light(random, nil) or 99) <= fun_caves.light_max then
-			minetest.set_node(random, {name = mushrooms[math.random(#mushrooms)]})
+
+		local grow_pos = {x=pos.x, y=pos.y+1, z=pos.z}
+		local grow_node = minetest.get_node_or_nil(grow_pos)
+		if grow_node and grow_node.name == "air"
+				and (minetest.get_node_light(grow_pos, nil) or 99) <= fun_caves.light_max then
+			if math.random(4) == 1 then
+				minetest.set_node(grow_pos, {name = fungal_tree_leaves[math.random(#fungal_tree_leaves)]})
+			else
+				minetest.set_node(grow_pos, {name = mushrooms[math.random(#mushrooms)]})
+			end
 		end
 	end
 })
+
+-- mushroom growth -- small into huge
+minetest.register_abm({
+	nodenames = mushrooms,
+	interval = 100 * fun_caves.time_factor,
+	chance = 25,
+	action = function(pos, node)
+		-- Clumsy, but it's the best way to limit them to caves.
+		if pos.y > 0 then
+			return
+		end
+
+		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
+		local node_up = minetest.get_node_or_nil(pos_up)
+		if not node_up or node_up.name ~= "air" then
+			return
+		end
+
+		local node_under = minetest.get_node_or_nil({x = pos.x, y = pos.y - 1, z = pos.z})
+		if not node_under
+				or minetest.get_item_group(node_under.name, "soil") == 0
+				or (minetest.get_node_light(pos_up, nil) or 99) > fun_caves.light_max then
+			return
+		end
+
+		minetest.set_node(pos_up, {name = "fun_caves:huge_mushroom_cap"})
+		minetest.set_node(pos, {name = "fun_caves:giant_mushroom_stem"})
+	end
+})
+
+-- mushroom growth -- huge into giant
+minetest.register_abm({
+	nodenames = {"fun_caves:huge_mushroom_cap"},
+	interval = 500 * fun_caves.time_factor,
+	chance = 30,
+	action = function(pos, node)
+		local pos_up = {x=pos.x,y=pos.y+1,z=pos.z}
+		local node_up = minetest.get_node_or_nil(pos_up)
+		if not node_up or node_up.name ~= "air" then
+			return
+		end
+
+		-- Check for soil.
+		node_under = minetest.get_node_or_nil({x = pos.x, y = pos.y - 2, z = pos.z})
+		if not node_under
+				or minetest.get_item_group(node_under.name, "soil") == 0
+				or (minetest.get_node_light(pos_up, nil) or 99) > fun_caves.light_max then
+			return
+		end
+
+		minetest.set_node(pos_up, {name = "fun_caves:giant_mushroom_cap"})
+		minetest.set_node(pos, {name = "fun_caves:giant_mushroom_stem"})
+	end
+})
+
+-- Spike spread and death
+minetest.register_abm({
+	nodenames = fun_caves.hot_spikes,
+	interval = 30 * fun_caves.time_factor,
+	chance = 30,
+	action = function(pos, node)
+		if not fun_caves.hot_spike then
+			return
+		end
+		local spike_num = fun_caves.hot_spike[node.name]
+		if not spike_num then
+			return
+		end
+
+		if spike_num < #fun_caves.hot_spikes then
+			minetest.set_node(pos, {name=fun_caves.hot_spikes[spike_num+1]})
+			return
+		end
+
+		local new_pos = {
+			x = pos.x + math.random(-2, 2),
+			y = pos.y + math.random(-1, 1),
+			z = pos.z + math.random(-2, 2)
+		}
+		local new_node = minetest.get_node_or_nil(new_pos)
+		if not (new_node and spike_air[new_node.name]) then
+			return
+		end
+
+		local node_under = minetest.get_node_or_nil({x = new_pos.x, y = new_pos.y - 1, z = new_pos.z})
+		if not (node_under and spike_soil[node_under.name]) then
+			return
+		end
+
+		minetest.set_node(new_pos, {name = hot_spikes[1]})
+	end
+})
+
+
+------------------------------------------------------------
+-- meteors
+------------------------------------------------------------
 
 -- meteor strikes
 minetest.register_abm({
@@ -265,7 +423,7 @@ minetest.register_abm({
 		end
 
 		minetest.set_node(pos, {name="fun_caves:meteorite_crater"})
-		--print('Fun Caves: meteorite impact '..pos.x..','..pos.y..','..pos.z)
+		print('Fun Caves: meteorite impact '..pos.x..','..pos.y..','..pos.z)
 
 		minetest.after(1, function()
 			for i = 1, #ps do
@@ -275,6 +433,7 @@ minetest.register_abm({
 	end
 })
 
+-- Remove old craters.
 minetest.register_abm({
 	nodenames = {"fun_caves:meteorite_crater"},
 	interval = 100 * fun_caves.time_factor,
@@ -284,163 +443,10 @@ minetest.register_abm({
 	end
 })
 
--- new mushrooms
-minetest.register_abm({
-	nodenames = {"default:dirt"},
-	neighbors = {"air"},
-	interval = 20 * fun_caves.time_factor,
-	chance = 25,
-	action = function(pos, node)
-		if pos.y > 0 then
-			return
-		end
 
-		local grow_pos = {x=pos.x, y=pos.y+1, z=pos.z}
-		local grow_node = minetest.get_node_or_nil(grow_pos)
-		if grow_node and grow_node.name == "air" then
-			if (minetest.get_node_light(grow_pos, nil) or 99) <= fun_caves.light_max then
-				minetest.set_node(grow_pos, {name = mushrooms[math.random(#mushrooms)]})
-				return
-			end
-		end
-	end
-})
-
--- Spike spread and death
-minetest.register_abm({
-	nodenames = fun_caves.hot_spikes,
-	interval = 30 * fun_caves.time_factor,
-	chance = 30,
-	action = function(pos, node)
-		local spike_num = fun_caves.hot_spike[node.name]
-		if not spike_num then
-			return
-		end
-
-		if spike_num < #fun_caves.hot_spikes then
-			minetest.set_node(pos, {name=fun_caves.hot_spikes[spike_num+1]})
-			return
-		end
-
-		local random = {
-			x = pos.x + math.random(-2, 2),
-			y = pos.y + math.random(-1, 1),
-			z = pos.z + math.random(-2, 2)
-		}
-		local random_node = minetest.get_node_or_nil(random)
-		if not random_node or (random_node.name ~= "air" and random_node.name ~= "default:lava_source" and random_node.name ~= "default:lava_flowing") then
-			return
-		end
-		local node_under = minetest.get_node_or_nil({x = random.x,
-			y = random.y - 1, z = random.z})
-		if not node_under then
-			return
-		end
-
-		--print("node_under ("..random.x..","..(random.y-1)..","..random.z.."): "..node_under.name)
-		if node_under.name == "fun_caves:hot_cobble" or node_under.name == "fun_caves:black_sand" then
-			--print("setting ("..random.x..","..random.y..","..random.z.."): "..node_under.name)
-			minetest.set_node(random, {name = hot_spikes[1]})
-		end
-	end
-})
-
-
-local fungal_tree_leaves = {}
-for i = 1, 4 do
-	fungal_tree_leaves[#fungal_tree_leaves+1] = "fun_caves:fungal_tree_leaves_"..i
-end
-
-local leaves = {}
-for _, leaf in pairs(fungal_tree_leaves) do
-	leaves[leaf] = true
-end
-
--- Exploding fungal fruit
-minetest.register_abm({
-	nodenames = {"fun_caves:fungal_tree_fruit"},
-	interval = 20 * fun_caves.time_factor,
-	chance = 14,
-	catch_up = false,
-	action = function(pos, node)
-		fun_caves.soft_boom(pos)
-	end
-})
-
--- Exploding fungal fruit -- in a fire
-minetest.register_abm({
-	nodenames = {"fun_caves:fungal_tree_fruit"},
-	neighbors = {"fire:basic_flame"},
-	interval = 10 * fun_caves.time_factor,
-	chance = 5,
-	catch_up = false,
-	action = function(pos, node)
-		fun_caves.soft_boom(pos)
-	end
-})
-
--- fungal spread
-minetest.register_abm({
-	nodenames = fungal_tree_leaves,
-	neighbors = {"air", "group:liquid"},
-	interval = 2 * fun_caves.time_factor,
-	chance = 10,
-	catch_up = false,
-	action = function(pos, node)
-		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
-			minetest.remove_node(pos)
-			return
-		end
-
-		local grow_pos = {x=pos.x, y=pos.y-1, z=pos.z}
-		local grow_node = minetest.get_node_or_nil(grow_pos)
-		if grow_node and grow_node.name == "air" then
-			minetest.set_node(grow_pos, {name = node.name})
-			return
-		end
-
-		grow_pos = {x=math.random(-1,1)+pos.x, y=math.random(-1,1)+pos.y, z=math.random(-1,1)+pos.z}
-		grow_node = minetest.get_node_or_nil(grow_pos)
-		if grow_node and grow_node.name == "air" and minetest.get_node_light(grow_pos, nil) <= fun_caves.light_max then
-			minetest.set_node(grow_pos, {name = node.name})
-			return
-		elseif grow_node and leaves[grow_node.name] and grow_node.name ~= node.name then
-			minetest.set_node(grow_pos, {name = 'air'})
-			return
-		end
-
-		if math.random(40) == 1 then
-			minetest.set_node(pos, {name = "fun_caves:fungal_tree_fruit"})
-			return
-		end
-
-		if math.random(100) == 1 then
-			minetest.set_node(pos, {name = fungal_tree_leaves[math.random(#fungal_tree_leaves)]})
-			return
-		end
-	end
-})
-
--- new fungi
-minetest.register_abm({
-	nodenames = {"default:dirt"},
-	neighbors = {"air"},
-	interval = 20 * fun_caves.time_factor,
-	chance = 25,
-	action = function(pos, node)
-		if pos.y > 0 then
-			return
-		end
-
-		local grow_pos = {x=pos.x, y=pos.y+1, z=pos.z}
-		local grow_node = minetest.get_node_or_nil(grow_pos)
-		if grow_node and grow_node.name == "air" and (minetest.get_node_light(grow_pos, nil) or 99) <= fun_caves.light_max then
-			minetest.set_node(grow_pos, {name = fungal_tree_leaves[math.random(#fungal_tree_leaves)]})
-			return
-		end
-	end
-})
-
+------------------------------------------------------------
+-- explosive functions
+------------------------------------------------------------
 
 -- All of this is copied from TNT, but modified to leave stone intact.
 
@@ -479,27 +485,21 @@ local function add_effects(pos, radius)
 end
 
 local function destroy(pos, cid)
-	if minetest.is_protected(pos, "") then
+	local def = cid_data[cid]
+	if not def or minetest.is_protected(pos, "") then
 		return
 	end
-	local def = cid_data[cid]
-	if def and def.on_blast then
+
+	if def.on_blast then
 		def.on_blast(vector.new(pos), 1)
 		return
 	end
+
 	if def.snappy == nil and def.choppy == nil and def.fleshy == nil and def.name ~= "fire:basic_flame" then
 		return
 	end
-	local new = "air"
-	--if math.random(1,2) == 1 then
-	if true then
-		local node_under = minetest.get_node_or_nil({x = pos.x,
-			y = pos.y - 1, z = pos.z})
-		if node_under and node_under.name ~= "air" then
-			--new = node.name
-		end
-	end
-	minetest.set_node(pos, {name=new})
+
+	minetest.set_node(pos, {name="air"})
 end
 
 local function explode(pos, radius)
@@ -602,7 +602,7 @@ end
 --	interval = 1 * fun_caves.time_factor,
 --	chance = 50,
 --	action = function(pos, node)
---		if minetest.get_node_light(pos, nil) >= default.LIGHT_MAX - 2 then
+--		if minetest.get_node_light(pos, nil) >= fun_caves.light_max + 2 then
 --			minetest.remove_node(pos)
 --			return
 --		end

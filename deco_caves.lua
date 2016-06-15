@@ -151,8 +151,6 @@ local cap = {
 	light_source = fun_caves.light_max,
 	groups = {fleshy=1, dig_immediate=3, flammable=2, plant=1},
 }
-if false then
-end
 minetest.register_node("fun_caves:giant_mushroom_cap", cap)
 
 -- mushroom cap, huge
