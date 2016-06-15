@@ -9,6 +9,7 @@ local hunger_delay = 60
 local dps_count = hunger_delay
 -- maximum number of mobs near player in fortresses
 local fortress_mob_count = 5
+local players_in_orbit = {}
 
 local mushrooms = {"flowers:mushroom_brown", "flowers:mushroom_red"}
 local hunger_mod = minetest.get_modpath("hunger")
@@ -107,6 +108,20 @@ minetest.register_globalstep(function(dtime)
 					end
 				end
 			end
+		end
+
+		if pos.y >= 11168 and pos.y <= 15168 then
+			if not players_in_orbit[player:get_player_name()] then
+				player:set_physics_override({gravity=0.1})
+				player:set_sky("#000000", "plain", {})
+				players_in_orbit[player:get_player_name()] = true
+			end
+		elseif players_in_orbit[player:get_player_name()] then
+			player:set_sky("#000000", "regular", {})
+			minetest.after(20, function()
+				player:set_physics_override({gravity=1})
+			end)
+			players_in_orbit[player:get_player_name()] = false
 		end
 
 		-- environmental damage
@@ -220,6 +235,29 @@ minetest.register_abm({
 ------------------------------------------------------------
 -- creation
 ------------------------------------------------------------
+
+-- vacuum sucks
+minetest.register_abm({
+	nodenames = {"fun_caves:vacuum"},
+	neighbors = {"air"},
+	interval = fun_caves.time_factor,
+	chance = 1,
+	action = function(pos, node)
+		if pos.y <= 11168 or pos.y >= 15168 then
+			return
+		end
+
+		local p1 = vector.subtract(pos, 1)
+		local p2 = vector.add(pos, 1)
+		local positions =  minetest.find_nodes_in_area(p1, p2, {"air"})
+		for _, p3 in pairs(positions) do
+			local node2 = minetest.get_node_or_nil(p3)
+			if node2 and node2.name == 'air' then
+				minetest.set_node(p3, {name = 'fun_caves:vacuum'})
+			end
+		end
+	end
+})
 
 -- fungal spread
 minetest.register_abm({

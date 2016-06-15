@@ -8,7 +8,7 @@ newnode.sunlight_propagates = true
 newnode.use_texture_alpha = true
 newnode.light_source = 14
 newnode.walkable = false
-newnode.buildable_to = true
+newnode.buildable_to = false
 newnode.pointable = false
 minetest.register_node("fun_caves:airy", newnode)
 
@@ -22,8 +22,6 @@ fun_caves.skysea = function(minp, maxp, data, p2data, area, node)
 	end
 
 	local csize = vector.add(vector.subtract(maxp, minp), 1)
-	local map_max = {x = csize.x, y = csize.y, z = csize.z}
-	local map_min = {x = minp.x, y = minp.y, z = minp.z}
 
 	local terrain_1 = minetest.get_perlin_map(terrain_noise_1, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})
 	local plant_n = minetest.get_perlin_map(plant_noise, {x=csize.x, y=csize.z}):get2dMap_flat({x=minp.x, y=minp.z})

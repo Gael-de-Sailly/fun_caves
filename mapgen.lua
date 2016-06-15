@@ -369,8 +369,12 @@ local function generate(p_minp, p_maxp, seed)
 		end
 	end
 
-	if minp.y > 12800 then
+	local aster = false
+	if minp.y > 17200 then
 		-- nop
+	elseif minp.y > 11000 then
+		write = fun_caves.asteroids(minp, maxp, data, p2data, area, node)
+		aster = true
 	elseif minp.y > 8400 then
 		write = fun_caves.skysea(minp, maxp, data, p2data, area, node)
 	elseif minp.y > 4000 then
@@ -400,7 +404,7 @@ local function generate(p_minp, p_maxp, seed)
 			-- set_lighting causes lighting artifacts,
 			-- but corrects the light inside trees.
 			vm:set_lighting({day = 0, night = 0}, minp, maxp)
-			vm:calc_lighting(minp, maxp)
+			vm:calc_lighting(minp, maxp, not aster)
 			-- Does not work:
 			--vm:calc_lighting({x=minp.x,y=emin.y,z=minp.z}, maxp)
 		end
@@ -418,6 +422,7 @@ local function generate(p_minp, p_maxp, seed)
 end
 
 
+dofile(fun_caves.path .. "/asteroids.lua")
 dofile(fun_caves.path .. "/cavegen.lua")
 dofile(fun_caves.path .. "/cloudgen.lua")
 dofile(fun_caves.path .. "/decogen.lua")

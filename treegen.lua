@@ -58,7 +58,7 @@ minetest.register_node("fun_caves:leaves_special", newnode)
 newnode = fun_caves.clone_node("default:water_source")
 newnode.description = "Water"
 newnode.liquid_range = 0
-newnode.liquid_viscosity = 7
+newnode.liquid_viscosity = 1
 newnode.liquid_renewable = false
 newnode.liquid_alternative_flowing = "fun_caves:weightless_water"
 newnode.liquid_alternative_source = "fun_caves:weightless_water"
