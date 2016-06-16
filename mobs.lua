@@ -252,20 +252,12 @@ for _, mob in pairs(mob_stats) do
 	end
 end
 
-local mob_check = {}
 for _, mob in pairs(mob_stats) do
 	if minetest.registered_entities[mob.name] then
 		minetest.registered_entities[mob.name].damage = mob.damage
 		minetest.registered_entities[mob.name].hp_min = math.ceil(mob.hp * 0.5)
 		minetest.registered_entities[mob.name].hp_max = math.ceil(mob.hp * 1.5)
 		minetest.registered_entities[mob.name].armor = mob.armor
-		mob_check[mob.name] = true
-	end
-end
-
-for name, mob in pairs(minetest.registered_entities) do
-	if not mob_check[name] then
-		print(name)
 	end
 end
 
@@ -302,6 +294,60 @@ if minetest.registered_entities["dmobs:fox"] then
 
 	--mobs:register_spawn("fun_caves:fire_fox", {'default:dirt_with_grass'}, 20, -1, 1000, 5, 31000)
 end
+
+
+mobs:register_mob("fun_caves:star", {
+	description = "Star",
+	type = "monster",
+	passive = false,
+	attack_type = "dogfight",
+	attacks_monsters = true,
+	fly = true,
+	fly_in = 'fun_caves:vacuum',
+	reach = 2,
+	damage = 2,
+	hp_min = 10,
+	hp_max = 20,
+	armor = 100,
+	collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
+	visual = "mesh",
+	visual_size = {x = 5, y = 5},
+	mesh = "star.x",
+	drawtype = "front",
+	textures = {
+		{"fun_caves_albino.png"},
+	},
+	makes_footstep_sound = false,
+	sounds = {
+		random = "mobs_bee",
+	},
+	walk_velocity = 1,
+	run_velocity = 3,
+	jump = true,
+	view_range = 15,
+	floats = 0,
+	--drops = {
+	--	{name = "mobs:honey", chance = 2, min = 1, max = 2},
+	--},
+	water_damage = 0,
+	lava_damage = 0,
+	light_damage = 0,
+	fall_damage = 0,
+	lifetimer = 360,
+	do_custom = function(self)
+		if not fun_caves.custom_ready(self) then
+			return
+		end
+
+		local pos = self.object:getpos()
+		local node = minetest.get_node_or_nil(pos)
+		if node and node.name then
+			self.fly_in = node.name
+		end
+	end
+})
+
+mobs:spawn_specific("fun_caves:star", {'default:stone', 'fun_caves:asteroid_water'}, {'fun_caves:vacuum'}, -1, 20, nil, 300, 2, 11168, 15168, nil)
 
 if minetest.registered_entities["mobs:bee"] then
 	local function bee_summon(self)

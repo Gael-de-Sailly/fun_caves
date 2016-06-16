@@ -2,6 +2,10 @@
 
 -- player surface damage and hunger
 local dps_delay = 3000000
+if fun_caves.DEBUG then
+	local dps_delay = 1000000
+end
+
 local last_dps_check = 0
 local cold_delay = 5
 local monster_delay = 3
