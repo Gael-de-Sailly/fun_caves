@@ -1,7 +1,7 @@
 -- search/replace -- lets mobs change the terrain
 -- used for goblin traps and torch thieving
 fun_caves.search_replace = function(pos, search_rate, replace_what, replace_with)
-	if math.random(1, search_rate) == 1 then
+	if math.random(search_rate) == 1 then
 		local p1 = vector.subtract(pos, 1)
 		local p2 = vector.add(pos, 1)
 
@@ -9,8 +9,8 @@ fun_caves.search_replace = function(pos, search_rate, replace_what, replace_with
 		local nodelist = minetest.find_nodes_in_area(p1, p2, replace_what)
 
 		if #nodelist > 0 then
-			for key,value in pairs(nodelist) do 
-				minetest.set_node(value, {name = replace_with})
+			for _, new_pos in pairs(nodelist) do 
+				minetest.set_node(new_pos, {name = replace_with})
 				return  -- only one at a time
 			end
 		end
@@ -61,109 +61,9 @@ fun_caves.surface_damage = function(self, cold_natured)
 	--end
 end
 
-local cardinals = {{x=0,y=0,z=0.75}, {x=-0.75,y=0,z=0}, {x=0,y=0,z=-0.75}, {x=0.75,y=0,z=0}}
---local diggable_nodes = {"group:stone", "group:sand", "group:soil", "group:plant", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_mese", "default:stone_with_diamond", "default:mese", "default:coalblock"}
-local diggable_nodes = {
-	digger = {"group:cracky", "group:snappy", "group:crumbly"},
-	bee = {"fun_caves:tree",  "fun_caves:glowing_fungal_wood", "fun_caves:sap"},
-}
-fun_caves.tunneling = function(self, type)
-	-- Types are available for fine-tuning.
-	if type == nil then
-		type = "digger"
-	end
-
-	-- This translates yaw into vectors.
-	local pos = self.object:getpos()
-
-	if self.state == "tunnel" then
-		-- Yaw is stored as one of the four cardinal directions.
-		if not self.digging_dir then
-			self.digging_dir = math.random(0,3)
-		end
-
-		-- Turn him roughly in the right direction.
-		self.object:setyaw(self.digging_dir * math.pi * 0.5)
-
-		-- Get a pair of coordinates that should cover what's in front of him.
-		local p = vector.add(pos, cardinals[self.digging_dir+1])
-
-		-- What's this about?
-		if type == "digger" then
-			p.y = p.y - 0.5
-		else
-			p.y = p.y + 0.25
-		end
-		local p1 = vector.add(p, -0.3)
-		local p2 = vector.add(p, 0.3)
-
-		-- Get any diggable nodes in that area.
-		local np_list = minetest.find_nodes_in_area(p1, p2, diggable_nodes[type])
-
-		if #np_list > 0 then
-			-- Dig it.
-			for _, np in pairs(np_list) do
-				if type ~= 'digger' or np.name ~= "default:cobble" then
-					minetest.remove_node(np)
-				end
-			end
-		end
-
-		if math.random() < 0.2 then
-			local d = {-1,1}
-			self.digging_dir = (self.digging_dir + d[math.random(2)]) % 4
-		end
-
-		set_animation(self, "walk")
-		set_velocity(self, self.walk_velocity)
-	elseif self.state == "room" then  -- Dig a room.
-		if not self.room_radius or not self.room_count then
-			self.room_radius = 1
-			self.room_count = 0
-		end
-
-		set_animation(self, "stand")
-		set_velocity(self, 0)
-
-		-- Work from the inside, out.
-		for r = 1,self.room_radius do
-			-- Get a pair of coordinates that form a room.
-			local p1 = vector.add(pos, -r)
-			local p2 = vector.add(pos, r)
-			-- But not below him.
-			p1.y = pos.y
-
-			local np_list = minetest.find_nodes_in_area(p1, p2, diggable_nodes[type])
-
-			-- I wanted to leave the outer layer incomplete, but this
-			--  actually tends to make it look worse.
-			if r >= self.room_radius and self.room_count > (self.room_radius * 2 + 1) ^ 3 or #np_list == 0 then
-				self.room_radius = math.random(1,2) + math.random(0,1)
-				self.state = "stand"
-				break
-			end
-
-			self.room_count = self.room_count + 1
-			if #np_list > 0 then
-				-- Dig it.
-				minetest.remove_node(np_list[math.random(#np_list)])
-				break
-			end
-		end
-	end
-
-	if self.state ~= "room" and math.random() < (type == 'digger' and 0.5 or 0.2) then
-		self.state = "tunnel"
-	elseif self.state == "tunnel" and math.random() < 0.01 then
-		self.state = "room"
-	elseif self.state == "tunnel" and math.random() < 0.1 then
-		self.state = "stand"
-	end
-end
-
 -- executed in a mob's do_custom() to regulate their actions
 -- if false, do nothing
-local custom_delay = 5000000
+local custom_delay = 2000000
 fun_caves.custom_ready = function(self, delay)
 	local time = minetest.get_us_time()
 	if not delay then
@@ -382,14 +282,17 @@ if minetest.registered_entities["mobs:bee"] then
 			return
 		end
 
+		local pos = self.object:getpos()
+		pos.y = pos.y + 1
+
 		if self.name == 'fun_caves:killer_bee' then
-			fun_caves.tunneling(self, "bee")
+			fun_caves.search_replace(pos, 10, {'group:tree', 'fun_caves:glowing_fungal_wood',}, 'air')
 		end
+		fun_caves.search_replace(pos, 10, {"fun_caves:tree"}, "fun_caves:glowing_fungal_wood")
+		fun_caves.search_replace(pos, 60, {"fun_caves:glowing_fungal_wood", 'fun_caves:sap'}, "air")
 
 		bee_summon(self)
 
-		fun_caves.climb(self)
-		fun_caves.search_replace(self.object:getpos(), 50, {"fun_caves:tree"}, "fun_caves:glowing_fungal_wood")
 		fun_caves.surface_damage(self)
 	end
 
@@ -418,7 +321,8 @@ if minetest.registered_entities["mobs:bee"] then
 			random = "mobs_bee",
 		},
 		walk_velocity = 1,
-		run_velocity = 3,
+		run_velocity = 2,
+		fall_speed = -3,
 		jump = true,
 		view_range = 15,
 		floats = 0,
@@ -429,8 +333,7 @@ if minetest.registered_entities["mobs:bee"] then
 		lava_damage = 5,
 		light_damage = 0,
 		fall_damage = 0,
-		--fall_speed = -3,
-		lifetimer = 360,
+		--lifetimer = 360,
 		follow = nil,
 		animation = {
 			speed_normal = 15,
@@ -439,15 +342,12 @@ if minetest.registered_entities["mobs:bee"] then
 			walk_start = 35,
 			walk_end = 65,
 		},
-		replace_rate = 50,
-		replace_what = {"fun_caves:glowing_fungal_wood", "fun_caves:sap",},
-		replace_with = "air",
-		replace_offset = -1,
 		do_custom = bee_do
 	})
 
 
 	mobs:register_spawn("fun_caves:killer_bee", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 300, 5, 31000)
+	mobs:register_spawn("fun_caves:killer_bee", {"fun_caves:glowing_fungal_wood"}, 20, -1, 100, 5, 31000)
 	mobs:register_egg("fun_caves:killer_bee", "Killer Bee", "mobs_bee_inv.png", 1)
 
 
@@ -456,6 +356,7 @@ if minetest.registered_entities["mobs:bee"] then
 	m.damage = 3
 	m.hp_min = 3
 	m.hp_max = 9
+	m.collisionbox = {-0.25, 0, -0.25, 0.25, 0.25, 0.25}
 	m.visual_size = {x = 1.25, y = 1.25}
 
 	minetest.registered_entities["fun_caves:killer_bee_drone"] = m
@@ -464,10 +365,11 @@ if minetest.registered_entities["mobs:bee"] then
 	mobs:register_spawn("fun_caves:killer_bee_drone", {"fun_caves:tree", "fun_caves:ironwood", "fun_caves:diamondwood"}, 20, -1, 1000, 5, 31000)
 
 	m = table.copy(minetest.registered_entities["fun_caves:killer_bee"])
+	m.name = 'fun_caves:killer_bee_queen'
 	m.damage = 2
 	m.hp_min = 4
 	m.hp_max = 12
-	m.name = 'fun_caves:killer_bee_queen'
+	m.collisionbox = {-0.3, 0, -0.3, 0.3, 0.3, 0.3}
 	m.visual_size = {x = 1.5, y = 1.25}
 
 	minetest.registered_entities["fun_caves:killer_bee_queen"] = m
@@ -478,6 +380,7 @@ end
 
 if minetest.registered_entities["kpgmobs:wolf"] then
 	local m = table.copy(minetest.registered_entities["kpgmobs:wolf"])
+	m.name = 'fun_caves:white_wolf'
 	m.textures = { {"fun_caves_white_wolf.png"}, }
 	m.base_texture = m.textures[1]
 
@@ -498,6 +401,7 @@ end
 
 if minetest.registered_entities["kpgmobs:medved"] then
 	local m = table.copy(minetest.registered_entities["kpgmobs:medved"])
+	m.name = 'fun_caves:moon_bear'
 	m.textures = { {"fun_caves_moon_bear.png"}, }
 	m.type = 'monster'
 	m.base_texture = m.textures[1]
@@ -519,6 +423,7 @@ end
 if minetest.registered_entities["mobs_monster:spider"] then
 	-- Deep spider
 	local m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.name = 'fun_caves:spider'
 	m.docile_by_day = false
 	m.drops = {
 		{name = "mobs:meat_raw", chance = 1, min = 1, max = 3},
@@ -543,6 +448,7 @@ if minetest.registered_entities["mobs_monster:spider"] then
 
 	-- ice spider
 	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.name = 'fun_caves:spider_ice'
 	m.docile_by_day = false
 	m.textures = { {"fun_caves_spider_ice.png"}, }
 	m.base_texture = m.textures[1]
@@ -569,6 +475,7 @@ if minetest.registered_entities["mobs_monster:spider"] then
 
 	-- dangling spiders
 	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.name = 'fun_caves:dangler'
 	m.docile_by_day = false
 	m.attacks_monsters = true
 	m.damage = 2
@@ -604,6 +511,7 @@ if minetest.registered_entities["mobs_monster:spider"] then
 
 	-- tarantula
 	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
+	m.name = 'fun_caves:tarantula'
 	m.type = "animal"
 	m.reach = 1
 	m.damage = 1
@@ -644,6 +552,7 @@ end
 
 if minetest.registered_entities["mobs_monster:sand_monster"] then
 	local m = table.copy(minetest.registered_entities["mobs_monster:sand_monster"])
+	m.name = 'fun_caves:tar_monster'
 	m.damage = 2
 	m.hp_min = 10
 	m.hp_max = 30
@@ -664,6 +573,7 @@ if minetest.registered_entities["mobs_monster:sand_monster"] then
 
 
 	m = table.copy(minetest.registered_entities["mobs_monster:sand_monster"])
+	m.name = 'fun_caves:sand_monster'
 	m.textures = { {"fun_caves_sand_monster.png"}, }
 	m.base_texture = m.textures[1]
 	m.drops = { {name = "default:sand", chance = 1, min = 3, max = 5}, }
@@ -724,6 +634,7 @@ if minetest.registered_entities["mobs_sharks:shark_lg"] then
 	local l_spawn_in		= {"default:water_flowing","default:water_source"}
 	local l_spawn_near		= {"default:water_flowing","default:water_source","seawrecks:woodship","seawrecks:uboot"}
 
+	m.name = 'fun_caves:shark_giant'
 	m.damage = 7
 	m.hp_min = 20
 	m.hp_max = 60
@@ -740,24 +651,7 @@ if minetest.registered_entities["mobs_sharks:shark_lg"] then
 end
 
 dofile(fun_caves.path.."/zombie.lua")
-
-
-fun_caves.goblin_spawn_frequency = 150
-fun_caves.goblin_trap_freq = 25
-fun_caves.goblin_torch_freq = 2
-
-fun_caves.goblin_drops = { "default:pick_steel",  "default:sword_steel", "default:shovel_steel", "farming:bread", "bucket:bucket_water", "default:pick_stone", "default:sword_stone" }
---{"group:stone"} = { "default:stone", "default:mossycobble", "default:sandstone", "default:desert_stone", "default:stone_with_coal", "default:stone_with_iron", "default:stone_with_copper", "default:stone_with_gold", "default:stone_with_diamond" }
-
-dofile(fun_caves.path.."/goblin_cobbler.lua")
-dofile(fun_caves.path.."/goblin_digger.lua")
-dofile(fun_caves.path.."/goblin_coal.lua")
-dofile(fun_caves.path.."/goblin_ice.lua")
-dofile(fun_caves.path.."/goblin_copper.lua")
-dofile(fun_caves.path.."/goblin_iron.lua")
-dofile(fun_caves.path.."/goblin_gold.lua")
-dofile(fun_caves.path.."/goblin_diamond.lua")
-dofile(fun_caves.path.."/goblin_king.lua")
+dofile(fun_caves.path.."/goblin.lua")
 
 fun_caves.fortress_spawns = {}
 local t_mobs = {

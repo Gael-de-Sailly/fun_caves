@@ -5,6 +5,8 @@ local newnode = fun_caves.clone_node("default:tree")
 newnode.description = "Bark"
 newnode.tiles = {"default_tree.png"}
 newnode.is_ground_content = false
+newnode.groups.tree = 0
+newnode.groups.flammable = 0
 minetest.register_node("fun_caves:bark", newnode)
 
 newnode = fun_caves.clone_node("default:tree")
