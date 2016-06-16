@@ -444,9 +444,9 @@ minetest.register_abm({
 minetest.register_abm({
 	nodenames = {"default:dirt_with_grass", "default:dirt_with_dry_grass"},
 	neighbors = {"air"},
-	interval = 100000 * fun_caves.time_factor,
+	interval = 1000000 * fun_caves.time_factor,
 	catch_up = false,
-	chance = 10000,
+	chance = 30000,
 	action = function(pos, node)
 		local ps = {}
 		local players = minetest.get_connected_players()

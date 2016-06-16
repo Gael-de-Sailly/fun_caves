@@ -502,3 +502,8 @@ minetest.register_craftitem("fun_caves:philosophers_stone", {
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
 })
+
+
+newnode = fun_caves.clone_node("default:stone")
+newnode.tiles = {'dna.png'}
+minetest.register_node("fun_caves:dna", newnode)

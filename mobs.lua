@@ -178,6 +178,98 @@ fun_caves.custom_ready = function(self, delay)
 end
 
 
+-- Try to standardize creature stats based on (log of) mass.
+local mob_stats = {
+
+	{name = 'dmobs:badger', hp = 12, damage = 1, armor = 100},
+	{name = 'dmobs:dragon', hp = 40, damage = 6, armor = 50},
+	{name = 'dmobs:elephant', hp = 38, damage = 5, armor = 75},
+	{name = 'dmobs:fox', hp = 8, damage = 1, armor = 100},
+	{name = 'dmobs:hedgehog', hp = 2, damage = 1, armor = 100},
+	{name = 'dmobs:ogre', hp = 26, damage = 3, armor = 75},
+	{name = 'dmobs:orc', hp = 22, damage = 2, armor = 100},
+	{name = 'dmobs:owl', hp = 6, damage = 1, armor = 100},
+	{name = 'dmobs:panda', hp = 22, damage = 2, armor = 100},
+	{name = 'kpgmobs:deer', hp = 20, damage = 2, armor = 100},
+	{name = 'kpgmobs:horse2', hp = 30, damage = 3, armor = 100},
+	{name = 'kpgmobs:horse3', hp = 30, damage = 3, armor = 100},
+	{name = 'kpgmobs:horse', hp = 30, damage = 3, armor = 100},
+	{name = 'kpgmobs:jeraf', hp = 32, damage = 3, armor = 100},
+	{name = 'kpgmobs:medved', hp = 26, damage = 3, armor = 100},
+	{name = 'kpgmobs:wolf', hp = 18, damage = 3, armor = 100},
+	{name = 'mobs_animal:bee', hp = 1, damage = 1, armor = 200},
+	{name = 'mobs_animal:bunny', hp = 2, damage = 1, armor = 100},
+	{name = 'mobs_animal:chicken', hp = 8, damage = 1, armor = 150},
+	{name = 'mobs_animal:cow', hp = 30, damage = 3, armor = 150},
+	{name = 'mobs_animal:kitten', hp = 8, damage = 1, armor = 100},
+	{name = 'mobs_animal:pumba', hp = 20, damage = 2, armor = 100},
+	{name = 'mobs_animal:rat', hp = 2, damage = 1, armor = 100},
+	{name = 'mobs_animal:sheep', hp = 18, damage = 1, armor = 150},
+	{name = 'mobs_bat:bat', hp = 2, damage = 1, armor = 150},
+	{name = 'mobs_birds:bird_lg', hp = 4, damage = 1, armor = 150},
+	{name = 'mobs_birds:bird_sm', hp = 2, damage = 1, armor = 150},
+	{name = 'mobs_birds:gull', hp = 4, damage = 1, armor = 150},
+	{name = 'mobs_butterfly:butterfly', hp = 1, damage = 0, armor = 200},
+	{name = 'mobs_creeper:creeper', hp = 14, damage = 2, armor = 150},
+	{name = 'mobs_crocs:crocodile_float', hp = 26, damage = 3, armor = 75},
+	{name = 'mobs_crocs:crocodile', hp = 26, damage = 3, armor = 75},
+	{name = 'mobs_crocs:crocodile_swim', hp = 26, damage = 3, armor = 75},
+	{name = 'mobs_fish:clownfish', hp = 2, damage = 0, armor = 100},
+	{name = 'mobs_fish:tropical', hp = 2, damage = 0, armor = 100},
+	{name = 'mobs_jellyfish:jellyfish', hp = 2, damage = 2, armor = 200},
+	{name = 'mobs_monster:dirt_monster', hp = 20, damage = 2, armor = 100},
+	{name = 'mobs_monster:dungeon_master', hp = 30, damage = 5, armor = 50},
+	{name = 'mobs_monster:lava_flan', hp = 16, damage = 3, armor = 50},
+	{name = 'mobs_monster:mese_monster', hp = 10, damage = 2, armor = 40},
+	{name = 'mobs_monster:oerkki', hp = 16, damage = 2, armor = 100},
+	{name = 'mobs_monster:sand_monster', hp = 20, damage = 2, armor = 200},
+	{name = 'mobs_monster:spider', hp = 22, damage = 2, armor = 100},
+	{name = 'mobs_monster:stone_monster', hp = 20, damage = 2, armor = 50},
+	{name = 'mobs_monster:tree_monster', hp = 18, damage = 2, armor = 75},
+	{name = 'mobs_sandworm:sandworm', hp = 42, damage = 7, armor = 100},
+	{name = 'mobs_sharks:shark_lg', hp = 34, damage = 5, armor = 80},
+	{name = 'mobs_sharks:shark_md', hp = 25, damage = 3, armor = 80},
+	{name = 'mobs_sharks:shark_sm', hp = 16, damage = 2, armor = 80},
+	--{name = 'mobs_slimes:green_big', hp = 16, damage = 3, armor = 100},
+	--{name = 'mobs_slimes:green_medium', hp = 16, damage = 3, armor = 100},
+	--{name = 'mobs_slimes:green_small', hp = 16, damage = 3, armor = 100},
+	--{name = 'mobs_slimes:lava_big', hp = 16, damage = 3, armor = 100},
+	--{name = 'mobs_slimes:lava_medium', hp = 16, damage = 3, armor = 100},
+	--{name = 'mobs_slimes:lava_small', hp = 16, damage = 3, armor = 100},
+	{name = 'mobs_turtles:seaturtle', hp = 18, damage = 2, armor = 75},
+	{name = 'mobs_turtles:turtle', hp = 10, damage = 1, armor = 50},
+	{name = 'mobs_yeti:yeti', hp = 22, damage = 2, armor = 100},
+}
+local colors = { 'black', 'blue', 'brown', 'cyan', 'dark_green', 'dark_grey', 'green', 'grey', 'magenta', 'orange', 'pink', 'red', 'violet', 'white', 'yellow',}
+for _, color in pairs(colors) do
+	mob_stats[#mob_stats+1] = {name = 'mobs_animal:sheep_'..color, hp = 18, damage = 1, armor = 150}
+end
+for _, mob in pairs(mob_stats) do
+	if string.find(mob.name, 'mobs_monster') or string.find(mob.name, 'mobs_animal') then
+		local i, j = string.find(mob.name, ':')
+		local suff = string.sub(mob.name, i)
+		mob_stats[#mob_stats+1] = {name = 'mobs'..suff, hp = mob.hp, damage = mob.damage, armor = mob.armor}
+	end
+end
+
+local mob_check = {}
+for _, mob in pairs(mob_stats) do
+	if minetest.registered_entities[mob.name] then
+		minetest.registered_entities[mob.name].damage = mob.damage
+		minetest.registered_entities[mob.name].hp_min = math.ceil(mob.hp * 0.5)
+		minetest.registered_entities[mob.name].hp_max = math.ceil(mob.hp * 1.5)
+		minetest.registered_entities[mob.name].armor = mob.armor
+		mob_check[mob.name] = true
+	end
+end
+
+for name, mob in pairs(minetest.registered_entities) do
+	if not mob_check[name] then
+		print(name)
+	end
+end
+
+
 if minetest.registered_entities["dmobs:fox"] then
 	local function fire_walk(self)
 		if not fun_caves.custom_ready(self, 1000000) then
@@ -198,8 +290,8 @@ if minetest.registered_entities["dmobs:fox"] then
 	local m = table.copy(minetest.registered_entities["dmobs:fox"])
 	m.name = 'fun_caves:fire_fox'
 	m.damage = 3
-	--hp_min = 42,
-	--hp_max = 52,
+	m.hp_min = 8
+	m.hp_max = 24
 	m.lava_damage = 0
 	m.textures = { {"fun_caves_fire_fox_2.png"}, }
 	m.base_texture = m.textures[1]
@@ -263,9 +355,9 @@ if minetest.registered_entities["mobs:bee"] then
 		attacks_monsters = true,
 		reach = 2,
 		damage = 1,
-		hp_min = 5,
-		hp_max = 10,
-		armor = 200,
+		hp_min = 2,
+		hp_max = 6,
+		armor = 100,
 		collisionbox = {-0.2, -0.01, -0.2, 0.2, 0.2, 0.2},
 		visual = "mesh",
 		mesh = "mobs_bee.x",
@@ -316,8 +408,8 @@ if minetest.registered_entities["mobs:bee"] then
 	local m = table.copy(minetest.registered_entities["fun_caves:killer_bee"])
 	m.name = 'fun_caves:killer_bee_drone'
 	m.damage = 3
-	m.hp_min = 10
-	m.hp_max = 20
+	m.hp_min = 3
+	m.hp_max = 9
 	m.visual_size = {x = 1.25, y = 1.25}
 
 	minetest.registered_entities["fun_caves:killer_bee_drone"] = m
@@ -327,8 +419,8 @@ if minetest.registered_entities["mobs:bee"] then
 
 	m = table.copy(minetest.registered_entities["fun_caves:killer_bee"])
 	m.damage = 2
-	m.hp_min = 15
-	m.hp_max = 30
+	m.hp_min = 4
+	m.hp_max = 12
 	m.name = 'fun_caves:killer_bee_queen'
 	m.visual_size = {x = 1.5, y = 1.25}
 
@@ -433,9 +525,10 @@ if minetest.registered_entities["mobs_monster:spider"] then
 	m = table.copy(minetest.registered_entities["mobs_monster:spider"])
 	m.docile_by_day = false
 	m.attacks_monsters = true
-	m.damage = 1
-	m.hp_min = 10
-	m.hp_max = 20
+	m.damage = 2
+	m.hp_min = 9
+	m.hp_max = 27
+	m.armor = 100
 	m.water_damage = 0
 	m.fall_damage = 0
 	m.collisionbox = {-0.32, -0.0, -0.25, 0.25, 0.25, 0.25}
@@ -506,8 +599,9 @@ end
 if minetest.registered_entities["mobs_monster:sand_monster"] then
 	local m = table.copy(minetest.registered_entities["mobs_monster:sand_monster"])
 	m.damage = 2
-	m.hp_min = 15
-	m.hp_max = 40
+	m.hp_min = 10
+	m.hp_max = 30
+	m.armor = 200
 	m.textures = { {"fun_caves_tar_monster.png"}, }
 	m.base_texture = m.textures[1]
 	m.drops = { {name = "default:coal_lump", chance = 1, min = 3, max = 5}, }
@@ -541,7 +635,6 @@ if minetest.registered_entities["dmobs:elephant"] then
 	local m = minetest.registered_entities["dmobs:elephant"]
 	m.type = "monster"
 	m.reach = 3
-	m.damage = 3
 end
 
 if minetest.registered_entities["mobs_monster:dirt_monster"] then
@@ -585,9 +678,9 @@ if minetest.registered_entities["mobs_sharks:shark_lg"] then
 	local l_spawn_in		= {"default:water_flowing","default:water_source"}
 	local l_spawn_near		= {"default:water_flowing","default:water_source","seawrecks:woodship","seawrecks:uboot"}
 
-	m.damage = 15
-	m.hp_min = 40
-	m.hp_max = 50
+	m.damage = 7
+	m.hp_min = 20
+	m.hp_max = 60
 	m.visual_size = {x=3, y=3}
 	m.collisionbox = {-2, -1.5, -2, 2, 1.5, 2}
 	m.textures = {"fun_caves_albino.png"}

@@ -15,6 +15,7 @@ newnode.sunlight_propagates = true
 newnode.post_effect_color = {a = 50, r = 30, g = 60, b = 90},
 minetest.register_node("fun_caves:asteroid_water", newnode)
 
+
 --bucket.liquids['fun_caves:asteroid_water'] = {
 --	source = 'fun_caves:asteroid_water',
 --	flowing = 'fun_caves:asteroid_water',
